@@ -59,7 +59,8 @@ export default function FreelancerOnlineComponent({ freelancers }) {
     endLocation: "",
     deposit: "",
     price: "",
-    serviceFee: ""
+    serviceFee: "",
+    status: ""
   });
   const [filteredFreelancers, setFilteredFreelancers] = useState(freelancers);
 
@@ -104,12 +105,23 @@ export default function FreelancerOnlineComponent({ freelancers }) {
     <div className="pt-1">
       <div className="overflow-x-auto">
         {/* Header columns with horizontal scroll */}
-        <div className="grid grid-flow-col border-t border-gray-300 font-bold bg-gray-100">
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "50px" }}>
+        <div className="grid grid-flow-col border-gray-300 font-bold w-full">
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "50px" }}>
             <div>{t("common.stt", "SỐ THỨ TỰ")}</div>
           </div>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            <div>
+              {t("freelancer.id")}
+              <FilterDropdown
+                options={getUniqueValues('id')}
+                selectedValue={filters.id}
+                onFilterChange={(value) => handleFilterChange('id', value)}
+                placeholder="All IDs"
+              />
+            </div>
+          </div>
 
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
             <div>
               {t("freelancer.jobName")}
               <FilterDropdown
@@ -120,8 +132,9 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
-            <div>{t("freelancer.estimate")}
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+            <div className="flex justify-center items-center " style={{ alignItems: "baseline" }}>
+              <p dangerouslySetInnerHTML={{ __html: t('freelancer.estimate') }} />
               <FilterDropdown
                 options={getUniqueValues('estimate')}
                 selectedValue={filters.estimate}
@@ -129,7 +142,17 @@ export default function FreelancerOnlineComponent({ freelancers }) {
                 placeholder="All Estimates"
               /></div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "160px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "200px" }}>
+            <div className="flex justify-center items-center " style={{ alignItems: "baseline" }}>
+              <p dangerouslySetInnerHTML={{ __html: t('freelancer.profilejob') }} />
+              <FilterDropdown
+                options={getUniqueValues('profilejob')}
+                selectedValue={filters.profilejob}
+                onFilterChange={(value) => handleFilterChange('profilejob', value)}
+                placeholder="All"
+              /></div>
+          </div>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "160px" }}>
             <div className="flex justify-center items-center " style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t('freelancer.requirements') }} />
               <FilterDropdown
@@ -140,7 +163,7 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.startTime") }} />
               <FilterDropdown
@@ -151,7 +174,7 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+          {/* <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.startLocation") }} />
               <FilterDropdown
@@ -161,9 +184,9 @@ export default function FreelancerOnlineComponent({ freelancers }) {
                 placeholder="All Start Locations"
               />
             </div>
-          </div>
+          </div> */}
           {/* New columns */}
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.finishTime") }} />
               <FilterDropdown
@@ -174,7 +197,7 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+          {/* <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.finishLocation") }} />
               <FilterDropdown
@@ -184,8 +207,8 @@ export default function FreelancerOnlineComponent({ freelancers }) {
                 placeholder="All Finish Locations"
               />
             </div>
-          </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "130px" }}>
+          </div> */}
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "130px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.deposit") }} />
               <FilterDropdown
@@ -196,7 +219,29 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
+              <p dangerouslySetInnerHTML={{ __html: t("freelancer.cod") }} />
+              <FilterDropdown
+                options={getUniqueValues('cod')}
+                selectedValue={filters.cod}
+                onFilterChange={(value) => handleFilterChange('cod', value)}
+                placeholder="All"
+              />
+            </div>
+          </div>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
+              <p dangerouslySetInnerHTML={{ __html: t("freelancer.vat") }} />
+              <FilterDropdown
+                options={getUniqueValues('vat')}
+                selectedValue={filters.vat}
+                onFilterChange={(value) => handleFilterChange('vat', value)}
+                placeholder="All"
+              />
+            </div>
+          </div>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t('freelancer.priceOffered') }} />
               <FilterDropdown
@@ -207,7 +252,18 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
+              <p dangerouslySetInnerHTML={{ __html: t("freelancer.payonweb") }} />
+              <FilterDropdown
+                options={getUniqueValues('payOnWeb')}
+                selectedValue={filters.payOnWeb}
+                onFilterChange={(value) => handleFilterChange('payOnWeb', value)} 
+                placeholder="All"
+              />
+            </div>
+          </div>
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "120px" }}>
             <div className="flex justify-center items-center" style={{ alignItems: "baseline" }}>
               <p dangerouslySetInnerHTML={{ __html: t("freelancer.setPrice") }} />
               <FilterDropdown
@@ -218,7 +274,8 @@ export default function FreelancerOnlineComponent({ freelancers }) {
               />
             </div>
           </div>
-          <div className="border-r border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+          
+          <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "120px" }}>
             {t("freelancer.accept")}
           </div>
         </div>
@@ -227,78 +284,100 @@ export default function FreelancerOnlineComponent({ freelancers }) {
         {filteredFreelancers.map((freelancer, index) => (
           <div
             key={index}
-            className="grid grid-flow-col border-t border-b  border-gray-300"
+            className="grid grid-flow-col border-b  border-gray-300"
           >
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "50px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "50px" }}>
               {index + 1}
             </div>
-
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+              <div>
+                {freelancer.id}
+              </div>
+            </div>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
               <div>
                 {freelancer.name}
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
               <div>
                 {freelancer.estimate}
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "160px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "200px" }}>
+              <div className="flex justify-center items-center">
+                <p dangerouslySetInnerHTML={{ __html: freelancer.profilejob }} />
+              </div>
+            </div>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "160px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.requirement }} />
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.startTime }} />
-
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "150px" }}>
+            {/* <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.startLocation }} />
-
               </div>
-            </div>
-            {/* New columns */}
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            </div> */}
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
               <div className="flex justify-center items-center">
-                <p dangerouslySetInnerHTML={{ __html: freelancer.finishTime }} />
-
+                <p dangerouslySetInnerHTML={{ __html: freelancer.endTime }} />
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+            {/* <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.endLocation }} />
               </div>
-            </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "130px" }}>
+            </div> */}
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "130px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.deposit }} />
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+              <div className="flex justify-center items-center">
+                <p dangerouslySetInnerHTML={{ __html: freelancer.cod }} />
+              </div>
+            </div>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
+              <div className="flex justify-center items-center">
+                <p dangerouslySetInnerHTML={{ __html: freelancer.vat }} />
+              </div>
+            </div>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "150px" }}>
               <div className="flex justify-center items-center">
                 <p dangerouslySetInnerHTML={{ __html: freelancer.price }} />
               </div>
             </div>
-            <div className="border-r border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "180px" }}>
               <div className="flex justify-center items-center">
-                <p dangerouslySetInnerHTML={{ __html: freelancer.serviceFee }} />
+                <p dangerouslySetInnerHTML={{ __html: freelancer.payOnWeb }} />
               </div>
             </div>
-            <div className="border-r  border-gray-300 p-2 text-center" style={{ width: "120px" }}>
-              <div className="flex justify-center items-center">
-                <button
+            <div className="border-r border-t border-gray-300 p-2 text-center" style={{ width: "120px" }}>
+              <input
+                  type="number"
+                  defaultValue={0}
+                  className="border-gray-300 rounded w-full text-right"
+                />
+            </div>
+            
+            <div className="border-r border-t border-gray-300 p-2 text-center
+            flex justify-center items-center
+            " style={{ width: "120px" }}>
+              <button
                   onClick={() =>
                     handleAcceptFreelancer(freelancer.documentId)
                   }
-                  className="bg-green-500 hover:bg-green-600 text-white rounded"
+                  className="bg-green-500 p-1 hover:bg-green-600 text-white rounded"
                 >
                   {t("common.accept")}
                 </button>
-              </div>
-
             </div>
           </div>
 

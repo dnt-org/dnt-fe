@@ -5,6 +5,7 @@ import { getFreelancer } from "../services/freelancerService";
 import { useNavigate } from "react-router-dom";
 import FreelancerActuallyComponent from "../components/FreelancerActuallyComponent";
 import FreelancerOnlineComponent from "../components/FreelancerOnlineComponent";
+import FreelancerShippingComponent from "../components/FreelancerShippingComponent";
 import { getWalletFromToken } from "../services/walletService";
 import { getFreelancerWithNullPic } from "../services/freelancerService";
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,7 @@ import {
     KeyboardIcon as KeyboardIcon,
 } from "lucide-react";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
+import GoodsAccount from "../components/GoodsAccount";
 
 
 export default function FreelancerPage() {
@@ -199,59 +201,30 @@ export default function FreelancerPage() {
                         <div className="">
                             <div className="overflow-hidden">
                                 {/* Row 1: TÀI KHOẢN CÔNG VIỆC TỰ DO */}
-                                {isLoggedIn && (
-                                    <div className="grid grid-cols-12 border-b border-gray-300">
-                                        <div className="col-span-4 p-3 border-r border-gray-300 font-bold">
-                                            {t('freelancer.accountOfFreelancer')}
-                                        </div>
-                                        <div className="col-span-2 p-3 border-r border-gray-300 text-center">
-                                            <input disabled type="text" value={wallet.account_of_freelancer}
-                                                placeholder={`(${t('payment.command')})`}
-                                                className="w-full p-1 border rounded" />
-
-
-                                        </div>
-                                        <div className="col-span-2 p-3 border-r border-gray-300 text-center">VNĐ</div>
-                                        <div className="col-span-2 p-3 border-r border-gray-300 text-center">
-                                            <input type="text" placeholder={`(${t('common.enter')})`}
-                                                className="w-full p-1 border rounded" />
-                                        </div>
-                                        <div className="col-span-2 p-3 text-center font-bold">
-                                            {t('freelancer.transferToWallet')}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Row 2: ĐĂNG ĐẶT CỌC */}
-                                {user && (
-                                    <div className="grid grid-cols-12 border-b border-gray-300">
-                                        <div className="col-span-4 p-3 border-r border-gray-300 font-bold">
-                                            {t('freelancer.depositing')}
-                                        </div>
-                                        <div className="col-span-2 p-3 border-r border-gray-300 text-center">
-                                            <input disabled value={wallet.pending_amount} type="text"
-                                                placeholder={`(${t('payment.command')})`}
-                                                className="w-full p-1 border rounded" />
-
-                                        </div>
-                                        <div className="col-span-2 p-3 border-r border-gray-300 text-center">VNĐ</div>
-                                        <div className="col-span-4"></div>
-                                    </div>
-                                )}
+                                <GoodsAccount title={t('freelancer.accountOfFreelancer')} />
 
                                 {/* Row 3: THỰC TẾ / TRỰC TUYẾN */}
                                 <div className="flex justify-center">
                                     <div
-                                        className={`p-3 border border-gray-300 text-center font-bold cursor-pointer ${activeTab === "actual" ? "bg-orange-100" : ""}`}
+                                    style={{width: '250px'}}
+                                        className={`p-3  border border-gray-300 text-center font-bold cursor-pointer ${activeTab === "actual" ? "bg-orange-100" : ""}`}
                                         onClick={() => setActiveTab("actual")}
                                     >
                                         {t('freelancer.actual')}
                                     </div>
                                     <div
+                                    style={{width: '250px'}}
                                         className={`p-3 border border-gray-300 text-center font-bold cursor-pointer ${activeTab === "online" ? "bg-blue-100" : ""}`}
                                         onClick={() => setActiveTab("online")}
                                     >
                                         {t('freelancer.online')}
+                                    </div>
+                                    <div
+                                    style={{width: '250px'}}
+                                        className={`p-3 border border-gray-300 text-center font-bold cursor-pointer ${activeTab === "shipping" ? "bg-green-100" : ""}`}
+                                        onClick={() => setActiveTab("shipping")}
+                                    >
+                                        {t('freelancer.shipping')}
                                     </div>
                                 </div>
                             </div>
@@ -266,8 +239,10 @@ export default function FreelancerPage() {
         </div>
         {activeTab === "actual" ? (
                 <FreelancerActuallyComponent freelancers={freelancersOffline} />
-            ) : (
+            ) : activeTab === "online" ? (
                 <FreelancerOnlineComponent freelancers={freelancersOnline} />
+            ) : (
+                <FreelancerShippingComponent freelancers={freelancersOffline} />
             )}
         </>
     );
