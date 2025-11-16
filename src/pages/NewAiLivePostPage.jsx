@@ -256,14 +256,14 @@ export default function NewAiLivePostPage() {
                   checked={allowAdVideo}
                   onChange={(e) => setAllowAdVideo(e.target.checked)}
                 />
-                <span>{t("aiLiveVideo.allowAdvertising")}</span>
+                <span>{t("aiLive.allowAdvertising")}</span>
               </label>
               {allowAdVideo ? (
                 <>
                   <div className="flex flex-wrap mx-2 justify-between">
                     <div className=" flex-1 flex justify-start items-center border border-gray-300 rounded w-1/3 m-2">
                       <span className="flex-1 text-gray-500 border-r">
-                        {t("aiLiveVideo.showAd")}
+                        {t("aiLive.showAd")}
                       </span>
                       <input
                         type="number"
@@ -271,13 +271,13 @@ export default function NewAiLivePostPage() {
                       // placeholder={t("aiLive.showAd")}
                       />
                       <span className="flex-1 text-gray-500 border-l pl-1">
-                        {t("aiLiveVideo.seconds")}
+                        {t("aiLive.seconds")}
                       </span>
                     </div>
                     <div className="flex-1 flex justify-start items-center border border-gray-300 rounded w-1/3 m-2">
 
                       <span className="flex-1 text-gray-500 border-r">
-                        {t("aiLiveVideo.insertAd")}
+                        {t("aiLive.insertAd")}
                       </span>
                       <input
                         type="number"
@@ -285,7 +285,7 @@ export default function NewAiLivePostPage() {
                       // placeholder={t("aiLive.showAd")}
                       />
                       <span className="flex-1 text-gray-500 border-l pl-1">
-                        {t("aiLiveVideo.seconds")}
+                        {t("aiLive.seconds")}
                       </span>
 
 
