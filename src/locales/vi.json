@@ -145,7 +145,7 @@
   },
   "aiLiveMovie": {
     "movie": "PHIM",
-    "movieName": "Tên PHIM",
+    "movieName": "TÊN PHIM",
     "noAds": "KHÔNG XEM QUẢNG CÁO",
     "advertising": "QUẢNG CÁO",
     "topUp": "NẠP TIỀN",
@@ -154,7 +154,17 @@
     "send": "GỬI",
     "receiveCode": "NHẬN MÃ",
     "inputCodePlaceholder": "NHẬP MÃ (Input code)",
-    "confirm": "XÁC NHẬN"
+    "confirm": "XÁC NHẬN",
+    "uploadMovie": "TẢI PHIM LÊN",
+    "license": "GIẤY PHÉP CHỦ SỞ HỮU SẢN PHẨM, BẢN QUYỀN, QUYỀN ĐƯỢC PHÉP PHÁT SÓNG",
+    "watchPrice": "GIÁ XEM PHIM",
+    "unitwatch": "VND/PHIM",
+    "adOnHomePage": "QUẢNG CÁO TRÊN TRANG CHỦ",
+    "amount": "SỐ TIỀN DÙNG CHO QUẢNG CÁO",
+    "unitad": "ĐƠN GIÁ",
+    "watchPricead": "VND/GIÂY/LUỢT XEM",
+    "contentad": "NỘI DUNG QUẢNG CÁO",
+    "chooseFile": "CHỌN FILE PHIM"
   },
   "aiLiveVideo": {
     "aiFollowsMeDesc": "Có cập nhật và hiển thị số lượng người đang theo dõi mình lên trên thư mục. Ấn vào thư mục để hiển thị AVATAR người theo dõi mình trong thư mục này.",
@@ -561,7 +571,7 @@
     "allowAdvertising": "Cho phép quảng cáo",
     "confirmCopyright": "Xác nhận bản quyền",
     "confirmCopyrightEn": "Confirm copyright",
-    "termsAgreement": "Tôi xác nhận tôi là chủ sở hữu, có bản quyền và được phép truyền tải và phát sóng các video, phim và chương trình phát sóng trực tiếp này mà không có quảng cáo, hàng hóa bán hàng và tôi đồng ý và chấp nhận tuân thủ hợp đồng cũng như tất cả các điều khoản và điều kiện theo yêu cầu của E-Commercial."
+    "termsAgreement": "Tôi xác nhận tôi là chủ sở hữu, có bản quyền và được phép truyền tải và phát sóng các video audio, phim và chương trình phát sóng trực tiếp này mà không chèn phương thức liên lạc và không phải mục đích quảng cáo, bán hàng, vi phạm pháp luật như tất cả các điều khoản và điều kiện theo yêu cầu của sàn thương mại điện tử."
   },
   "payment": {
     "bdk": "3-BĐK",
