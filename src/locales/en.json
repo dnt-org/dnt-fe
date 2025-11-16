@@ -672,6 +672,8 @@
     "hourMinute": "hour, minute",
     "accept": "ACCEPT",
     "acceptEn": "Accept",
+    "confirm": "CONFIRM",
+    "confirmEn": "Confirm",
     "timeReviewPrice": "TIME REVIEW PRICE",
     "timeReviewPriceEn": "Price review time",
     "goodsVerify": "GOODS VERIFY",

@@ -11,6 +11,7 @@ import {
   EyeOff as EyeOffIcon,
 } from "lucide-react";
 import ProductGrid from "../components/ProductGrid";
+import GoodsAccount from "../components/GoodsAccount";
 
 
 export default function DetailOfGoodsPage() {
@@ -48,55 +49,55 @@ export default function DetailOfGoodsPage() {
   const { id } = useParams(); // Get the ID from the URL parameter
   const [product, setProduct] = useState({
     id: 1,
-  documentId: "w940wbgafccoucy16evy21v4",
-  name: "Oil",
-  model: "M",
-  size: "120 KG",
-  color: "red",
-  price: 100000,
-  askingPrice: null,
-  displayPrice: true,
-  hidePrice: false,
-  location: "HCM",
-  address: null,
-  description: null,
-  estimatedValue: null,
-  deliveryDate: null,
-  depositRequirement: null,
-  autoAcceptPrice: null,
-  unit: null,
-  marketPrice: null,
-  lowUnitPrice: null,
-  lowestUnitAskingPrice: null,
-  highestUnitAskingPrice: null,
-  deliveryDays: null,
-  endPostTime: null,
-  lowestAmount: null,
-  highestAmount: null,
-  lowestAutoAcceptPrice: null,
-  highestAutoAcceptPrice: null,
-  contractDuration: null,
-  personInCharge: null,
-  phoneNumber: null,
-  email: null,
-  confirmOwnership: true,
-  eventFeePercentage: null,
-  livestreamFee: null,
-  advertisingAmount: null,
-  showOnMainPage: 0,
-  showOnVideo: 0,
-  advertisingUrl: null,
-  registerForAdvertising: false,
-  successFee: null,
-  totalFees: null,
-  createdAt: "2025-08-10T07:55:48.149Z",
-  updatedAt: "2025-08-10T07:55:48.149Z",
-  publishedAt: "2025-08-10T07:55:48.127Z",
-  listingType: null,
-  categoryType: null,
-  conditionType: null,
-  nation: null,
-  province: null
+    documentId: "w940wbgafccoucy16evy21v4",
+    name: "Oil",
+    model: "M",
+    size: "120 KG",
+    color: "red",
+    price: 100000,
+    askingPrice: null,
+    displayPrice: true,
+    hidePrice: false,
+    location: "HCM",
+    address: null,
+    description: null,
+    estimatedValue: null,
+    deliveryDate: null,
+    depositRequirement: null,
+    autoAcceptPrice: null,
+    unit: null,
+    marketPrice: null,
+    lowUnitPrice: null,
+    lowestUnitAskingPrice: null,
+    highestUnitAskingPrice: null,
+    deliveryDays: null,
+    endPostTime: null,
+    lowestAmount: null,
+    highestAmount: null,
+    lowestAutoAcceptPrice: null,
+    highestAutoAcceptPrice: null,
+    contractDuration: null,
+    personInCharge: null,
+    phoneNumber: null,
+    email: null,
+    confirmOwnership: true,
+    eventFeePercentage: null,
+    livestreamFee: null,
+    advertisingAmount: null,
+    showOnMainPage: 0,
+    showOnVideo: 0,
+    advertisingUrl: null,
+    registerForAdvertising: false,
+    successFee: null,
+    totalFees: null,
+    createdAt: "2025-08-10T07:55:48.149Z",
+    updatedAt: "2025-08-10T07:55:48.149Z",
+    publishedAt: "2025-08-10T07:55:48.127Z",
+    listingType: null,
+    categoryType: null,
+    conditionType: null,
+    nation: null,
+    province: null
   });
 
   const categories = {
@@ -149,9 +150,9 @@ export default function DetailOfGoodsPage() {
       case "SALE": return "sale";
       case "BUY": return "buy";
       case "RENT": return "rent";
-      case "FOR RENT": 
+      case "FOR RENT":
       case "FORRENT": return "forRent";
-      case "SERVICES": 
+      case "SERVICES":
       case "SERVICE": return "service";
       default: return "";
     }
@@ -162,15 +163,15 @@ export default function DetailOfGoodsPage() {
     const v = value.toString().toUpperCase().replace(/_/g, " ").trim();
     switch (v) {
       case "GOODS": return "goods";
-      case "LAND AND HOUSE": 
-      case "LAND HOUSE": 
-      case "LANDHOUSE": 
+      case "LAND AND HOUSE":
+      case "LAND HOUSE":
+      case "LANDHOUSE":
       case "LAND_HOUSE": return "land";
       case "VEHICLE": return "vehicle";
       case "MANPOWER": return "manpower";
-      case "IMPORT - EXPORT": 
-      case "IMPORT-EXPORT": 
-      case "IMPORT_EXPORT": 
+      case "IMPORT - EXPORT":
+      case "IMPORT-EXPORT":
+      case "IMPORT_EXPORT":
       case "IMPORTEXPORT": return "importExport";
       default: return "";
     }
@@ -205,62 +206,62 @@ export default function DetailOfGoodsPage() {
     setSelectedDistrict((prev) => lsDistrict || prev);
   }, []);
 
-const fetchProductDetails = async () => {
-      try {
-        const response = await getProductById(id);
-        setProduct(response.data.data);
-        console.log(response.data.data);
-        
-        // Ưu tiên giá trị từ localStorage (từ filter ở trang chủ), nếu không có thì dùng từ API
-        const lsCategory = localStorage.getItem("category");
-        const lsSubcategory = localStorage.getItem("subcategory");
-        const lsCondition = localStorage.getItem("condition");
-        const lsNation = localStorage.getItem("nation");
-        const lsProvince = localStorage.getItem("province");
-        
-        if (lsCategory) {
-          setSelectedCategory(mapCategoryToKey(lsCategory));
-        } else if (response.data.data.listingType) {
-          // Map giá trị từ API về đúng format nếu cần
-          const apiCategory = response.data.data.listingType;
-          setSelectedCategory(mapCategoryToKey(apiCategory));
-        }
-        
-        if (lsSubcategory) {
-          setSelectedSubcategory(mapSubcategoryToKey(lsSubcategory));
-        } else if (response.data.data.categoryType) {
-          const apiSubcategory = response.data.data.categoryType;
-          setSelectedSubcategory(mapSubcategoryToKey(apiSubcategory));
-        }
-        
-        if (lsCondition) {
-          setSelectedCondition(mapConditionToKey(lsCondition));
-        } else if (response.data.data.conditionType) {
-          const apiCondition = response.data.data.conditionType;
-          setSelectedCondition(mapConditionToKey(apiCondition));
-        }
-        
-        if (lsNation) {
-          setSelectedCountry(lsNation);
-        } else if (response.data.data.nation) {
-          setSelectedCountry(response.data.data.nation);
-        }
-        
-        if (lsProvince) {
-          setSelectedProvince(lsProvince);
-        } else if (response.data.data.province) {
-          setSelectedProvince(response.data.data.province);
-        }
-      } catch (error) {
-        console.error("Error fetching product details:", error);
+  const fetchProductDetails = async () => {
+    try {
+      const response = await getProductById(id);
+      setProduct(response.data.data);
+      console.log(response.data.data);
+
+      // Ưu tiên giá trị từ localStorage (từ filter ở trang chủ), nếu không có thì dùng từ API
+      const lsCategory = localStorage.getItem("category");
+      const lsSubcategory = localStorage.getItem("subcategory");
+      const lsCondition = localStorage.getItem("condition");
+      const lsNation = localStorage.getItem("nation");
+      const lsProvince = localStorage.getItem("province");
+
+      if (lsCategory) {
+        setSelectedCategory(mapCategoryToKey(lsCategory));
+      } else if (response.data.data.listingType) {
+        // Map giá trị từ API về đúng format nếu cần
+        const apiCategory = response.data.data.listingType;
+        setSelectedCategory(mapCategoryToKey(apiCategory));
       }
-    };
+
+      if (lsSubcategory) {
+        setSelectedSubcategory(mapSubcategoryToKey(lsSubcategory));
+      } else if (response.data.data.categoryType) {
+        const apiSubcategory = response.data.data.categoryType;
+        setSelectedSubcategory(mapSubcategoryToKey(apiSubcategory));
+      }
+
+      if (lsCondition) {
+        setSelectedCondition(mapConditionToKey(lsCondition));
+      } else if (response.data.data.conditionType) {
+        const apiCondition = response.data.data.conditionType;
+        setSelectedCondition(mapConditionToKey(apiCondition));
+      }
+
+      if (lsNation) {
+        setSelectedCountry(lsNation);
+      } else if (response.data.data.nation) {
+        setSelectedCountry(response.data.data.nation);
+      }
+
+      if (lsProvince) {
+        setSelectedProvince(lsProvince);
+      } else if (response.data.data.province) {
+        setSelectedProvince(response.data.data.province);
+      }
+    } catch (error) {
+      console.error("Error fetching product details:", error);
+    }
+  };
   return (
     <div className="min-h-screen w-full">
       <div className="bg-transparent p-4 w-full">
         {/* Header with Navigation */}
         <div className="flex items-center justify-between relative mb-2">
-          <button 
+          <button
             className="text-red-600 hover:text-red-800 relative"
             onClick={() => navigate("/")}
           >
@@ -278,7 +279,7 @@ const fetchProductDetails = async () => {
               6 - {t('detailOfGoods.title')}
             </h1>
           </div>
-          <button 
+          <button
             className="text-red-600 hover:text-red-800"
             onClick={() => navigate("/admin-control")}
           >
@@ -287,78 +288,13 @@ const fetchProductDetails = async () => {
         </div>
         {/* TÀI KHOẢN HÀNG HÓA Section - Chỉ hiển thị khi đã đăng nhập */}
         {user && (
-          <div className="grid grid-cols-5 border border-gray-300 mt-2">
-            <div className="border-r border-gray-300 p-2">
-              <div className="font-bold text-center">{t('payment.goodsAccount')}</div>
-            </div>
-            <div className="border-r border-gray-300 p-2 text-center">
-              <input 
-                type="number" 
-                name="exchangeRate" 
-                className="w-full border border-gray-300 p-1 mt-1" 
-                defaultValue="1"
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 1;
-                  const calculatedValue = value * 1; // Tỉ giá mặc định là 1
-                  document.getElementById('calculatedValue').value = calculatedValue;
-                }}     
-              />
-              <div className="font-bold flex items-center justify-center">
-                <span className="mr-2">{isVisible1 ? "1" : "•••"}</span>
-                <button 
-                  type="button" 
-                  onClick={() => setIsVisible1(!isVisible1)}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-                </button>
-              </div>
-            </div>
-            <div className="border-r border-gray-300 p-2 text-center">
-              <div className="font-bold  p-1 mt-1">VN</div>
-              <div className="mt-1 flex items-center justify-center">
-                <span className="mr-2">D|</span>
-              </div>
-            </div>
-            <div className="border-r border-gray-300 p-2 text-center">
-              <input 
-                type="number" 
-                name="exchangeRate" 
-                className="w-full border border-gray-300 p-1 mt-1" 
-                defaultValue="1"
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 1;
-                  const calculatedValue = value * 1; // Tỉ giá mặc định là 1
-                  document.getElementById('calculatedValue').value = calculatedValue;
-                }}
-              />
-              <div className="font-bold flex items-center justify-center">
-                <span className="mr-2">{isVisible2 ? "1" : "•••"}</span>
-                <button 
-                  type="button" 
-                  onClick={() => setIsVisible2(!isVisible2)}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  {isVisible2 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-                </button>
-              </div>
-            </div>
-            <div className="p-2 text-center">
-              <div className="font-bold text-sm">{t('payment.transferToWallet')}</div>
-              <button 
-                type="button" 
-                className="mt-1 w-full bg-blue-500 text-white px-2 py-1 text-sm rounded hover:bg-blue-600 whitespace-nowrap"
-              >
-                {t('common.transfer')}
-              </button>
-            </div>
-          </div>
+          <GoodsAccount title={t("goods.accountOfGoods")} onTransfer={() => { /* TODO: thêm handler nếu cần */ }} />
         )}
         {/* Category Selection - Tối ưu không gian */}
         <div className="mt-2">
           <div className="grid grid-cols-5 gap-2">
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedCategory}
                 disabled
@@ -372,7 +308,7 @@ const fetchProductDetails = async () => {
               </select>
             </div>
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedSubcategory}
                 disabled
@@ -386,7 +322,7 @@ const fetchProductDetails = async () => {
               </select>
             </div>
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedCondition}
                 disabled
@@ -422,86 +358,66 @@ const fetchProductDetails = async () => {
         <ProductGrid products={[product]} readOnly={true} />
 
         {/* Product Details Section */}
-        
+
         {/* Product Information */}
         <div className="w-full border border-gray-300 mt-4">
-          <table className="w-full border-collapse">
-            <tbody>
-              <tr>
-                <td className="border border-gray-300 p-2 text-left font-bold" style={{ width: '30%' }}>
-                  {t('detailOfGoods.timeReviewPrice')}:
-                </td>
-                <td
-                  className="border border-gray-300 p-2 text-center"
-                  colSpan="4"
-                >
-                  <span className="text-sm italic">{product.description}</span>
-                  
-                </td>
-              </tr>
-              <tr>
-                <td
-                  className="border border-gray-300 p-2 text-left font-bold"
-                  style={{ width: '30%' }}
-                >
-                  {t('detailOfGoods.endTime')}:
-                </td>
-                <td className="border border-gray-300 p-2 text-center w-1/6">
-                  {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                  }) : ''}
-                </td>
-                 <td className="border border-gray-300 p-2 text-center w-1/6">
-                  {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                  }) : ''}
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 p-2 text-left font-bold" style={{ width: '30%' }} rowSpan="1">
-                  {t('detailOfGoods.goodsAddress')}:
-                </td>
-                <td className="border border-gray-300 p-2 text-center" style={{ width: 'calc(2/6 * 100%)' }}>
-                  {product.address}
+          <div className="grid grid-cols-8">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+              {t('detailOfGoods.timeReviewPrice')}:
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-4">
+              <span className="text-sm italic">{product.description}</span>
+            </div>
 
-                </td>
-                <td className="border border-gray-300 p-2 text-center" style={{ width: 'calc(2/6 * 100%)' }}>
-                  #Map#
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-4">
+              {t('detailOfGoods.endTime')}:
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-2">
+              {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }) : ''}
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-2">
+              {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+              }) : ''}
+            </div>
 
-                </td>
-              </tr>
-              {/* Goods Verify */}
-              <tr>
-                <td className="border border-gray-300 p-2 text-left font-bold" style={{ width: '30%' }}>
-                  {t('detailOfGoods.goodsVerify')}:
-                </td>
-                <td className="border border-gray-300 p-2 text-center" style={{ width: 'calc(2/6 * 100%)' }}>
-                  <img src="/video.jpg" alt="video" className="h-24 w-auto object-cover border inline-block" />
-                </td>
-                <td className="border border-gray-300 p-2 text-center" style={{ width: 'calc(2/6 * 100%)' }}>
-                  <button type="button" className="bg-gray-300 px-4 py-2 rounded hover:bg-blue-600">
-                    {t('common.viewFile')}
-                  </button>
-                </td>
-              </tr>
-              {/* Poster's Information */}
-              <tr>
-                <td className="border border-gray-300 p-2 text-left font-bold" style={{ width: '30%' }}>
-                  {t('detailOfGoods.posterInfo')}:
-                </td>
-                <td className="border border-gray-300 p-2" colSpan="4">
-                  <button type="button" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200 rounded">
-                    {t('common.open')}
-                  </button>
-                </td>
-              </tr>
-              
-            </tbody>
-          </table>
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+              {t('detailOfGoods.goodsAddress')}:
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-3">
+              {product.address}
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-1">
+              #Map#
+            </div>
+
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+              {t('detailOfGoods.goodsVerify')}:
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-3">
+              <img src="/video.jpg" alt="video" className="h-24 w-auto object-cover border inline-block" />
+            </div>
+            <div className="border border-gray-300 p-2 text-center col-span-1">
+              <button type="button" className="bg-gray-300 px-4 py-2 rounded hover:bg-blue-600">
+                {t('common.viewFile')}
+              </button>
+            </div>
+
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+              {t('detailOfGoods.posterInfo')}:
+            </div>
+            <div className="border border-gray-300 p-2 col-span-4">
+              <button type="button" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200 rounded">
+                {t('common.open')}
+              </button>
+            </div>
+          </div>
         </div>
 
 
