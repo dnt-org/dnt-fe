@@ -147,7 +147,7 @@ export default function NewAiLivePostPage() {
   };
 
   return (
-    <div className="flex justify-center items-center ">
+    <div className="flex justify-center items-center new-ailive-post-page">
       <div className="bg-transparent backdrop-blur-md p-1 rounded-lg shadow-lg w-full mx-auto">
         <PageHeaderWithOutColorPicker
           color={color}
@@ -208,7 +208,7 @@ export default function NewAiLivePostPage() {
 
         {/* Input Zones */}
         {activeTab === "video" && (
-          <div className="text-black text-sm mt-1">
+          <div className="text-black text-sm mt-1 new-ailive-post-page">
             {/* VIDEO COLUMN */}
             <div className="bg-blue-100 p-2">
               <span className="sr-only">* {t("aiLive.uploadVideo")}</span>
@@ -343,7 +343,7 @@ export default function NewAiLivePostPage() {
           </div>
         )}
         {activeTab === "movie" && (
-          <div className="text-black text-sm mt-1">
+          <div className="text-black text-sm mt-1 new-ailive-post-page">
             {/* MOVIE COLUMN */}
             <div className="bg-cyan-100 p-4 pt-0">
               <span className="sr-only">* {t("aiLive.uploadMovie")}</span>
@@ -395,7 +395,7 @@ export default function NewAiLivePostPage() {
               </span>
 
             </div>
-            <div className="bg-cyan-100 p-4 pt-0">
+            <div className="bg-cyan-100 p-4 pt-0 pb-0">
               <label className="inline-flex items-center mb-2">
                 <input
                   type="checkbox"
@@ -408,7 +408,7 @@ export default function NewAiLivePostPage() {
             </div>
             {allowAdMovie && (
               <>
-                <div className="bg-cyan-100 p-4 ">
+                <div className="bg-cyan-100 p-4 pt-0">
                   <span className="sr-only">{t("aiLive.advertisingOnMainpage")}</span>
                   <input
                     type="number"
@@ -423,7 +423,7 @@ export default function NewAiLivePostPage() {
                     </div>
                     <input
                       type="number"
-                      className="col-span-3 p-1 w-full border-t border-b text-right flex items-center justify-end"
+                      className="col-span-4 p-1 w-full border-t border-b text-right flex items-center justify-end"
                       placeholder=""
                     />
                     <span className="col-span-3 text-gray-500 border pl-1 flex items-center justify-start">
@@ -444,7 +444,7 @@ export default function NewAiLivePostPage() {
           </div>
         )}
         {activeTab === "live" && (
-          <div className="text-black text-sm mt-1">
+          <div className="text-black text-sm mt-1 new-ailive-post-page">
             {/* LIVE COLUMN */}
             <div className="bg-green-100 p-4">
               <span className="sr-only">* {t("aiLive.expectedAiringTime")}</span>
@@ -460,26 +460,26 @@ export default function NewAiLivePostPage() {
                         </span>
                       )}
                       <input
-                        type="time"
+                        type="datetime-local"
                         value={liveTimeStartHour || ""}
                         onChange={(e) => setLiveTimeStartHour(e.target.value)}
                         className="w-full border rounded px-2 py-1 pl-24"
                       />
                     </div>
                   </div>
-                  <div className="relative w-full">
+                  {/* <div className="relative w-full">
                     {!liveTimeStartDate && (
                       <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-gray-400">
                         {t("aiLive.from")}
                       </span>
                     )}
                     <input
-                      type="date"
+                      type="datetime-local"
                       value={liveTimeStartDate || ""}
                       onChange={(e) => setLiveTimeStartDate(e.target.value)}
                       className="w-full border rounded px-2 py-1 pl-24"
                     />
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="w-1/2 px-2">
@@ -492,26 +492,26 @@ export default function NewAiLivePostPage() {
                         </span>
                       )}
                       <input
-                        type="time"
+                        type="datetime-local"
                         value={liveTimeEndHour || ""}
                         onChange={(e) => setLiveTimeEndHour(e.target.value)}
                         className="w-full border rounded px-2 py-1 pl-24"
                       />
                     </div>
                   </div>
-                  <div className="relative w-full">
+                  {/* <div className="relative w-full">
                     {!liveTimeEndDate && (
                       <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-gray-400">
                         {t("aiLive.to")}
                       </span>
                     )}
                     <input
-                      type="date"
+                      type="datetime-local"
                       value={liveTimeEndDate || ""}
                       onChange={(e) => setLiveTimeEndDate(e.target.value)}
                       className="w-full border rounded px-2 py-1 pl-24"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <input
@@ -519,11 +519,26 @@ export default function NewAiLivePostPage() {
                 value={liveName}
                 onChange={(e) => setLiveName(e.target.value)}
                 className="w-full border rounded px-2 py-1 mt-1"
-                placeholder={t("aiLive.liveName")}
+                placeholder={t("aiLive.name")}
               />
             </div>
 
-            <div className="bg-green-100 p-4">
+            <div className="bg-green-100 p-4 pt-0">
+              <span className="sr-only">* {t("aiLive.productOwnership")}</span>
+              <div className="relative w-full border p-1 rounded">
+                <label htmlFor="movieFile" className="inset-y-0 left-2 flex items-center text-gray-400 cursor-pointer ">
+                  {t("aiLiveMovie.license")}
+                </label>
+                <input
+                  type="file"
+                  id="movieFile"
+                  className="hidden"
+                  onChange={(e) => setMovieFile(e.target.files?.[0] || null)}
+                />
+              </div>
+            </div>
+
+            {/* <div className="bg-green-100 p-4">
               <span className="sr-only">{t("aiLive.productOwnership")}</span>
               <div className="relative w-full">
                 {!liveOwnershipFile && (
@@ -537,31 +552,35 @@ export default function NewAiLivePostPage() {
                   onChange={(e) => setLiveOwnershipFile(e.target.files?.[0] || null)}
                 />
               </div>
-            </div>
+            </div> */}
             <div className="bg-green-100 p-4">
-              <div className="flex flex-wrap -mx-2">
-                <div className="w-1/3 px-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div className="items-center col-span-1 grid grid-cols-8 ">
+                  <div className="p-1 col-span-3 border">{t("aiLive.pricewatchlive")}</div>
                   <input
                     type="number"
-                    className="w-full border px-2 py-1"
-                    placeholder="VNĐ / LIVE"
+                    className="p-1 col-span-3 border-t border-b"
                   />
+                  <div className="col-span-2 p-1 border-t border-b border-r text-center">{t("aiLive.unit")}</div>
                 </div>
 
-                <div className="w-1/3 px-2">
+                <div className="items-center col-span-1 grid grid-cols-8">
+                  <div className="p-1 col-span-3 border">{t("aiLive.pricemess")}</div>
                   <input
                     type="number"
-                    className="w-full border px-2 py-1"
-                    placeholder={t("aiLive.messagePrice")}
+                    className="col-span-3 p-1 border-r border-t border-b"
                   />
+                  <div className="col-span-2 pt-1 pb-1 border-t border-b border-r text-center">{t("aiLive.unitMess")}</div>
                 </div>
 
-                <div className="w-1/3 px-2">
+
+                <div className="items-center col-span-1 grid grid-cols-8">
+                  <div className="p-1 col-span-3 border">{t("aiLive.pricemessVip")}</div>
                   <input
                     type="number"
-                    className="w-full border px-2 py-1"
-                    placeholder={t("aiLive.vipMessagePrice")}
+                    className="col-span-3 border-r p-1 border-t border-b"
                   />
+                  <div className="col-span-2 pt-1 pb-1 border-t border-b border-r text-center">{t("aiLive.unitMess")}</div>
                 </div>
               </div>
             </div>
@@ -569,7 +588,7 @@ export default function NewAiLivePostPage() {
               <div className="flex flex-wrap -mx-2">
                 <div className="w-1/3 px-2 flex items-center">
                   <input type="checkbox" className="mr-2" />
-                  <span className="">{t("aiLive.advertisingOnMainpage")}</span>
+                  <span className="">{t("ailivelive.advertisingOnMainpage")}</span>
                 </div>
 
                 <div className="w-2/3 px-2">
@@ -577,7 +596,7 @@ export default function NewAiLivePostPage() {
                     <input
                       type="number"
                       className="w-full border px-2 py-1"
-                      placeholder={t("aiLive.deposit")}
+                      placeholder={t("ailivelive.priceforad")}
                     />
                   </div>
 
@@ -585,20 +604,20 @@ export default function NewAiLivePostPage() {
                     <input
                       type="number"
                       className="w-full border px-2 py-1"
-                      placeholder="VNĐ / GIÂY (S) / LƯỢT XEM (View)"
+                      placeholder={t("ailivelive.priceforadUnit")}
                     />
                   </div>
 
                   <div>
                     <span className="sr-only">{t("aiLive.adContent")}</span>
-                    <div className="relative w-full">
-                      {!liveAdFile && (
-                        <span className="pointer-events-none absolute inset-y-0 left-2 flex items-center text-gray-400">
-                          {t("aiLive.choose")}
-                        </span>
-                      )}
+                    <div className="relative w-full border p-1">
+                      <label htmlFor="liveAdFile" className="text-gray-400 cursor-pointer p-1 w-full">
+                        {t("ailivelive.adContent")}
+                      </label>
                       <input
                         type="file"
+                        id="liveAdFile"
+                        hidden
                         className="w-full border rounded px-2 py-1 bg-transparent pl-16"
                         onChange={(e) => setLiveAdFile(e.target.files?.[0] || null)}
                       />
@@ -615,7 +634,7 @@ export default function NewAiLivePostPage() {
                   checked={allowAdLive}
                   onChange={(e) => setAllowAdLive(e.target.checked)}
                 />
-                {t("aiLive.allowAdvertisingOnLive")}
+                {t("ailivelive.allowAdvertisingOnLive")}
               </label>
               {allowAdLive && (
                 <div>
@@ -629,7 +648,7 @@ export default function NewAiLivePostPage() {
 
               {allowAdLive && (
                 <>
-                  <div className="bg-green-100 p-0">
+                  {/* <div className="bg-green-100 p-0">
                     <div className="flex flex-wrap -mx-2">
                       <div className="w-full px-0">
                         <div className="mb-4">
@@ -663,7 +682,7 @@ export default function NewAiLivePostPage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   <div>
                     <input
                       type="number"
@@ -682,14 +701,9 @@ export default function NewAiLivePostPage() {
               )}
 
               <div className="">
-                <div className="flex items-center">
-                  <div className="w-1/15 flex justify-start pl-2">
-                    <input type="checkbox" className="w-6 h-6" />
-                  </div>
-                  <div className="w-14/15">
-                    <span className="ml-2">{t("aiLive.confirmCopyright")}</span>
-                  </div>
-                </div>
+                <input type="checkbox" className="" />
+                <span className="ml-2">{t("aiLive.confirmCopyright")}</span>
+
               </div>
             </div>
           </div>

@@ -475,13 +475,8 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
               <input
                 type="number"
                 min="0"
-                value={item.autoAcceptPrice}
-                onChange={(e) =>
-                  handleItemChange(item.id, "autoAcceptPrice", e.target.value)
-                }
                 className="w-full border-t border-b border-r border-gray-300 text-right"
                 placeholder=""
-                disabled
               />
               <button
                 className="w-full cursor-pointer border border-gray-300 text-center"

@@ -361,25 +361,26 @@ export default function DetailOfGoodsPage() {
 
         {/* Product Information */}
         <div className="w-full border border-gray-300 mt-4">
-          <div className="grid grid-cols-8">
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+          <div className="grid grid-cols-20">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
               {t('detailOfGoods.timeReviewPrice')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-4">
+            <div className="border border-gray-300 p-2 text-center col-span-6">
               <span className="text-sm italic">{product.description}</span>
             </div>
+            <div className="col-span-8"></div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-4">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
               {t('detailOfGoods.endTime')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-2">
+            <div className="border border-gray-300 p-2 text-center col-span-6">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               }) : ''}
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-2">
+            <div className="border border-gray-300 p-2 text-center col-span-9">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -387,36 +388,35 @@ export default function DetailOfGoodsPage() {
               }) : ''}
             </div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
               {t('detailOfGoods.goodsAddress')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-3">
+            <div className="border border-gray-300 p-2 text-center col-span-6">
               {product.address}
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-1">
+            <div className="border border-gray-300 p-2 text-center col-span-9">
               #Map#
             </div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
               {t('detailOfGoods.goodsVerify')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-3">
-              <img src="/video.jpg" alt="video" className="h-24 w-auto object-cover border inline-block" />
-            </div>
-            <div className="border border-gray-300 p-2 text-center col-span-1">
-              <button type="button" className="bg-gray-300 px-4 py-2 rounded hover:bg-blue-600">
+            <div className="border border-gray-300 p-2 text-center col-span-6 ">
+              <button type="button" className="bg-gray-300 px-1 rounded hover:bg-gray-100">
                 {t('common.viewFile')}
               </button>
             </div>
+            <div className="col-span-9"></div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-2">
+            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
               {t('detailOfGoods.posterInfo')}:
             </div>
-            <div className="border border-gray-300 p-2 col-span-4">
-              <button type="button" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200 rounded">
+            <div className="border border-gray-300 col-span-6 flex justify-center items-center">
+              <button type="button" className="bg-gray-300 hover:bg-gray-100 text-black font-bold px-4 border border-gray-200 rounded flex items-center justify-center">
                 {t('common.open')}
               </button>
             </div>
+            <div className="col-span-9"></div>
           </div>
         </div>
 
@@ -452,14 +452,7 @@ export default function DetailOfGoodsPage() {
         </div> */}
 
         {/* Back Button */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => navigate(-1)}
-            className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            {t('common.goBack')}
-          </button>
-        </div>
+        
       </div>
     </div>
   );

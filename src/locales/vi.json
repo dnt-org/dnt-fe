@@ -186,8 +186,8 @@
     "noView": "KHÔNG XEM",
     "advertising": "QUẢNG CÁO",
     "allowAdvertising": "CHO PHÉP QUẢNG CÁO TRÊN VIDEO & AUDIO NÀY",
-    "seconds": "VND/GIÂY/LƯỢT XEM",
-    "showAd": "HIỂN THỊ QUẢNG CÁO",
+    "seconds": "VNĐ / GIÂY (S) / LƯỢT XEM",
+    "showAd": "HIỆN QUẢNG CÁO",
     "insertAd": "CHÈN QUẢNG CÁO"
   },
   "goods": {
@@ -569,9 +569,27 @@
     "choose": "TẢI VIDEO & AUDIO",
     "post": "BÀI ĐĂNG",
     "allowAdvertising": "Cho phép quảng cáo",
-    "confirmCopyright": "Xác nhận bản quyền",
+    "confirmCopyright": "CAM KẾT BẢN QUYỀN, KHÔNG VI PHẠM NHỮNG ĐIỀU PHÁP LUẬT CẤM.",
     "confirmCopyrightEn": "Confirm copyright",
-    "termsAgreement": "Tôi xác nhận tôi là chủ sở hữu, có bản quyền và được phép truyền tải và phát sóng các video audio, phim và chương trình phát sóng trực tiếp này mà không chèn phương thức liên lạc và không phải mục đích quảng cáo, bán hàng, vi phạm pháp luật như tất cả các điều khoản và điều kiện theo yêu cầu của sàn thương mại điện tử."
+    "to": "ĐẾN",
+    "from": "TỪ",
+    "name": "TÊN TRỰC TIẾP",
+    "pricewatchlive": "GIÁ XEM TRỰC TIẾP",
+    "unit": "VNĐ",
+    "pricemess": "GIÁ NHẮN TIN THƯỜNG",
+    "pricemessVip": "GIÁ NHẮN TIN VIP",
+    "unitMess": "VNĐ / TIN NHẮN",
+    "termsAgreement": "Tôi xác nhận tôi là chủ sở hữu, có bản quyền và được phép truyền tải và phát sóng các video audio, phim và chương trình phát sóng trực tiếp này mà không chèn phương thức liên lạc và không phải mục đích quảng cáo, bán hàng, vi phạm pháp luật như tất cả các điều khoản và điều kiện theo yêu cầu của sàn thương mại điện tử.",
+    "showAd": "HIỆN QUẢNG CÁO",
+    "secondsUnit": "VNĐ / GIÂY (S) / LƯỢT XEM",
+    "pressToEnterNumber": "ấn = nhập số",
+    "startAdvertisingFromSeconds": "BẮT ĐẦU QUẢNG CÁO TỪ GIÂY THỨ...",
+    "pressToEnterSeconds": "ấn = nhập số giây",
+    "startAdvertisingFromViews": "BẮT ĐẦU QUẢNG CÁO TỪ LƯỢT XEM THỨ",
+    "pressToEnterViews": "ấn = nhập số lượt xem",
+    "tick": "* tick",
+    "startAdvertisingFromSecondsLive": "BẮT ĐẦU QUẢNG CÁO TỪ GIÂY THỨ...",
+    "startAdvertisingFromViewsLive": "BẮT ĐẦU QUẢNG CÁO TỪ LƯỢT XEM THỨ"
   },
   "payment": {
     "bdk": "3-BĐK",
@@ -803,7 +821,7 @@
     "timeReviewPrice": "THỜI GIAN DUYỆT GIÁ",
     "timeReviewPriceEn": "Price review time",
     "goodsVerify": "XÁC MINH HÀNG HÓA",
-    "posterInfo": "THÔNG TIN NGƯỜI ĐĂNG BÀI",
+    "posterInfo": "THƯƠNG HIỆU NGƯỜI ĐĂNG BÀI",
     "category": {
       "sale": "HÀNG BÁN",
       "buy": "CẦN MUA",
@@ -990,5 +1008,14 @@
       "confirmPasswordMismatch": "Xác nhận mật khẩu không trùng khớp"
     },
     "next": "TIẾP THEO"
+  },
+  "ailivelive": {
+    "advertisingOnMainpage": "QUẢNG CÁO TRÊN TRANG CHỦ",
+    "priceforad": "SỐ TIỀN DÀNH CHO QUẢNG CÁO",
+    "priceforadUnit": "VND/GIÂY/LƯỢT XEM",
+    "adContent": "NỘI DUNG QUẢNG CÁO",
+    "adContentEn": "Ad content",
+    "allowAdvertisingOnLive": "CHO PHÉP QUẢNG CÁO TRÊN TRỰC TIẾP NÀY",
+    "disclaimer": "CAM KẾT BẢN QUYỀN KHÔNG VI PHẠP NHỮNG ĐIỀU PHÁP LUẬT CẤM"
   }
 }
