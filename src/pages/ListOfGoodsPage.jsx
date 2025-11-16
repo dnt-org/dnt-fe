@@ -8,6 +8,7 @@ import { getCountryByCode } from "../services/countries";
 import {
   Home as HomeIcon,
   KeyboardIcon as KeyboardIcon,
+  SearchIcon as SearchIcon,
 } from "lucide-react";
 
 // Categories data - defined outside component to avoid reference errors
@@ -268,7 +269,7 @@ export default function ListOfGoodsPage() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-1 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-1 rounded-lg shadow-lg w-full mx-auto">
         {/* Header with Navigation */}
         <div className="flex items-center justify-between relative mb-2">
           <button 
@@ -391,10 +392,11 @@ export default function ListOfGoodsPage() {
           {/* Search section */}
           <div className="mt-1 border-1 border-gray-300">
             <div className="flex items-center">
-              
+              <SearchIcon size={24} className="text-gray-400" />
+
               <input 
                 type="text" 
-                placeholder={t('goods.searchPlaceholder')} 
+                // placeholder={t('goods.searchPlaceholder')} 
                 className="flex-1 p-2 rounded"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
