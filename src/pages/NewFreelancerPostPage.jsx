@@ -5,6 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import NewFreelancerPostDirectComponent from "../components/NewFreelancerPostDirectComponent";
 import NewFreelancerPostOnlineComponent from "../components/NewFreelancerPostOnlineComponent";
+import NewFreelancerShippingComponent from "../components/NewFreelancerShippingComponent";
 import { Home as HomeIcon, KeyboardIcon as KeyboardIcon } from "lucide-react";
 import PostTypeMenu from "../components/PostTypeMenu";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx";
@@ -63,12 +64,13 @@ export default function NewFreelancerPostPage() {
             {/* TÀI KHOẢN HÀNG HÓA Section */}
             <GoodsAccount title={t("freelancer.accountOfFreelancer")} onTransfer={{}} />
             {/* Two columns layout */}
-            <div className="grid grid-cols-2">
+            <div className="flex justify-center">
               {/* Column 1 - THỰC TẾ */}
               <div
-                className={`border-r border-gray-300 p-4 text-center cursor-pointer ${
+                className={`border flex-1 border-gray-300 p-2 text-center cursor-pointer w-[2vw] ${
                   activeTab === "direct" ? "bg-blue-600" : ""
                 }`}
+                style={{ maxWidth: "15vw" }}
                 onClick={() => setActiveTab("direct")}
               >
                 <h3 className="font-bold ">
@@ -77,13 +79,26 @@ export default function NewFreelancerPostPage() {
               </div>
               {/* Column 2 - TRỰC TUYẾN */}
               <div
-                className={`p-4 text-center cursor-pointer ${
+                className={`p-2 flex-1 border text-center cursor-pointer  ${
                   activeTab === "online" ? "bg-blue-600" : ""
                 }`}
+                style={{ maxWidth: "15vw" }}
                 onClick={() => setActiveTab("online")}
               >
                 <h3 className="font-bold ">
                   {t("freelancer.online")}
+                </h3>
+              </div>
+
+               <div
+                className={`p-2 flex-1 border text-center cursor-pointer ${
+                  activeTab === "shipping" ? "bg-blue-600" : ""
+                }`}
+                style={{ maxWidth: "15vw" }}
+                onClick={() => setActiveTab("shipping")}
+              >
+                <h3 className="font-bold ">
+                  {t("freelancer.shipping")}
                 </h3>
               </div>
             </div>
@@ -93,8 +108,10 @@ export default function NewFreelancerPostPage() {
         {/* Render the appropriate component based on the active tab */}
         {activeTab === "direct" ? (
           <NewFreelancerPostDirectComponent />
-        ) : (
+        ) : activeTab === "online" ? (
           <NewFreelancerPostOnlineComponent />
+        ) : (
+          <NewFreelancerShippingComponent />
         )}
       </div>
     </div>

@@ -220,7 +220,8 @@
     "sortingCriteria4": "4 - Lowest price",
     "sortingCriteria5": "5 - Highest price",
     "sortingCriteria6": "6 - Followers profit",
-    "accept": "ACCEPT"
+    "accept": "ACCEPT",
+    "shipping": "SHIPPING COMPANY"
   },
   "freelancerOnline": {
     "searchPlaceholder": "SEARCH: Job ID, job name",

@@ -130,7 +130,8 @@
     "transferToWallet": "CHUYỂN VỀ VÍ",
     "depositing": "ĐĂNG ĐẶT CỌC",
     "actual": "THỰC TẾ",
-    "accept": "XÁC NHẬN"
+    "accept": "XÁC NHẬN",
+    "shipping": "CÔNG TY VẬN CHUYỂN"
   },
   "aiLiveStream": {
     "followFolder": "THƯ MỤC THEO DÕI",
@@ -427,7 +428,9 @@
     "successFee": "PHÍ THÀNH CÔNG",
     "taxOtherFees": "THUẾ + PHÍ KHÁC",
     "totalFeesVat": "TỔNG PHÍ + THUẾ",
-    "postButton": "ĐĂNG BÀI"
+    "postButton": "ĐĂNG BÀI",
+    "cod": "TIỀN THU HỘ",
+    "payonweb": "THANH TOÁN QUA SÀN"
   },
   "login": {
     "idPlaceholder": "SỐ THUẬT NĂNG (ID)",
