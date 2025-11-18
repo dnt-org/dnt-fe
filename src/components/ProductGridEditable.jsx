@@ -61,7 +61,7 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
     <>
 
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e0 transparent' }}>
         {/* Header columns with horizontal scroll */}
         <div className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
           <div className="border-r border-b border-gray-300 p-2 text-center">
