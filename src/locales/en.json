@@ -1165,7 +1165,7 @@
     "pricewatchlive": "LIVE WATCH PRICE",
     "unit": "VND",
     "pricemess": "MESSAGE PRICE",
-    "pricemessVip": "VIP MESSAGE PRICE",
+    "pricemessVip": "<b>VIP</b> MESSAGE PRICE",
     "unitMess": "VND / MESSAGE",
     "liveName": "LIVE'S NAME",
     "liveNameEn": "Live's name",
