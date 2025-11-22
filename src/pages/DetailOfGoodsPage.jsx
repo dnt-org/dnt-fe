@@ -415,16 +415,22 @@ export default function DetailOfGoodsPage() {
             <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.goodsVerify')}:
             </div>
-            <div className="p-2 text-center col-span-6 border-l border-gray-300">
+            <div className="p-2 text-center col-span-6 border-l border-gray-300 flex items-center justify-center">
               <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold w-20 rounded">
                 {t('common.viewFile')}
               </button>
             </div>
             <div className="col-span-9 row-span-2 border-l border-gray-300 flex items-center justify-center">
-              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-1 rounded">
-                {t('detailOfGoods.reviewvideo')}
-              </button>
+              <video  
+                src="https://www.youtube.com/watch?v=7Sd6wCiSaeI"
+                title={t('detailOfGoods.reviewvideo')}
+                className="w-50 h-50 border"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></video>
             </div>
+
+
 
             <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.posterInfo')}:
