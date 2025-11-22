@@ -69,7 +69,8 @@ export default function GoodsFormRows({
           <div>{t("goods.priceReviewTime")}</div>
         </div>
         <div className="col-span-12 border-r border-gray-300 p-2">
-          <TextInput
+          <input
+            type="time"
             name="priceReviewTime"
             value={goodsInfo.priceReviewTime}
             onChange={onGoodsInfoChange}
