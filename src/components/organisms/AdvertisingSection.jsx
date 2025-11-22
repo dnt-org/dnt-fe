@@ -3,6 +3,7 @@ import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 import NumberInput from "../atoms/NumberInput"
 import FileInput from "../atoms/FileInput"
+import Checkbox from "../atoms/Checkbox"
 
 export default function AdvertisingSection({ goodsInfo, onGoodsInfoChange }) {
   const { t } = useTranslation()
@@ -32,7 +33,10 @@ export default function AdvertisingSection({ goodsInfo, onGoodsInfoChange }) {
       <div className="col-span-4 border-r border-t border-gray-300 p-2 flex items-center">
         <FileInput name="advertisingFile" />
       </div>
-      <div className="col-span-5 border-t border-gray-300" />
+      <div className="col-span-5 border-t border-gray-300 flex items-center">
+        <Checkbox className="ml-2" name="advertisingFile" value={goodsInfo.advertisingFile} onChange={onGoodsInfoChange} />
+        <div className="font-semibold pl-2">{t("goods.registerAdvertising")}</div>
+      </div>
     </div>
   )
 }

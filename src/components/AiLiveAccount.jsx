@@ -47,7 +47,6 @@ export default function AiLiveAccount({ title, onTransfer }) {
           style={{ textAlign: "right" }}
         />
         <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
-          <div className="flex-4 text-left pl-1">{isVisible1 ? "0" : "•••"}</div>
           <div className="flex-1"><button
             type="button"
             onClick={() => setIsVisible1(!isVisible1)}
@@ -56,7 +55,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
 
-
+          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
         </div>
       </div>
 
@@ -93,7 +92,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
         />
         <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
           <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
-            <div className="flex-4 text-left pl-1">{isVisible1 ? "0" : "•••"}</div>
+
             <div className="flex-1"><button
               type="button"
               onClick={() => setIsVisible2(!isVisible1)}
@@ -101,6 +100,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
             >
               {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
             </button></div>
+            <div className="flex-4 text-right pl-1">{isVisible2 ? "0" : "•••"}</div>
           </div>
         </div>
       </div>
@@ -120,7 +120,6 @@ export default function AiLiveAccount({ title, onTransfer }) {
           style={{ textAlign: "right" }}
         />
         <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
-          <div className="flex-4 text-left pl-1">{isVisible1 ? "0" : "•••"}</div>
           <div className="flex-1"><button
             type="button"
             onClick={() => setIsVisible1(!isVisible1)}
@@ -128,6 +127,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
+          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>
@@ -148,7 +148,6 @@ export default function AiLiveAccount({ title, onTransfer }) {
           style={{ textAlign: "right" }}
         />
         <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
-          <div className="flex-4 text-left pl-1">{isVisible1 ? "0" : "•••"}</div>
           <div className="flex-1"><button
             type="button"
             onClick={() => setIsVisible1(!isVisible1)}
@@ -156,6 +155,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
+          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>
@@ -175,7 +175,6 @@ export default function AiLiveAccount({ title, onTransfer }) {
           style={{ textAlign: "right" }}
         />
         <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">
-          <div className="flex-4 text-left pl-1">{isVisible1 ? "0" : "•••"}</div>
           <div className="flex-1"><button
             type="button"
             onClick={() => setIsVisible1(!isVisible1)}
@@ -183,6 +182,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
+          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Eye as EyeIcon, Forward as ForwardIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
+import NumberInput from "./atoms/NumberInput";
 
 export default function ProductGridEditable({ products = [], onItemsChange }) {
   const { t } = useTranslation();
@@ -9,6 +10,7 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
   const [isFollowing, setIsFollowing] = useState(false);
   const { containerRef, trackRef, thumbRef } = useHorizontalScrollbar();
   const [lowestHighestAskingPrice, setLowestHighestAskingPrice] = useState(true);
+  const [lowestAmount, setLowestAmount] = useState(true);
 
   useEffect(() => {
     setItems(products || []);
@@ -166,19 +168,28 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center">
+            <select
+              value={lowestAmount ? "yes" : "no"}
+              onChange={(e) =>
+                setLowestAmount(lowestAmount === undefined ? e.target.value === "yes" : !lowestAmount)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="yes">{t("productGrid.lowestHighestAskingPricelow")}</option>
+              <option value="no">{t("productGrid.lowestHighestAskingPricehigh")}</option>
+            </select>
+            <span className="text-red-500">*</span>
             <div>
-              {t("productGrid.lowestHighestAskingPrice")}{" "}
-              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.lowestAmount")}</div>
+            <div>{lowestAmount ? t("productGrid.lowestAmount") : t("productGrid.highestAmount")}</div>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300">
-            <div>{t("productGrid.lowestHighestAutoAccept")}</div>
+            <div>{lowestAmount ? t("productGrid.lowestHighestAutoAccept") : t("productGrid.highestAutoAccept")}</div>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300">
-            <div>{t("productGrid.autoRejectPrice")}</div>
+            <div>{lowestAmount ? t("productGrid.autoRejectPricelow") : t("productGrid.autoRejectPricehigh")}</div>
           </div>
         </div>
 
@@ -188,7 +199,7 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
             key={item.id}
             className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}
           >
-            <div className="border-r border-b border-gray-300 text-center">
+            <div className="border-r border-b border-gray-300 text-center flex items-center justify-center">
               <div>{item.id}</div>
             </div>
             <input
@@ -199,30 +210,30 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               }
               className="w-full border-r border-b border-gray-300"
             />
-              <input
-                type="text"
-                value={item.model}
-                onChange={(e) =>
-                  handleItemChange(item.id, "model", e.target.value)
-                }
-                className="w-full border-r border-b border-gray-300"
-              />
-              <input
-                type="text"
-                value={item.size}
-                onChange={(e) =>
-                  handleItemChange(item.id, "size", e.target.value)
-                }
-                className="w-full border-r border-b border-gray-300"
-              />
-              <input
-                type="text"
-                value={item.color}
-                onChange={(e) =>
-                  handleItemChange(item.id, "color", e.target.value)
-                }
-                className="w-full border-r border-b border-gray-300"  
-              />
+            <input
+              type="text"
+              value={item.model}
+              onChange={(e) =>
+                handleItemChange(item.id, "model", e.target.value)
+              }
+              className="w-full border-r border-b border-gray-300"
+            />
+            <input
+              type="text"
+              value={item.size}
+              onChange={(e) =>
+                handleItemChange(item.id, "size", e.target.value)
+              }
+              className="w-full border-r border-b border-gray-300"
+            />
+            <input
+              type="text"
+              value={item.color}
+              onChange={(e) =>
+                handleItemChange(item.id, "color", e.target.value)
+              }
+              className="w-full border-r border-b border-gray-300"
+            />
             <div className="border-r border-t border-b border-gray-300 p-2 text-center">
               <input
                 type="file"
@@ -241,58 +252,58 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
                 {t("productGrid.uploadFile")}
               </button>
             </div>
-              <input
-                type="number"
-                min="0"
-                value={item.warrantyChangeDays}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "warrantyChangeDays",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-              />
-              <input
-                type="number"
-                min="0"
-                value={item.warrantyRepairDays}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "warrantyRepairDays",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-              />
-              <input
-                type="number"
-                min="0"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-              />
-              <input
-                type="number"
-                min="0"
-                value={item.maxDeliveryDaysAfterAcceptance}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "maxDeliveryDaysAfterAcceptance",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-              />
+            <input
+              type="number"
+              min="0"
+              value={item.warrantyChangeDays}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "warrantyChangeDays",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-right"
+            />
+            <input
+              type="number"
+              min="0"
+              value={item.warrantyRepairDays}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "warrantyRepairDays",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-right"
+            />
+            <input
+              type="number"
+              min="0"
+              value={item.repairWarrantyRetentionPercent}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "repairWarrantyRetentionPercent",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-right"
+            />
+            <input
+              type="number"
+              min="0"
+              value={item.maxDeliveryDaysAfterAcceptance}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "maxDeliveryDaysAfterAcceptance",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-right"
+            />
             <div className="border-r border-t border-b border-gray-300 p-2 text-center">
               <select
                 value={item.handoverLocation}
@@ -310,165 +321,159 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
                 </option>
               </select>
             </div>
-              <select
-                value={item.contractDurationMultiplicity}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "contractDurationMultiplicity",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="one">{t("productGrid.one")}</option>
-                <option value="many">{t("productGrid.many")}</option>
-              </select>
-              <select
-                value={item.contractDurationUnit}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "contractDurationUnit",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="time">{t("productGrid.time")}</option>
-                <option value="year">{t("productGrid.year")}</option>
-              </select>
+            <select
+              value={item.contractDurationMultiplicity}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "contractDurationMultiplicity",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="one">{t("productGrid.one")}</option>
+              <option value="many">{t("productGrid.many")}</option>
+            </select>
+            <select
+              value={item.contractDurationUnit}
+              onChange={(e) =>
+                handleItemChange(
+                  item.id,
+                  "contractDurationUnit",
+                  e.target.value
+                )
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="time">{t("productGrid.time")}</option>
+              <option value="year">{t("productGrid.year")}</option>
+            </select>
 
-              <select
-                value={item.directPayment}
-                onChange={(e) =>
-                  handleItemChange(item.id, "directPayment", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
+            <select
+              value={item.directPayment}
+              onChange={(e) =>
+                handleItemChange(item.id, "directPayment", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="yes">{t("productGrid.yes")}</option>
+              <option value="no">{t("productGrid.no")}</option>
+            </select>
 
-              <input
-                type="text"
-                value={item.depositRequirementDirect}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "depositRequirementDirect",
-                    e.target.value
-                  )
-                }
-                className="w-full border-t border-b border-r border-gray-300"
-                placeholder=""
-              />
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
 
-              <select
-                value={item.paymentViaWallet}
-                onChange={(e) =>
-                  handleItemChange(item.id, "paymentViaWallet", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
-              
-              <select
-                value={item.depositRequirementWallet}
-                onChange={(e) =>
-                  handleItemChange(item.id, "depositRequirementWallet", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
+                className="w-full p-3  border-gray-300 text-right"
 
-             
-              <select
-                value={item.vat}
-                onChange={(e) =>
-                  handleItemChange(item.id, "vat", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
-              <input
-                type="number"
-                min="0"
-                value={item.quantityMinimum}
-                onChange={(e) =>
-                  handleItemChange(item.id, "quantityMinimum", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
               />
-              <input
-                type="text"
-                value={item.unit}
-                onChange={(e) =>
-                  handleItemChange(item.id, "unit", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300"
-              />
-              <input
-                type="currency"
-                value={item.unitMarketPrice}
-                onChange={(e) =>
-                  handleItemChange(item.id, "unitMarketPrice", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-              />
+              VND
+            </div>
 
-              <select
-                value={item.vat}
-                onChange={(e) =>
-                  handleItemChange(item.id, "vat", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.highest")}</option>
-                <option value="no">{t("productGrid.lowest")}</option>
-              </select>
-              
-              <input
-                type="currency"
-                value={item.amountDesired}
-                onChange={(e) =>
-                  handleItemChange(item.id, "amountDesired", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-                placeholder=""
+            <select
+              value={item.paymentViaWallet}
+              onChange={(e) =>
+                handleItemChange(item.id, "paymentViaWallet", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="yes">{t("productGrid.yes")}</option>
+              <option value="no">{t("productGrid.no")}</option>
+            </select>
+
+            <select
+              value={item.depositRequirementWallet}
+              onChange={(e) =>
+                handleItemChange(item.id, "depositRequirementWallet", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="yes">{t("productGrid.yes")}</option>
+              <option value="no">{t("productGrid.no")}</option>
+            </select>
+
+
+            <select
+              value={item.vat}
+              onChange={(e) =>
+                handleItemChange(item.id, "vat", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="">{t("productGrid.choose")}</option>
+              <option value="yes">{t("productGrid.yes")}</option>
+              <option value="no">{t("productGrid.no")}</option>
+            </select>
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
+
+                className="w-full p-3  border-gray-300 text-right"
+
               />
-              <input
-                type="currency"
-                min="0"
-                value={item.autoAcceptPrice}
-                onChange={(e) =>
-                  handleItemChange(item.id, "autoAcceptPrice", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-                placeholder=""
+              VND
+            </div>
+            <input
+              type="text"
+              value={item.unit}
+              onChange={(e) =>
+                handleItemChange(item.id, "unit", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300"
+            />
+            <input
+              type="currency"
+              value={item.unitMarketPrice}
+              onChange={(e) =>
+                handleItemChange(item.id, "unitMarketPrice", e.target.value)
+              }
+              className="w-full border-t border-b border-r border-gray-300 text-right"
+            />
+
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
+
+                className="w-full p-3  border-gray-300 text-right"
+
               />
-              <input
-                type="text"
-                value={item.autoRejectPrice}
-                onChange={(e) =>
-                  handleItemChange(item.id, "autoRejectPrice", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-                placeholder=""
+              VND
+            </div>
+
+
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
+
+                className="w-full p-3  border-gray-300 text-right"
+
               />
+              VND
+            </div>
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
+
+                className="w-full p-3  border-gray-300 text-right"
+
+              />
+              VND
+            </div>
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                placeholder={t("goods.enter")}
+
+                className="w-full p-3  border-gray-300 text-right"
+
+              />
+              VND
+            </div>
           </div>
         ))}
 
@@ -482,9 +487,9 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               +
             </button>
           </div>
-          
 
-          
+
+
         </div>
         {/* Always-visible horizontal scrollbar track + moving thumb */}
         {/*<div className="scrollbar-track" aria-hidden="true" ref={trackRef}>*/}

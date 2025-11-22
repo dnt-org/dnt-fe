@@ -68,7 +68,7 @@ export default function GoodsFormRows({
         <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.priceReviewTime")}</div>
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2">
+        <div className="col-span-12 border-r border-gray-300 p-2">
           <TextInput
             name="priceReviewTime"
             value={goodsInfo.priceReviewTime}
@@ -77,7 +77,6 @@ export default function GoodsFormRows({
             placeholder={t("goods.enter")}
           />
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2" />
       </div>
 
       <div className="grid grid-cols-17 border-b border-gray-300">
@@ -85,7 +84,7 @@ export default function GoodsFormRows({
         <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.endPostTime")}</div>
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2">
+        <div className="col-span-12 border-r border-gray-300 p-2">
           <input
             type="datetime-local"
             name="endPostDate"
@@ -96,7 +95,6 @@ export default function GoodsFormRows({
             style={{ border: "none" }}
           />
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2" />
       </div>
 
       <div className="grid grid-cols-17 border-b border-gray-300">
