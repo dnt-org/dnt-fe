@@ -11,6 +11,9 @@ import { downloadContract } from "../services/contractService";
 import { useTranslation } from 'react-i18next';
 import { verifyBankNumber } from "../services/authService";
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
+import useRegisterForm from "../hooks/useRegisterForm";
+import RegisterStepOne from "../components/organisms/RegisterStepOne";
+import RegisterStepTwo from "../components/organisms/RegisterStepTwo";
 
 
 
@@ -41,7 +44,7 @@ const generateRandomPassword = (length = 8) => {
 
 
 
-export default function RegisterPage() {
+function RegisterLegacyPage() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
@@ -617,4 +620,51 @@ export default function RegisterPage() {
     </div>
   );
 
+}
+
+export default function RegisterPage() {
+  const { t } = useTranslation();
+  const {
+    color,
+    handleChangeColor,
+    countries,
+    selectedCountry,
+    setSelectedCountry,
+    validationErrors,
+    error,
+    page,
+    isVerifying,
+    formData,
+    handleInputChange,
+    isFormValid,
+    handleContractDownload,
+    handleRegister,
+    handleNextClick,
+    isReadContract,
+  } = useRegisterForm(t);
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+        <PageHeaderWithOutColorPicker color={color} onColorChange={handleChangeColor} titlePrefix="1" title={t('register.registerTitle', 'ĐĂNG KÝ')} />
+        {page === 1 && (
+          <RegisterStepOne
+            t={t}
+            error={error}
+            countries={countries}
+            selectedCountry={selectedCountry}
+            setSelectedCountry={setSelectedCountry}
+            validationErrors={validationErrors}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            isFormValid={isFormValid}
+            isVerifying={isVerifying}
+            handleNextClick={handleNextClick}
+          />
+        )}
+        {page === 2 && (
+          <RegisterStepTwo t={t} handleContractDownload={handleContractDownload} isReadContract={isReadContract} handleRegister={handleRegister} />
+        )}
+      </div>
+    </div>
+  );
 }
