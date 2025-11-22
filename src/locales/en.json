@@ -841,7 +841,8 @@
       "new": "NEW",
       "old": "OLD",
       "unused": "UNUSED"
-    }
+    },
+    "reviewvideo": "GOODS VERIFY REVIEW VIDEO"
   },
   "rewardList": {
     "title": "REWARD LIST",

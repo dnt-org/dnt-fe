@@ -9,6 +9,7 @@ import {
   KeyboardIcon as KeyboardIcon,
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
+  Forward as Share2Icon,
 } from "lucide-react";
 import ProductGrid from "../components/ProductGrid";
 import GoodsAccount from "../components/GoodsAccount";
@@ -355,32 +356,45 @@ export default function DetailOfGoodsPage() {
         </div>
 
         {/* ID Section */}
+        <div className="flex items-center border border-gray-300">
+          <label className="w-20 text-center font-bold">ID</label>
+          <div className="w-full p-2  border-gray-300 text-center grid grid-cols-12">
+            <div className="col-span-11">
+              {product.custom_id}
+            </div>
+            <div className="col-span-1 flex items-center gap-2 justify-end">
+              <EyeIcon size={16} />
+              <Share2Icon size={16} />
+            </div>
+
+          </div>
+        </div>
         <ProductGrid products={[product]} readOnly={true} />
 
         {/* Product Details Section */}
 
         {/* Product Information */}
-        <div className="w-full border border-gray-300 mt-4">
-          <div className="grid grid-cols-20">
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
+        <div className="w-full border border-gray-300 mt-4 rounded-md overflow-hidden">
+          <div className="grid grid-cols-20 divide-y divide-gray-300">
+            <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.timeReviewPrice')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-6">
+            <div className="p-2 text-center col-span-6 border-l border-gray-300">
               <span className="text-sm italic">{product.description}</span>
             </div>
-            <div className="col-span-8"></div>
+            <div className="col-span-9 border-l border-gray-300"></div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
+            <div className="p-2 text-left font-bold col-span-5 ">
               {t('detailOfGoods.endTime')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-6">
+            <div className="p-2 text-center col-span-6 border-l border-gray-300">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               }) : ''}
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-9">
+            <div className="p-2 text-center col-span-9 border-l border-gray-300">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -388,35 +402,38 @@ export default function DetailOfGoodsPage() {
               }) : ''}
             </div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
+            <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.goodsAddress')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-6">
+            <div className="p-2 text-center col-span-6 border-l border-gray-300">
               {product.address}
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-9">
+            <div className="p-2 text-center col-span-9 border-l border-gray-300">
               #Map#
             </div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
+            <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.goodsVerify')}:
             </div>
-            <div className="border border-gray-300 p-2 text-center col-span-6 ">
-              <button type="button" className="bg-gray-300 px-1 rounded hover:bg-gray-100">
+            <div className="p-2 text-center col-span-6 border-l border-gray-300">
+              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold w-20 rounded">
                 {t('common.viewFile')}
               </button>
             </div>
-            <div className="col-span-9"></div>
+            <div className="col-span-9 row-span-2 border-l border-gray-300 flex items-center justify-center">
+              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-1 rounded">
+                {t('detailOfGoods.reviewvideo')}
+              </button>
+            </div>
 
-            <div className="border border-gray-300 p-2 text-left font-bold col-span-5">
+            <div className="p-2 text-left font-bold col-span-5  ">
               {t('detailOfGoods.posterInfo')}:
             </div>
-            <div className="border border-gray-300 col-span-6 flex justify-center items-center">
-              <button type="button" className="bg-gray-300 hover:bg-gray-100 text-black font-bold px-4 border border-gray-200 rounded flex items-center justify-center">
+            <div className="col-span-6 flex justify-center items-center border-l border-gray-300">
+              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold w-20  rounded">
                 {t('common.open')}
               </button>
             </div>
-            <div className="col-span-9"></div>
           </div>
         </div>
 
@@ -452,7 +469,7 @@ export default function DetailOfGoodsPage() {
         </div> */}
 
         {/* Back Button */}
-        
+
       </div>
     </div>
   );

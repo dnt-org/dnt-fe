@@ -90,7 +90,7 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
               {t("productGrid.qualityInfo")}{" "}
               <span className="text-red-500">*</span>
             </div>
-          </div>
+          </div>  
           <div className="border-r border-b border-gray-300 p-2 text-center">
             <div>
               {t("productGrid.warrantyChangeDays")}{" "}
@@ -188,7 +188,7 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
             key={item.id}
             className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}
           >
-            <div className="border-r border-b border-gray-300 text-center">
+            <div className="border-r border-b border-gray-300 text-center flex items-center justify-center">
               <div>{item.id}</div>
             </div>
             <input
