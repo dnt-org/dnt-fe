@@ -6,12 +6,14 @@ import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
 export default function ProductGridReadOnly({ products = [], onItemsChange }) {
   const { t } = useTranslation();
   const [items, setItems] = useState(products || []);
+  const [isManpower, setIsManpower] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const { containerRef, trackRef, thumbRef } = useHorizontalScrollbar();
   const [lowestHighestAskingPrice, setLowestHighestAskingPrice] = useState(true);
 
   useEffect(() => {
     setItems(products || []);
+    setIsManpower(products.some((item) => item?.categoryType?.includes("manpower")));
   }, [products]);
 
 
@@ -57,10 +59,9 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
     if (onItemsChange) onItemsChange(updated);
   };
 
+
   return (
     <>
-
-
       <div className="overflow-x-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e0 transparent' }}>
         {/* Header columns with horizontal scroll */}
         <div className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
@@ -175,7 +176,8 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
             <div>{t("productGrid.lowestAmount")}</div>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300">
-            <div>{t("detailOfGoods.setPrice")}</div>
+            <div>{isManpower ? t("detailOfGoods.downloadFileHS") : t("detailOfGoods.setPrice")}</div>
+            <small className="text-red-500">sẽ đổi thành tải file với bài tuyển dụng và dòng này được xoá đi</small>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300">
             <div>{t("detailOfGoods.confirm")}</div>
@@ -472,12 +474,18 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 placeholder=""
                 disabled
               />
-              <input
-                type="number"
-                min="0"
-                className="w-full border-t border-b border-r border-gray-300 text-right"
-                placeholder=""
-              />
+              {isManpower ? (
+                <button
+                  className="w-full cursor-pointer border border-gray-300 text-center"
+                >{t("detailOfGoods.downloadFile")}</button>
+              ) : (
+                <input
+                  type="number"
+                  min="0"
+                  className="w-full border-t border-b border-r border-gray-300 text-right"
+                  placeholder=""
+                />
+              )}
               <button
                 className="w-full cursor-pointer border border-gray-300 text-center"
               >{t("detailOfGoods.confirm")}</button>

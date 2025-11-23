@@ -31,13 +31,12 @@ export default function AiLiveAccount({ title, onTransfer }) {
   };
 
   return (
-    <div className="grid grid-cols-8 border border-gray-300">
-      <div className="border-r border-gray-300 p-2 text-center flex items-center justify-center">
+    <div className="flex border border-gray-300 overflow-auto">
+      <div className="acctab border-r border-gray-300 p-2 text-center flex items-center justify-center w-[200px]">
         <div dangerouslySetInnerHTML={{ __html: title }} className="font-bold text-center">
-
         </div>
       </div>
-      <div className="border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="number"
           name="exchangeRate"
@@ -55,11 +54,11 @@ export default function AiLiveAccount({ title, onTransfer }) {
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
 
-          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
+          <div className="flex-4 text-right pr-4">{isVisible1 ? "0" : "•••"}</div>
         </div>
       </div>
 
-      <div className="border-r border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="text"
           name=""
@@ -75,7 +74,7 @@ export default function AiLiveAccount({ title, onTransfer }) {
       </div>
 
 
-      <div className="border-r border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="number"
           name="exchangeRate"
@@ -100,11 +99,11 @@ export default function AiLiveAccount({ title, onTransfer }) {
             >
               {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
             </button></div>
-            <div className="flex-4 text-right pl-1">{isVisible2 ? "0" : "•••"}</div>
+            <div className="flex-4 text-right pr-4">{isVisible2 ? "0" : "•••"}</div>
           </div>
         </div>
       </div>
-      <div className="border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="number"
           disabled
@@ -127,12 +126,12 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
-          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
+          <div className="flex-4 text-right pr-4">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>
       </div>
-      <div className="border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="number"
           name="exchangeRate"
@@ -155,12 +154,12 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
-          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
+          <div className="flex-4 text-right pr-4">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>
       </div>
-      <div className="border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center">
+      <div className="acctab border-r h-20 border-gray-300 text-center flex flex-col items-center justify-center w-[200px]">
         <input
           type="number"
           name="exchangeRate"
@@ -182,14 +181,14 @@ export default function AiLiveAccount({ title, onTransfer }) {
           >
             {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
           </button></div>
-          <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
+          <div className="flex-4 text-right pr-4">{isVisible1 ? "0" : "•••"}</div>
 
 
         </div>
       </div>
 
 
-      <div className="p-2 text-center flex items-center justify-center">
+      <div className="acctab p-2 text-center flex items-center justify-center w-[200px]">
         <button
           type="button"
           className="mt-1 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"

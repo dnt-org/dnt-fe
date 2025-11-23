@@ -57,7 +57,7 @@ export default function GoodsAccount({ title, onTransfer }) {
                     >
                         {isVisible1 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
                     </button></div>
-                    <div className="flex-4 text-right pl-1">{isVisible1 ? "0" : "•••"}</div>
+                    <div className="flex-4 text-right pr-4">{isVisible1 ? "0" : "•••"}</div>
 
 
                 </div>
@@ -100,7 +100,7 @@ export default function GoodsAccount({ title, onTransfer }) {
                         >
                             {isVisible2 ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
                         </button></div>
-                        <div className="flex-4 text-right pl-1">{isVisible2 ? "0" : "•••"}</div>
+                        <div className="flex-4 text-right pr-4">{isVisible2 ? "0" : "•••"}</div>
 
                     </div>
                 </div>

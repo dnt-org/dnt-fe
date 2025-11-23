@@ -1,6 +1,7 @@
 import React from "react";
 import { Eye, HandHeart, BookOpen, Share, Flag, Plus } from "lucide-react";
 import { useTranslation } from 'react-i18next';
+import AiLiveVideoList from "./AiLiveVideoList";
 
 export default function AiLiveLiveStreamComponent() {
   const { t } = useTranslation();
@@ -88,7 +89,6 @@ export default function AiLiveLiveStreamComponent() {
         {/* Cột phải - VIDEO LIVESTREAM */}
         <div className="p-4 h-screen flex flex-col">
           <div className="text-center font-bold mb-4">{t('aiLiveStream.videoLivestream', 'VIDEO LIVESTREAM')}</div>
-          
           <div className="border border-black p-4 flex-1 flex flex-col">
             <div className="mb-4">
               <div className="text-sm mb-2">
@@ -131,19 +131,9 @@ export default function AiLiveLiveStreamComponent() {
               <div className="font-bold">{t('aiLive.products', 'HÀNG HÓA')}</div>
             </div>
 
-            {/* Các nút video - flex-1 để chiếm hết không gian còn lại */}
-            {/* <div className="flex-1 flex flex-col justify-center space-y-2">
-              {Array.from({ length: 4 }, (_, index) => (
-                <div key={index} className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="bg-yellow-100 p-2 text-center">ấn = vào video livestream</div>
-                  <div className="bg-yellow-100 p-2 text-center">Gạt lên = dẫn video livestream tập theo gióng tiktok</div>
-                </div>
-              ))}
+            <div className="mt-4">
+              <AiLiveVideoList />
             </div>
-
-            <div className="mt-4 text-center">
-              <div className="bg-yellow-100 p-2 text-sm">ấn = đến trang</div>
-            </div> */}
           </div>
         </div>
       </div>

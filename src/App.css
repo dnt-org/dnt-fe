@@ -266,6 +266,9 @@ td {
         font-size: 10px !important;
     }
 }
+.acctab{
+    min-width: 150px !important;
+}
 
 .menu-left-top-login {
     width: 3vw;

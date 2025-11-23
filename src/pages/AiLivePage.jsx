@@ -12,6 +12,8 @@ import AiLiveLiveComponent from "../components/AiLiveLiveComponent";
 import { useTranslation } from 'react-i18next';
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx";
 import NumericInput from "../components/NumericInput.jsx";
+import AiLiveAccount from "../components/AiLiveAccount.jsx";
+import AiLiveStreamGoods from "../components/organisms/AiLiveStreamGoods.jsx";
 
 
 export default function AiLivePage() {
@@ -39,7 +41,7 @@ export default function AiLivePage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-5xl mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full  mx-auto">
         {/* Header */}
         <PageHeaderWithOutColorPicker
           color={color}
@@ -63,35 +65,10 @@ export default function AiLivePage() {
           }
           title={t('aiLive.pageTitle')}
         />
-
-        {/* Grid Content */}
-        <div className="mt-6">
-        <div className="grid grid-cols-5 border border-black text-center text-black">
-          <div className="p-2 font-semibold border-r">
-            {t('aiLive.accountOfAiLive')}
-          </div>
-          <div className="p-2 font-semibold border-r">0</div>
-          <div className="p-2 font-semibold border-r text-yellow-600">
-            VNĐ
-          </div>
-          <div className="p-2 border-r">
-            <NumericInput
-              value={inputValue}
-              onChange={setInputValue}
-              className="w-full text-center border border-gray-400 rounded px-2 py-1"
-              placeholder={t('aiLive.enterNumber')}
-            />
-          </div>
-          <div className="p-2 font-semibold">
-            {t('aiLive.transferToWallet')}
-          </div>
-        </div>
-        </div>
-        {/* Hàng trống */}
-        <div className="grid grid-cols-5 border-x border-b border-black h-10"></div>
+        <AiLiveAccount title={t('aiLive.accountOfAiLive')} />
 
         {/* 6 Buttons */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-3 sm:grid-cols-6  gap-4 mt-6">
           {[
             { label: t('aiLive.livestream'), sub: t('aiLive.livestreamSub'), value: "LIVESTREAM" },
             { label: t('aiLive.video'), sub: "", value: "VIDEO" },
@@ -111,7 +88,7 @@ export default function AiLivePage() {
         </div>
         {/* Hiển thị component tùy theo lựa chọn */}
         {selectedComponent === "LIVESTREAM" && (
-        <AiLiveLiveStreamComponent />
+        <AiLiveStreamGoods />
         )}
         {selectedComponent === "VIDEO" && (
         <AiLiveVideoComponent />
