@@ -43,7 +43,8 @@
     "no": "KHÔNG",
     "open": "Mở",
     "viewFile": "Xem file",
-    "downloadFile": "Tải file"
+    "downloadFile": "Tải file",
+    "add": "Thêm"
   },
   "hero": {
     "mainTitle": "CÔNG BẰNG LỚN - UY TÍN LỚN",
@@ -151,7 +152,7 @@
   "aiLiveMovie": {
     "movie": "PHIM",
     "movieName": "TÊN PHIM",
-    "noAds": "KHÔNG XEM QUẢNG CÁO",
+    "noAds": "TẮT QUẢNG CÁO",
     "advertising": "QUẢNG CÁO",
     "topUp": "NẠP TIỀN",
     "enterAmount": "Nhập số tiền",
@@ -194,6 +195,39 @@
     "seconds": "VNĐ / GIÂY (S) / LƯỢT XEM",
     "showAd": "HIỆN QUẢNG CÁO",
     "insertAd": "CHÈN QUẢNG CÁO"
+  },
+  "aiLive": {
+    "goodsSelling": "HÀNG HÓA ĐANG BÁN TRONG BUỔI LIVE"
+  },
+  "liveGoods": {
+    "from": "Từ",
+    "to": "Đến",
+    "setQuantity": "SỐ LƯỢNG ĐẶT MUA",
+    "desiredUnitPrice": "ĐƠN GIÁ MONG MUỐN",
+    "desiredAmount": "THÀNH TIỀN MONG MUỐN",
+    "actions": "HÀNH ĐỘNG",
+    "chooseOne": "chọn 1",
+    "totalLowest": "THÀNH TIỀN MONG MUỐN THẤP NHẤT",
+    "totalHighest": "THÀNH TIỀN MONG MUỐN CAO NHẤT"
+  },
+  "liveConfirm": {
+    "owner": "CHỦ BÀI ĐĂNG",
+    "agree": "ĐỒNG Ý",
+    "reject": "TỪ CHỐI",
+    "countdown": "Bộ đếm lùi thời gian từ 300 giây để XÁC NHẬN.",
+    "remind240": "- Còn 240 giây NHÁY NHẮC NHỞ.",
+    "sound120": "- Còn 120 giây thì thêm cảnh báo âm thanh.",
+    "lock0": "- Về 00 thì THOÁT và bị khóa 24H.",
+    "remaining": "Còn",
+    "locked": "Đã khóa 24H"
+  },
+  "customerConfirm": {
+    "approvedLeft": "ĐÃ DUYỆT",
+    "rejectedRight": "TỪ CHỐI",
+    "title": "XÁC NHẬN",
+    "withOwner": "(ấn với chủ)",
+    "confirmButton": "Xác nhận đặt giá",
+    "goToDetail": "ĐẾN CHI TIẾT BÀI ĐĂNG"
   },
   "goods": {
     "listOfGoods": "DANH SÁCH HÀNG HÓA",

@@ -43,7 +43,8 @@
     "no": "NO",
     "open": "Open",
     "viewFile": "View file",
-    "downloadFile": "Download file"
+    "downloadFile": "Download file",
+    "add": "Add"
   },
   "hero": {
     "mainTitle": "GREAT FAIRNESS - GREAT REPUTATION",
@@ -151,7 +152,7 @@
   "aiLiveMovie": {
     "movie": "MOVIE",
     "movieName": "MOVIE NAME",
-    "noAds": "NO ADS",
+    "noAds": "TURN OFF ADS",
     "advertising": "ADVERTISING",
     "topUp": "TOP UP",
     "enterAmount": "Enter amount",
@@ -194,6 +195,37 @@
     "seconds": "VND / SECOND (S) / VIEW",
     "showAd": "SHOW AD",
     "insertAd": "INSERT AD"
+  },
+  "aiLive": {
+    "goodsSelling": "GOODS BEING SOLD DURING LIVE"
+  },
+  "liveGoods": {
+    "from": "From",
+    "to": "To",
+    "setQuantity": "ORDERED QUANTITY",
+    "desiredUnitPrice": "DESIRED UNIT PRICE",
+    "desiredAmount": "DESIRED AMOUNT",
+    "actions": "ACTIONS",
+    "chooseOne": "choose 1"
+  },
+  "liveConfirm": {
+    "owner": "POST OWNER",
+    "agree": "AGREE (press to customer)",
+    "reject": "REJECT (press to customer)",
+    "countdown": "Countdown from 300 seconds to CONFIRM.",
+    "remind240": "- At 240s, start blinking reminder.",
+    "sound120": "- At 120s, add sound alert.",
+    "lock0": "- At 00s, exit and lock for 24H.",
+    "remaining": "Remaining",
+    "locked": "Locked for 24H"
+  },
+  "customerConfirm": {
+    "approvedLeft": "APPROVED (command from owner)",
+    "rejectedRight": "REJECTED (command from owner)",
+    "title": "CONFIRM",
+    "withOwner": "(press with owner)",
+    "confirmButton": "Confirm set price",
+    "goToDetail": "GO TO POST DETAIL"
   },
   "goods": {
     "listOfGoods": "LIST OF GOODS",

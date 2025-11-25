@@ -2,26 +2,30 @@ import React from "react"
 import PropTypes from "prop-types"
 import { Eye } from "lucide-react"
 
-export default function VideoCard({ index, name, productId, viewers, selected, onClick }) {
+export default function VideoCard({ index, name, productId, viewers, selected, onClick, avatar }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`border ${selected ? "border-green-500" : "border-black"} rounded-sm w-full h-full px-3 py-2 text-center hover:bg-yellow-50`}
+      className={`border ${selected ? "border-green-500" : "border-black"} rounded-sm flex flex-col items-center justify-start w-full h-full px-3 py-2 text-center hover:bg-blue-50`}
     >
       <div className="font-extrabold text-2xl">VIDEO</div>
       <div className="font-extrabold text-2xl">{index}</div>
-      <div className="text-xs italic">(slide cập nhật)</div>
-      <div className="mt-2 border border-black inline-block text-left px-2 py-1">
-        <div className="text-xs">AVT - TÊN - ID</div>
+      <div className="mt-2 border w-full h-full border-black inline-block text-left px-2 py-1"
+        style={{ backgroundImage: selected ? "green-50" : "white" }}
+      >
+        <div className="text-xs flex  items-start justify-start">
+          <img className="w-8 h-8 rounded-full" src={avatar} />
+          <div className="font-bold ml-2">{name}</div>
+          <div className="font-bold ml-2">{productId}</div>
+
+        </div>
         <div className="flex items-center gap-1 text-xs">
           <Eye size={14} />
           <span>{viewers} đang xem</span>
         </div>
       </div>
-      {name ? (
-        <div className="mt-2 text-[11px] truncate">{name}{productId ? ` • ${productId}` : ""}</div>
-      ) : null}
+
     </button>
   )
 }
@@ -40,5 +44,5 @@ VideoCard.defaultProps = {
   productId: "",
   viewers: 0,
   selected: false,
-  onClick: () => {},
+  onClick: () => { },
 }

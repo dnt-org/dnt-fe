@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next"
 import VideoCard from "./molecules/VideoCard"
+import { useNavigate } from "react-router-dom"
 
 export default function AiLiveVideoList({ videos = [] }) {
   const { t } = useTranslation()
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [currentPage, setCurrentPage] = useState(0);
+  const navigate = useNavigate()
 
   const data = videos.length
     ? videos
@@ -49,7 +51,7 @@ export default function AiLiveVideoList({ videos = [] }) {
                 productId={v.productId}
                 viewers={v.viewers}
                 selected={selectedIndex === originalIndex}
-                onClick={() => setSelectedIndex(originalIndex)}
+                onClick={() => { setSelectedIndex(originalIndex); navigate(`/ai-live/video/${v.id}`) }}
               />
             </div>
           );

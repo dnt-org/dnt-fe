@@ -14,6 +14,7 @@ import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPi
 import NumericInput from "../components/NumericInput.jsx";
 import AiLiveAccount from "../components/AiLiveAccount.jsx";
 import AiLiveStreamGoods from "../components/organisms/AiLiveStreamGoods.jsx";
+import AiLiveVideoList from "../components/AiLiveVideoList.jsx";
 
 
 export default function AiLivePage() {
@@ -86,6 +87,11 @@ export default function AiLivePage() {
             </button>
           ))}
         </div>
+        {
+          selectedComponent === null && (
+            <AiLiveVideoList />
+          )
+        }
         {/* Hiển thị component tùy theo lựa chọn */}
         {selectedComponent === "LIVESTREAM" && (
         <AiLiveStreamGoods />
