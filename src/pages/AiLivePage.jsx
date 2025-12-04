@@ -34,6 +34,10 @@ export default function AiLivePage() {
     setUser(token);
   }, [color]);
 
+  useEffect(() => { 
+    setSelectedComponent(null);
+  }, []);
+
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
     setColor(newColor);
@@ -71,21 +75,25 @@ export default function AiLivePage() {
         {/* 6 Buttons */}
         <div className="grid grid-cols-3 sm:grid-cols-6  gap-4 mt-6">
           {[
-            { label: t('aiLive.livestream'), sub: t('aiLive.livestreamSub'), value: "LIVESTREAM" },
-            { label: t('aiLive.video'), sub: "", value: "VIDEO" },
-            { label: t('aiLive.movie'), sub: t('aiLive.movieSub'), value: "MOVIE" },
-            { label: t('aiLive.live'), sub: t('aiLive.liveSub'), value: "LIVE" },
-            { label: t('aiLive.equipment'), sub: t('aiLive.equipmentSub'), value: "EQUIPMENT" },
-            { label: t('aiLive.game'), sub: t('aiLive.gameSub'), value: "GAME" },
-          ].map((item, idx) => (
-            <button
-              key={idx}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center shadow-md transition-all"
-              onClick={() => {setSelectedComponent(item.value);}}
-            >
-              {item.label}
-            </button>
-          ))}
+                { label: t('aiLive.livestream'), sub: t('aiLive.livestreamSub'), value: "LIVESTREAM" },
+                { label: t('aiLive.video'), sub: "", value: "VIDEO" },
+                { label: t('aiLive.movie'), sub: t('aiLive.movieSub'), value: "MOVIE" },
+                { label: t('aiLive.live'), sub: t('aiLive.liveSub'), value: "LIVE" },
+                { label: t('aiLive.equipment'), sub: t('aiLive.equipmentSub'), value: "EQUIPMENT" },
+                { label: t('aiLive.vutrucanhan'), sub: t('aiLive.vutrucanhanSub'), value: "VUTRUCANHAN" },
+              ].map((item, idx) => (
+                <button dangerouslySetInnerHTML={{ __html: item.label }}
+                  key={idx}
+                  className={
+                    selectedComponent === item.value
+                      ? "bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center shadow-md transition-all"
+                      : " hover:bg-blue-600 text-black font-bold py-4 px-6 rounded-lg text-center shadow-md transition-all"
+                  }
+                  onClick={() => {setSelectedComponent(item.value);}}
+                >
+                  
+                </button>
+              ))}
         </div>
         {
           selectedComponent === null && (

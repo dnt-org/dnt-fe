@@ -51,7 +51,7 @@ export default function AiLiveVideoList({ videos = [] }) {
                 productId={v.productId}
                 viewers={v.viewers}
                 selected={selectedIndex === originalIndex}
-                onClick={() => { setSelectedIndex(originalIndex); navigate(`/ai-live/video/${v.id}`) }}
+                onClick={() => { setSelectedIndex(originalIndex); navigate(`/ai-live/${v.isGoods ? 'video-goods' : 'video'}/${v.id}`) }}
               />
             </div>
           );

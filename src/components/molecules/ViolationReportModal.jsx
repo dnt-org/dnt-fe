@@ -2,9 +2,8 @@ import { useState } from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 
-export default function ViolationReportModal({ open, onClose, onSubmit }) {
+export default function ViolationReportModal({ open, onClose, onSubmit, type = "goods" }) {
   const { t } = useTranslation()
-  const [type, setType] = useState("")
   const [detail, setDetail] = useState("")
   const [time, setTime] = useState("")
 
@@ -22,19 +21,22 @@ export default function ViolationReportModal({ open, onClose, onSubmit }) {
       <div className="relative bg-white w-[560px] border border-black rounded shadow-lg">
         <div className="px-4 py-3 font-bold border-b">{t("aiLiveVideo.report", "Báo cáo")}</div>
         <div className="p-4 space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              className={`border px-3 py-2 ${type === "law" ? "bg-blue-100" : "bg-white"}`}
-              onClick={() => setType("law")}
+          <div>
+            <label className="text-xs">{t("aiLiveVideo.reportType", "Loại vi phạm")}</label>
+            <select
+              className="w-full border px-2 py-2 mt-1"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
             >
-              {t("aiLive.lawViolation", "Vi phạm pháp luật")}
-            </button>
-            <button
-              className={`border px-3 py-2 ${type === "contact" ? "bg-blue-100" : "bg-white"}`}
-              onClick={() => setType("contact")}
-            >
-              {t("aiLive.contactInfo", "Chứa liên lạc")}
-            </button>
+              <option value="">-- Chọn loại vi phạm --</option>
+              <option value="law">{t("aiLive.lawViolation", "Vi phạm pháp luật")}</option>
+              <option value="contact">{t("aiLive.contactInfo", "Chứa liên lạc")}</option>
+              {type !== "goods" && (<>
+                <option value="ads">{t("aiLive.adsViolation", "Quảng cáo")}</option>
+                <option value="sell">{t("aiLive.sellViolation", "Bán hàng")}</option>
+              </>
+              )}
+            </select>
           </div>
           {type && (
             <div className="space-y-2">

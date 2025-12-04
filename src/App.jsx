@@ -16,6 +16,7 @@ import DetailOfGoodsPage from './pages/DetailOfGoodsPage.jsx'
 import NewFreelancerPostPage from './pages/NewFreelancerPostPage.jsx'
 import AiLivePage from './pages/AiLivePage.jsx'
 import AiLiveVideoDetailPageSpec from './pages/AiLiveVideoDetailPageSpec.jsx'
+import AiLiveVideoDetailPage from './pages/AiLiveVideoDetailPage.jsx' 
 import NewAiLivePostPage from './pages/NewAiLivePostPage.jsx'
 import AdminControlPage from './pages/AdminControlPage.jsx'
 import RewardListPage from './pages/RewardListPage.jsx'
@@ -38,6 +39,7 @@ function App() {
         <Route exact path="/detail-of-goods" element={<DetailOfGoodsPage />} />
          <Route exact path="/ai-live" element={<AiLivePage />} />
          <Route exact path="/ai-live/video/:id" element={<AiLiveVideoDetailPageSpec />} />
+         <Route exact path="/ai-live/video-goods/:id" element={<AiLiveVideoDetailPage />} />
 
         {/* Protected routes require authToken in localStorage */}
         <Route element={<ProtectedRoute />}> 
