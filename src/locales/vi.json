@@ -537,8 +537,10 @@
     "scanIdEn": "Poster's ID",
     "recordVideo": "ĐĂNG KÝ KINH DOANH CỦA DOANH NGHIỆP ĐĂNG BÀI",
     "recordVideoEn": "Poster's TRADE REGISTRATION COMPANY",
-    "requirements": "Vui lòng chụp ảnh CCCD và quay video đăng ký kinh doanh để tiếp tục",
-    "requirementsEn": "Please capture ID photo and record trade registration video to continue"
+    "requirements": "Vui lòng chụp hình, quay phim Căn Cước Công Dân hoặc Đăng Ký Kinh Doanh để tiếp tục...",
+    "requirementsEn": "Please take a photo or record a video of your Citizen ID or Business Registration to continue...",
+    "redirecting": "Đang chuyển hướng...",
+    "redirectingEn": "Redirecting..."
   },
   "scanner": {
     "error": "Lỗi khi quét ID. Vui lòng thử lại.",
