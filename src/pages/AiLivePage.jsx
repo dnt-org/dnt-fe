@@ -23,7 +23,7 @@ export default function AiLivePage() {
   const [inputValue, setInputValue] = useState("");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [selectedComponent, setSelectedComponent] = useState("VIDEO");
 
   // Using the shared NumericInput component for numeric-only input
 
@@ -34,9 +34,7 @@ export default function AiLivePage() {
     setUser(token);
   }, [color]);
 
-  useEffect(() => { 
-    setSelectedComponent(null);
-  }, []);
+      
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value;

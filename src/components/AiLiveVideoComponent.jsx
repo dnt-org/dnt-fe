@@ -41,16 +41,14 @@ export default function AiLiveVideoComponent() {
   const [streams, setStreams] = useState([])
   const [isExpend, setIsExpend] = useState(false)
   const categories = [
-    ["GIỚI THIỆU BẢN THÂN", "Introduce yourself"],
-    ["THIẾU NHI", "Children"],
-    ["LƯU NIỆM", "Memory"],
-    ["KINH NGHIỆM SỐNG", "Life experience"],
-    ["ĐIỂM NÓNG", "Hot area"],
     ["KINH TẾ & XÃ HỘI", "Economy & Society"],
     ["THỂ THAO", "Sport"],
     ["GIẢI TRÍ", "Entertainment"],
-    ["CHIẾN DỊCH & SỰ KIỆN", "Campaigns & Events"],
     ["SÁNG TẠO", "Creative"],
+    ["CHIẾN DỊCH & SỰ KIỆN", "Campaigns & Events"],
+    ["THIẾU NHI", "Children"],
+    ["LƯU NIỆM", "Memory"],
+    ["KINH NGHIỆM SỐNG", "Life experience"],
     ["Ý TƯỞNG KHỞI NGHIỆP", "Start up ideas"],
     ["KHÁC", "Other"]
   ]
@@ -219,24 +217,26 @@ export default function AiLiveVideoComponent() {
             className="border min-w-[300px] border-black p-2 hover:bg-yellow-100 cursor-pointer"
           >
             <div className="font-bold">{vi}</div>
-            <div className="text-[11px] italic">({en})</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-10">
-        <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start  gap-2">
-          <img
+        <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start gap-2">
+          <div className="w-full flex  items-end gap-1">
+            <img
             src={activeUser?.avatar}
-            className="w-12 h-12 rounded-full ring-2 ring-blue-500"
+            className="w-12 h-12 ring-2 ring-blue-500"
           />
           2342958
+          </div>
         </div>
 
-        <div className={`col-span-9 ${isExpend ? 'block' : 'hidden'}`} >
+        <div className={`col-span-9 flex justify-between ${isExpend ? 'block' : 'hidden'}`} >
           <div className=" rounded-lg p-3">
-            <button className=" border p-2" onClick={() => setOpenFollow(v => !v)}>
+            <button className=" border p-2 relative " onClick={() => setOpenFollow(v => !v)}>
               <Users className="w-5 h-5" />
+              <span className="absolute text-right top-0 right-[-10px] text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
             </button>
             {openFollow && (
               <div className="mt-3">

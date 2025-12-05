@@ -141,8 +141,8 @@ export default function MoneyInputModal({ open, onClose, title, initialValue = "
               </div>
               <div className="relative w-full h-2 bg-gray-200 rounded overflow-hidden">
                 <div
-                  className="absolute top-0 left-0 h-full bg-yellow-400 transition-all duration-1000 linear"
-                  style={{ width: `${(countdown / 30) * 100}%` }}
+                  className="absolute top-0 left-0 h-full bg-yellow-400 transition-transform duration-1000 ease-linear origin-left transform-gpu"
+                  style={{ width: '100%', transform: `scaleX(${Math.max(0, Math.min(1, countdown / 30))})`, willChange: 'transform' }}
                 ></div>
               </div>
               <div className="flex justify-center space-x-4">
