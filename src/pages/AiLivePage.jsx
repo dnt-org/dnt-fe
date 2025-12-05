@@ -44,7 +44,7 @@ export default function AiLivePage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full  mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-0 rounded-lg shadow-lg w-full  mx-auto">
         {/* Header */}
         <PageHeaderWithOutColorPicker
           color={color}
@@ -71,7 +71,7 @@ export default function AiLivePage() {
         <AiLiveAccount title={t('aiLive.accountOfAiLive')} />
 
         {/* 6 Buttons */}
-        <div className="grid grid-cols-3 sm:grid-cols-6  gap-4 mt-6">
+        <div className="grid grid-cols-3 sm:grid-cols-6  gap-4 mt-1">
           {[
                 { label: t('aiLive.livestream'), sub: t('aiLive.livestreamSub'), value: "LIVESTREAM" },
                 { label: t('aiLive.video'), sub: "", value: "VIDEO" },

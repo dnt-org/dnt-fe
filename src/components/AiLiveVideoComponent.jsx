@@ -196,7 +196,7 @@ export default function AiLiveVideoComponent() {
   }
 
   return (
-    <div className="space-y-6 ">
+    <div className="">
       <div className="mt-1 border-1 border-gray-300">
         <div className="flex items-center">
           <SearchIcon size={24} className="text-gray-400" />
@@ -236,7 +236,7 @@ export default function AiLiveVideoComponent() {
           <div className=" rounded-lg p-3">
             <button className=" border p-2 relative " onClick={() => setOpenFollow(v => !v)}>
               <Users className="w-5 h-5" />
-              <span className="absolute text-right top-0 right-[-10px] text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
+              <span style={{right: '-40px'}} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
             </button>
             {openFollow && (
               <div className="mt-3">
@@ -298,7 +298,7 @@ export default function AiLiveVideoComponent() {
             )}
           </div>
 
-          <div className={` rounded-lg p-3 ${activeSection && activeSection !== 'package' ? 'hidden' : ''}`}>
+          <div className={` rounded-lg p-3 `}>
             <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'package' ? null : 'package')}>
               <Package className="w-5 h-5" />
             </button>
@@ -347,7 +347,7 @@ export default function AiLiveVideoComponent() {
             )}
           </div>
 
-          <div className={` rounded-lg p-3 ${activeSection && activeSection !== 'products' ? 'hidden' : ''}`}>
+          <div className={` rounded-lg p-3`}>
             <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'products' ? null : 'products')}>
               <Bookmark className="w-5 h-5" />
             </button>
@@ -396,7 +396,7 @@ export default function AiLiveVideoComponent() {
             )}
           </div>
 
-          <div className={` rounded-lg p-3 ${activeSection && activeSection !== 'completed' ? 'hidden' : ''}`}>
+          <div className={` rounded-lg p-3 `}>
             <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'completed' ? null : 'completed')}>
               <Save className="w-5 h-5" />
             </button>
@@ -433,7 +433,7 @@ export default function AiLiveVideoComponent() {
             )}
           </div>
 
-          <div className={` rounded-lg p-3 ${activeSection && activeSection !== 'violations' ? 'hidden' : ''}`}>
+          <div className={` rounded-lg p-3 `}>
             <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'violations' ? null : 'violations')}>
               <FlagOff className="w-5 h-5" />
             </button>
@@ -470,7 +470,7 @@ export default function AiLiveVideoComponent() {
             )}
           </div>
 
-          <div className={` rounded-lg p-3 ${activeSection && activeSection !== 'reports' ? 'hidden' : ''}`}>
+          <div className={` rounded-lg p-3`}>
             <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'reports' ? null : 'reports')}>
               <Flag className="w-5 h-5" />
             </button>

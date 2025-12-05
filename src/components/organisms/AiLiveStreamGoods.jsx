@@ -175,7 +175,7 @@ export default function AiLiveStreamGoods() {
     }
 
     return (
-        <div className="space-y-6 ">
+        <div className="space-y-1 ">
             <div className="mt-1 border-1 border-gray-300">
                 <div className="flex items-center">
                     <SearchIcon size={24} className="text-gray-400" />
@@ -188,18 +188,20 @@ export default function AiLiveStreamGoods() {
                 </div>
             </div>
             <div className="grid grid-cols-10">
-                <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start  gap-2">
-                    <img
-                        src={activeUser?.avatar}
-                        className="w-12 h-12 rounded-full ring-2 ring-blue-500"
-                    />
-                    2342958
+                <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start gap-2">
+                    <div className="w-full flex  items-end gap-1">
+                        <img
+                            src={activeUser?.avatar}
+                            className="w-12 h-12 ring-2 ring-blue-500"
+                        />
+                        2342958
+                    </div>
                 </div>
-
-                <div className={`col-span-9 ${isExpend ? 'block' : 'hidden'}`} >
+                <div className={`col-span-9 flex justify-between ${isExpend ? 'block' : 'hidden'}`} >
                     <div className=" rounded-lg p-3">
-                        <button className= " border p-2" onClick={() => setOpenFollow(v => !v)}>
+                        <button className=" border p-2 relative " onClick={() => setOpenFollow(v => !v)}>
                             <Users className="w-5 h-5" />
+                            <span style={{ right: '-40px' }} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
                         </button>
                         {openFollow && (
                             <div className="mt-3">
