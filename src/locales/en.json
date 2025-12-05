@@ -534,8 +534,10 @@
     "scanIdEn": "Poster's ID",
     "recordVideo": "POSTER'S BUSINESS REGISTRATION",
     "recordVideoEn": "Poster's TRADE REGISTRATION COMPANY",
-    "requirements": "Please take a photo of your ID card and record a business registration video to continue",
-    "requirementsEn": "Please capture ID photo and record trade registration video to continue"
+    "requirements": "Please take a photo or record a video of your Citizen ID or Business Registration to continue...",
+    "requirementsEn": "Please take a photo or record a video of your Citizen ID or Business Registration to continue...",
+    "redirecting": "Redirecting...",
+    "redirectingEn": "Redirecting..."
   },
   "scanner": {
     "error": "ID scan error. Please try again.",

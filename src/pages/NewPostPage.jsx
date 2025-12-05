@@ -47,6 +47,13 @@ export default function NewPostPage() {
     const [previewBlocked, setPreviewBlocked] = useState(false);
     const containerRef = useRef(null);
 
+    // Redirect to /new-good-post once both verifications are completed
+    useEffect(() => {
+        if (hasIdCaptured && hasBusinessVideo) {
+            navigate("/new-good-post", { replace: true });
+        }
+    }, [hasIdCaptured, hasBusinessVideo, navigate]);
+
     // Mock functions to bypass verification
     const mockIdCapture = () => {
         // Create a mock data URL (transparent 1x1 image)
@@ -399,10 +406,10 @@ export default function NewPostPage() {
 
                 {/* Three columns layout */}
                 <div className="mt-6">
-                    <div className="border border-gray-300">
+                    <div className="">
                         {/* Using the common PostTypeMenu component */}
                         {hasIdCaptured && hasBusinessVideo ? (
-                            <PostTypeMenu activeType={null}/>
+                            <div className="p-4 text-center text-gray-700">{t("posts.redirecting") || "Đang chuyển hướng..."}</div>
                         ) : (
                             <div className="p-4 text-center text-gray-700">
                                 {t("posts.requirements")}
