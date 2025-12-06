@@ -75,5 +75,12 @@ export default function useGoodsForm() {
     setGoodsInfo((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
   }
 
-  return { goodsItems, goodsInfo, setGoodsInfo, handleGoodsItemChange, handleAddGoodsItem, handleInputChange }
+  // Hàm kết hợp giờ và phút thành định dạng 24h (HH:mm)
+  const formatPriceReviewTime = () => {
+    const hour = (goodsInfo.priceReviewTimeHour || "00").toString().padStart(2, "0")
+    const minute = (goodsInfo.priceReviewTimeMinute || "00").toString().padStart(2, "0")
+    return `${hour}:${minute}`
+  }
+
+  return { goodsItems, goodsInfo, setGoodsInfo, handleGoodsItemChange, handleAddGoodsItem, handleInputChange, formatPriceReviewTime }
 }

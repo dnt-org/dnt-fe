@@ -207,11 +207,25 @@ const NewFreelancerShippingComponent = ({ freelanceType }) => {
             </div>
           </div>
           <div className="col-span-3 border border-gray-300 flex items-center">
-            <input
-              type="time"
-              className="max-w-[120px] p-2 border-gray-300 rounded flex-1 text-center"
-              placeholder={t("newFreelancerDirect.timePickerPlaceholder")}
-            />
+            <div className="flex items-center gap-1 mx-auto">
+              <input
+                type="number"
+                min="1"
+                max="23"
+                className="w-12 p-2 border-gray-300 rounded text-center"
+                placeholder="HH"
+                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); }}
+              />
+              <span>:</span>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                className="w-12 p-2 border-gray-300 rounded text-center"
+                placeholder="MM"
+                onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); }}
+              />
+            </div>
           </div>
           {/* <div className="col-span-10 p-2 flex items-left">
             <div className="text-center w-full">
