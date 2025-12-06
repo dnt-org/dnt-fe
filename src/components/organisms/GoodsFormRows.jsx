@@ -185,7 +185,7 @@ export default function GoodsFormRows({
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
             <div className="col-span-3 border-r border-gray-300 p-2 text-center flex items-center justify-center">
-              <FileInput name="uploadLivestreamGoodsVideo" label="TẢI LÊN VIDEO LIVESTREAM HÀNG HÓA" />
+              <FileInput name="uploadLivestreamGoodsVideo" label={t("goods.uploadLivestreamGoodsVideo")} />
             </div>
           </div>
 
@@ -194,7 +194,7 @@ export default function GoodsFormRows({
             {/* Row 1 - Đăng ký làm video livestream hàng hóa */}
             <div className="col-span-4 border-r border-b border-gray-300 p-2 flex items-center gap-2">
               <Checkbox name="regLivestreamGoods" checked={goodsInfo.regLivestreamGoods} onChange={onGoodsInfoChange} className="w-4 h-4" />
-              <div className="font-medium">ĐĂNG KÝ LÀM VIDEO LIVESTREAM HÀNG HÓA</div>
+              <div className="font-medium">{t("goods.registerLivestreamGoodsVideo")}</div>
             </div>
             <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regLivestreamGoodsPercent" value={goodsInfo.regLivestreamGoodsPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -210,20 +210,20 @@ export default function GoodsFormRows({
             <div className="col-span-2 border-r border-b border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
             {/* 3 nút chung cho cả 3 dòng - dùng row-span-3 */}
             <div className="col-span-1 row-span-3 border-r border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-              <button type="button" className="w-full text-xs underline text-blue-600">MẪU HỢP ĐỒNG</button>
-              <div className="text-[10px] text-gray-500">(ấn xem + tải xuống)</div>
+              <button type="button" className="w-full text-xs underline text-blue-600">{t("goods.contractTemplate")}</button>
+              <div className="text-[10px] text-gray-500">{t("goods.clickToViewDownload")}</div>
             </div>
             <div className="col-span-1 row-span-3 border-r border-gray-300 p-2 text-center flex items-center justify-center">
-              <FileInput name="uploadCompanyProfile" label="TẢI LÊN HỒ SƠ CÔNG TY" />
+              <FileInput name="uploadCompanyProfile" label={t("goods.uploadCompanyProfile")} />
             </div>
             <div className="col-span-1 row-span-3 p-2 text-center flex items-center justify-center">
-              <FileInput name="uploadProductProfile" label="TẢI LÊN HỒ SƠ SẢN PHẨM" />
+              <FileInput name="uploadProductProfile" label={t("goods.uploadProductProfile")} />
             </div>
 
             {/* Row 2 - Đăng ký làm video thương hiệu bản thân */}
             <div className="col-span-4 border-r border-b border-gray-300 p-2 flex items-center gap-2">
               <Checkbox name="regPersonalBrandVideo" checked={goodsInfo.regPersonalBrandVideo} onChange={onGoodsInfoChange} className="w-4 h-4" />
-              <div className="font-medium">ĐĂNG KÝ LÀM VIDEO THƯƠNG HIỆU BẢN THÂN</div>
+              <div className="font-medium">{t("goods.registerPersonalBrandVideo")}</div>
             </div>
             <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandPercent" value={goodsInfo.regPersonalBrandPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -241,7 +241,7 @@ export default function GoodsFormRows({
             {/* Row 3 - Đăng ký làm video quảng cáo sản phẩm */}
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center gap-2">
               <Checkbox name="regProductAdVideo" checked={goodsInfo.regProductAdVideo} onChange={onGoodsInfoChange} className="w-4 h-4" />
-              <div className="font-medium">ĐĂNG KÝ LÀM VIDEO QUẢNG CÁO SẢN PHẨM</div>
+              <div className="font-medium">{t("goods.registerProductAdVideo")}</div>
             </div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regProductAdPercent" value={goodsInfo.regProductAdPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
