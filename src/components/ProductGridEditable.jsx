@@ -3,6 +3,8 @@ import { Eye as EyeIcon, Forward as ForwardIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
 import NumberInput from "./atoms/NumberInput";
+import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
+import { getUserCountry } from "../utils/user";
 
 export default function ProductGridEditable({ products = [], onItemsChange }) {
   const { t } = useTranslation();
@@ -65,131 +67,129 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
 
       <div className="overflow-x-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e0 transparent' }}>
         {/* Header columns with horizontal scroll */}
-        <div className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+        <div className="grid grid-flow-col auto-cols-[300px] border-gray-300 items-stretch" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             {t("productGrid.sequenceNumber")}
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.nameOfGoods")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.model")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.size")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.color")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.image")} <span className="text-red-500">*</span>
             </div>
           </div>
           {/* New columns */}
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.qualityInfo")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.warrantyChangeDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.warrantyRepairDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.repairWarrantyPercent")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.maxDeliveryDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.handoverLocation")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           {/* THỜI LƯỢNG THỰC HIỆN split into 2 columns */}
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.contractDuration")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.timeUnit")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.directPayment")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.depositRequirementDirect")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.paymentViaWallet")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.depositRequirementWallet")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.vat")} <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.quantityMinimum")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.unit")} <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.unitMarketPrice")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <select
-              value={lowestAmount ? "yes" : "no"}
-              onChange={(e) =>
-                setLowestAmount(lowestAmount === undefined ? e.target.value === "yes" : !lowestAmount)
-              }
-              className="w-full border-t border-b border-r border-gray-300 text-center"
-            >
-              <option value="yes">{t("productGrid.lowestHighestAskingPricelow")}</option>
-              <option value="no">{t("productGrid.lowestHighestAskingPricehigh")}</option>
-            </select>
-            <span className="text-red-500">*</span>
-            <div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div className="font-medium">
+              {t("productGrid.desiredUnitPrice")} <span className="text-red-500">*</span>
             </div>
+            <select
+              value={lowestAmount ? "low" : "high"}
+              onChange={(e) => setLowestAmount(e.target.value === "low")}
+              className="w-full mt-1 border-t border-b border-r border-gray-300 text-center"
+            >
+              <option value="low">{t("productGrid.lowest")}</option>
+              <option value="high">{t("productGrid.highest")}</option>
+            </select>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{lowestAmount ? t("productGrid.lowestAmount") : t("productGrid.highestAmount")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: lowestAmount ? t("productGrid.lowestAmount") : t("productGrid.highestAmount") }} /></div>
           </div>
-          <div className="p-2 text-center border-r border-b border-gray-300">
-            <div>{lowestAmount ? t("productGrid.lowestHighestAutoAccept") : t("productGrid.highestAutoAccept")}</div>
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: lowestAmount ? t("productGrid.lowestHighestAutoAccept") : t("productGrid.highestAutoAccept") }} /></div>
           </div>
-          <div className="p-2 text-center border-r border-b border-gray-300">
-            <div>{lowestAmount ? t("productGrid.autoRejectPricelow") : t("productGrid.autoRejectPricehigh")}</div>
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: lowestAmount ? t("productGrid.autoRejectPricelow") : t("productGrid.autoRejectPricehigh") }} /></div>
           </div>
         </div>
 
@@ -278,19 +278,22 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               }
               className="w-full border-t border-b border-r border-gray-300 text-right"
             />
-            <input
-              type="number"
-              min="0"
-              value={item.repairWarrantyRetentionPercent}
-              onChange={(e) =>
-                handleItemChange(
-                  item.id,
-                  "repairWarrantyRetentionPercent",
-                  e.target.value
-                )
-              }
-              className="w-full border-t border-b border-r border-gray-300 text-right"
-            />
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
             <input
               type="number"
               min="0"
@@ -365,13 +368,19 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
             </select>
 
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <NumberInput
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value)
+                  }
                 placeholder={t("goods.enter")}
-
-                className="w-full p-3  border-gray-300 text-right"
-
+                country={getUserCountry()}
               />
-              VND
             </div>
 
             <select
@@ -386,17 +395,21 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               <option value="no">{t("productGrid.no")}</option>
             </select>
 
-            <select
-              value={item.depositRequirementWallet}
-              onChange={(e) =>
-                handleItemChange(item.id, "depositRequirementWallet", e.target.value)
-              }
-              className="w-full border-t border-b border-r border-gray-300 text-center"
-            >
-              <option value="">{t("productGrid.choose")}</option>
-              <option value="yes">{t("productGrid.yes")}</option>
-              <option value="no">{t("productGrid.no")}</option>
-            </select>
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.depositRequirementWallet}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "depositRequirementWallet",
+                    e.target.value)
+                  }
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
 
 
             <select
@@ -412,12 +425,8 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
             </select>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <NumberInput
-                placeholder={t("goods.enter")}
-
                 className="w-full p-3  border-gray-300 text-right"
-
               />
-              VND
             </div>
             <input
               type="text"
@@ -427,52 +436,89 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               }
               className="w-full border-t border-b border-r border-gray-300"
             />
-            <input
-              type="currency"
-              value={item.unitMarketPrice}
-              onChange={(e) =>
-                handleItemChange(item.id, "unitMarketPrice", e.target.value)
-              }
-              className="w-full border-t border-b border-r border-gray-300 text-right"
-            />
+            
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.unitMarketPrice}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "unitMarketPrice",
+                    e.target.value
+                  )
+                }
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
 
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <NumberInput
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
                 placeholder={t("goods.enter")}
-
-                className="w-full p-3  border-gray-300 text-right"
-
+                country={getUserCountry()}
               />
-              VND
             </div>
 
 
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <NumberInput
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
                 placeholder={t("goods.enter")}
-
-                className="w-full p-3  border-gray-300 text-right"
-
+                country={getUserCountry()}
               />
-              VND
             </div>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <NumberInput
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
                 placeholder={t("goods.enter")}
-
-                className="w-full p-3  border-gray-300 text-right"
-
+                country={getUserCountry()}
               />
-              VND
             </div>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <NumberInput
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="number"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
                 placeholder={t("goods.enter")}
-
-                className="w-full p-3  border-gray-300 text-right"
-
+                country={getUserCountry()}
               />
-              VND
             </div>
           </div>
         ))}

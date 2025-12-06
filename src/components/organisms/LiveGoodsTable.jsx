@@ -109,17 +109,17 @@ export default function LiveGoodsTable({ initialItems = [] }) {
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.size")}</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.color")}</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.image")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.qualityInfo")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.warrantyChangeDays")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.warrantyRepairDays")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.repairWarrantyPercent")} *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} /> *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} /> *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} /> *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} /> *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.maxDeliveryDays")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.handoverLocation")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.contractDuration")} *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} /> *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.directPayment")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.depositRequirementDirect")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.paymentViaWallet")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.depositRequirementWallet")}</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.vat")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.quantityMinimum")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("liveGoods.setQuantity")} *</th>

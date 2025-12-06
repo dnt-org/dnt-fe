@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Eye as EyeIcon, Forward as ForwardIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
+import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 
 export default function ProductGridReadOnly({ products = [], onItemsChange }) {
   const { t } = useTranslation();
@@ -64,122 +65,122 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
     <>
       <div className="overflow-x-scroll" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e0 transparent' }}>
         {/* Header columns with horizontal scroll */}
-        <div className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+        <div className="grid grid-flow-col auto-cols-[300px] border-gray-300 items-stretch" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             {t("productGrid.sequenceNumber")}
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.nameOfGoods")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.model")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.size")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.color")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.image")} <span className="text-red-500">*</span>
             </div>
           </div>
           {/* New columns */}
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.qualityInfo")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>  
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.warrantyChangeDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.warrantyRepairDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.repairWarrantyPercent")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.maxDeliveryDays")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.handoverLocation")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           {/* THỜI LƯỢNG THỰC HIỆN split into 2 columns */}
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.contractDuration")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.timeUnit")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.directPayment")}</div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.depositRequirementDirect")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.paymentViaWallet")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
-            <div>{t("productGrid.depositRequirementWallet")}</div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.vat")} <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.quantityMinimum")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.unit")} <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.unitMarketPrice")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
               {t("productGrid.lowestHighestAskingPrice")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center">
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>{t("productGrid.lowestAmount")}</div>
           </div>
-          <div className="p-2 text-center border-r border-b border-gray-300">
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
             <div>{isManpower ? t("detailOfGoods.downloadFileHS") : t("detailOfGoods.setPrice")}</div>
             <small className="text-red-500">sẽ đổi thành tải file với bài tuyển dụng và dòng này được xoá đi</small>
           </div>
-          <div className="p-2 text-center border-r border-b border-gray-300">
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
             <div>{t("detailOfGoods.confirm")}</div>
           </div>
         </div>
@@ -276,9 +277,9 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 className="w-full border-t border-b border-r border-gray-300 text-right"
                 disabled
               />
-              <input
-                type="number"
-                min="0"
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="text"
                 value={item.repairWarrantyRetentionPercent}
                 onChange={(e) =>
                   handleItemChange(
@@ -287,7 +288,7 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                     e.target.value
                   )
                 }
-                className="w-full border-t border-b border-r border-gray-300 text-right"
+                placeholder={t("goods.enter")}
                 disabled
               />
               <input

@@ -22,7 +22,7 @@ export default function NewGoodPostPage() {
   const [selectedCategory, setSelectedCategory] = useState(localStorage.getItem("subcategory") || "")
   const [selectedCondition, setSelectedCondition] = useState(localStorage.getItem("condition") || "")
   const { countries, provinces, districts, selectedCountry, selectedProvince, selectedDistrict, handleCountryChange, handleProvinceChange, handleDistrictChange } = useLocationSelection()
-  const { goodsItems, goodsInfo, setGoodsInfo, handleInputChange } = useGoodsForm()
+  const { goodsItems, goodsInfo, setGoodsInfo, handleInputChange, formatPriceReviewTime } = useGoodsForm()
   const [errorMessage, setErrorMessage] = useState("")
 
   const onGoodsInfoChange = (e) => {
@@ -33,6 +33,7 @@ export default function NewGoodPostPage() {
     e.preventDefault()
     const formattedData = {
       ...goodsInfo,
+      priceReviewTime: formatPriceReviewTime(),
       price: goodsInfo.price ? parseFloat(goodsInfo.price) : 0,
       askingPrice: goodsInfo.askingPrice ? parseFloat(goodsInfo.askingPrice) : 0,
       estimatedValue: goodsInfo.estimatedValue ? parseFloat(goodsInfo.estimatedValue) : 0,
@@ -78,7 +79,7 @@ export default function NewGoodPostPage() {
       <div className="mt-1">
         <form onSubmit={handleSubmit} className=" border-gray-300">
           <PostTypeMenu activeType="goods" />
-          <GoodsAccount title={t("goods.accountOfGoods")} onTransfer={() => {}} />
+          <GoodsAccount title={t("goods.accountOfGoods")} country={selectedCountry} onTransfer={() => {}} />
           <GoodsFormRows
             selectedType={selectedType}
             selectedCategory={selectedCategory}
