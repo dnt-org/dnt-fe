@@ -147,6 +147,26 @@ export default function GoodsFormRows({
           <span className="font-bold">7</span>
         </div>
         <div className="col-span-16">
+        <div className="grid grid-cols-17 border-b border-gray-300">
+            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+              <div>{t("goods.successFee")}</div>
+            </div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+              <NumberInput name="videoAd" value={goodsInfo.videoAd} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+              <span className="text-gray-700">%</span>
+            </div>
+            <div className="col-span-2 p-2 text-center"><div className="text-red-500">*</div></div>
+          </div>
+
+          <div className="grid grid-cols-17 border-b border-gray-300">
+            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+              <div>{t("goods.vatOtherFees")}</div>
+            </div>
+            <div className="col-span-3 border-r border-gray-300 p-2">
+              <div className="text-right">0 <span className="text-gray-700">%</span></div>
+            </div>
+            <div className="col-span-6 p-2 text-center" />
+          </div>
           <div className="grid grid-cols-17 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.eventFee")}</div>
@@ -255,28 +275,6 @@ export default function GoodsFormRows({
               <TwoLineUnitInput name="regProductAdFee" value={goodsInfo.regProductAdFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
-          </div>
-
-
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
-              <div>{t("goods.successFee")}</div>
-            </div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
-              <NumberInput name="videoAd" value={goodsInfo.videoAd} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
-              <span className="text-gray-700">%</span>
-            </div>
-            <div className="col-span-1 p-2 text-center"><div className="text-red-500">*</div></div>
-          </div>
-
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
-              <div>{t("goods.vatOtherFees")}</div>
-            </div>
-            <div className="col-span-3 border-r border-gray-300 p-2">
-              <div className="text-right">0 <span className="text-gray-700">%</span></div>
-            </div>
-            <div className="col-span-5 p-2 text-center" />
           </div>
 
           <div className="grid grid-cols-16">

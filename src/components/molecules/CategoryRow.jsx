@@ -28,8 +28,8 @@ export default function CategoryRow({ selectedType,
   const subcategoryOptions = [{ label: t("goods.selectSubcategoryPlaceholder"), value: "" }, ...subCategories.slice(1).map((sc) => ({ label: t(`goods.subcategory.${subcategoryKeyMap[sc.en] || sc.en.toLowerCase().replace(/\s+/g, "_").replace(/-/g, "_")}`) || (isVi ? sc.vi : sc.en), value: sc.en }))]
   const conditionOptions = [{ label: t("goods.selectConditionPlaceholder"), value: "" }, ...conditions.slice(1).map((cd) => ({ label: t(`goods.condition.${conditionKeyMap[cd.en] || cd.en.toLowerCase()}`) || (isVi ? cd.vi : cd.en), value: cd.en }))]
 
-  const countryOptions = (countries || []).map((c, idx) => ({ label: c.vi || c.en, value: c.en || c.vi }))
-  const provinceOptions = (provinces || []).map((p, idx) => ({ label: p.vi || p.en, value: p.en || p.vi }))
+  const countryOptions = [{ label: t("goods.selectCountry"), value: "" }, ...(countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }))]
+  const provinceOptions = [{ label: t("goods.selectProvince"), value: "" }, ...(provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }))]
   
   return (
     <div className="grid grid-cols-4 border-b border-gray-300">

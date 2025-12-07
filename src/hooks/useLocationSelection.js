@@ -16,26 +16,7 @@ export default function useLocationSelection() {
         const list = await getCountries()
         if (!mounted) return
         setCountries(list)
-        const savedCountry = localStorage.getItem("nation") || localStorage.getItem("selectedCountryName") || ""
-        const savedProvince = localStorage.getItem("province") || localStorage.getItem("selectedProvinceName") || ""
-        const savedDistrict = localStorage.getItem("district") || ""
-        if (savedCountry) {
-          setSelectedCountry(savedCountry)
-          try {
-            const states = await getCountryByCode(savedCountry)
-            if (!mounted) return
-            setProvinces(states)
-            if (savedProvince) {
-              setSelectedProvince(savedProvince)
-              try {
-                const ds = await getDistrictByCode(savedProvince)
-                if (!mounted) return
-                setDistricts(ds)
-                if (savedDistrict) setSelectedDistrict(savedDistrict)
-              } catch {}
-            }
-          } catch {}
-        }
+        // Do not prefill from localStorage anymore; leave defaults empty
       } catch {}
     })()
     return () => {
