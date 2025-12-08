@@ -52,8 +52,8 @@ export default function AdvertisingSection({ goodsInfo, onGoodsInfoChange }) {
         <FileInput name="advertisingFile" />
       </div>
       <div className="col-span-5 border-t border-gray-300 flex items-center">
-        <Checkbox className="ml-2" name="advertisingFile" value={goodsInfo.advertisingFile} onChange={onGoodsInfoChange} />
-        <div className="font-semibold pl-2">{t("goods.registerAdvertising")}</div>
+        {/* <Checkbox className="ml-2" name="advertisingFile" value={goodsInfo.advertisingFile} onChange={onGoodsInfoChange} />
+        <div className="font-semibold pl-2">{t("goods.registerAdvertising")}</div> */}
       </div>
     </div>
   )
