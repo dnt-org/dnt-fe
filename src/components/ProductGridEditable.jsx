@@ -85,7 +85,7 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.image")} <span className="text-red-500">*</span>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} /> <span className="text-red-500">*</span>
             </div>
           </div>
           {/* New columns */}
@@ -234,14 +234,27 @@ export default function ProductGridEditable({ products = [], onItemsChange }) {
               }
               className="w-full border-r border-b border-gray-300"
             />
-            <div className="border-r border-t border-b border-gray-300 p-2 text-center">
-              <input
-                type="file"
-                onChange={(e) =>
-                  handleItemChange(item.id, "image", e.target.files[0])
-                }
-                className="w-full p-1 mt-1 text-xs border"
-              />
+            <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
+              <div className="flex items-center justify-center gap-2">
+                {/* Hide native file input to remove default "No file chosen" text */}
+                <input
+                  type="file"
+                  id={`image-${item.id}`}
+                  onChange={(e) =>
+                    handleItemChange(item.id, "image", e.target.files?.[0] || null)
+                  }
+                  className="sr-only"
+                />
+                <label
+                  htmlFor={`image-${item.id}`}
+                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap"
+                >
+                  {t("productGrid.uploadFile")}
+                </label>
+                {item.image && (
+                  <div className="text-xs truncate max-w-[150px]" title={item.image.name}>{item.image.name}</div>
+                )}
+              </div>
             </div>
             {/* New cells */}
             <div className="border-r border-t border-b border-gray-300 p-2 text-center">

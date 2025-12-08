@@ -277,7 +277,7 @@ export default function GoodsFormRows({
             <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
           </div>
 
-          <div className="grid grid-cols-16">
+          <div className="grid grid-cols-17">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.totalFeeVat")}</div>
             </div>
@@ -289,8 +289,11 @@ export default function GoodsFormRows({
               <div className="w-full p-1 mr-1 text-right">0</div>
               <span className="text-gray-700"></span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">{t("goods.vnd")}</div>
-            <div className="col-span-4 border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-1 border-r border-gray-300 p-2 text-center">
+              <TwoLineUnitInput name="totalFeeVat" value={goodsInfo.totalFeeVat} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            </div>
+            <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 text-center"></div>
           </div>
         </div>
       </div>

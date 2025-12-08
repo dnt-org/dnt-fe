@@ -83,7 +83,7 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.image")} <span className="text-red-500">*</span>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} /> <span className="text-red-500">*</span>
             </div>
           </div>
           {/* New columns */}
