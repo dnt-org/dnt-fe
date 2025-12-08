@@ -108,7 +108,7 @@ export default function LiveGoodsTable({ initialItems = [] }) {
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.model")}</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.size")}</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.color")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.image")} *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} /> *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} /> *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} /> *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} /> *</th>
