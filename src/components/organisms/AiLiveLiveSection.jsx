@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import PropTypes from "prop-types"
+import TwoLineUnitInput from "../atoms/TwoLineUnitInput"
 
 export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange, liveName, onLiveNameChange, liveTimeStartHour, onLiveTimeStartHourChange, liveTimeEndHour, onLiveTimeEndHourChange, onLiveAdFileChange }) {
   const [allowAdLiveHome, setAllowAdLiveHome] = useState(false)
@@ -38,11 +39,26 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
       </div>
 
       <div className="bg-green-100 p-4 pt-0">
-        <div className="items-center col-span-1 grid grid-cols-8 ">
-          <div className="p-1 col-span-1 border">{t("aiLive.pricewatchlive")}</div>
-          <div className="col-span-7 border-t border-b border-r">
-            <input type="number" min="0" className="p-1 text-right w-[90%]" />
-            {t("aiLive.unit")}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="items-center col-span-1 grid grid-cols-4 ">
+            <div className="p-1 col-span-1 border">{t("aiLive.pricewatchlive")}</div>
+            <div className="col-span-3 border-t border-b border-r flex items-center">
+              <input type="number" min="0" className="p-1 text-right w-full focus:outline-none" />
+              <span className="px-2 text-gray-500">
+                {(() => {
+                  const unitStr = t("aiLive.unit");
+                  const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                  return m ? (
+                    <div className="flex items-center">
+                      <div className="w-10">
+                        <TwoLineUnitInput isInput={false} />
+                      </div>
+                      <span className="ml-1">{m[2]}</span>
+                    </div>
+                  ) : unitStr;
+                })()}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -56,7 +72,20 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
                 min="0"
                 className="p-1 text-right w-[70%] focus:outline-none"
               />
-              <span className="px-2 text-gray-500">{t("aiLive.unitMess")}</span>
+              <span className="px-2 text-gray-500">
+                {(() => {
+                  const unitStr = t("aiLive.unitMess");
+                  const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                  return m ? (
+                    <div className="flex items-center">
+                      <div className="w-10">
+                        <TwoLineUnitInput isInput={false} />
+                      </div>
+                      <span className="ml-1">{m[2]}</span>
+                    </div>
+                  ) : unitStr;
+                })()}
+              </span>
             </div>
           </div>
           <div className="grid grid-cols-4 items-center">
@@ -68,7 +97,20 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
                 min="0"
                 className="p-1 text-right w-[70%] focus:outline-none"
               />
-              <span className="px-2 text-gray-500">{t("aiLive.unitMess")}</span>
+              <span className="px-2 text-gray-500">
+                {(() => {
+                  const unitStr = t("aiLive.unitMess");
+                  const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                  return m ? (
+                    <div className="flex items-center">
+                      <div className="w-10">
+                        <TwoLineUnitInput isInput={false} />
+                      </div>
+                      <span className="ml-1">{m[2]}</span>
+                    </div>
+                  ) : unitStr;
+                })()}
+              </span>
             </div>
           </div>
         </div>
@@ -103,12 +145,31 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
           </div>
           <div className="w-2/3 px-2">
             {allowAdLiveHome && (<>
-              <div className="mb-4">
-              <input type="number" className="w-full border px-2 py-1" placeholder={t("ailivelive.priceforad")} />
-            </div>
-            <div className="mb-4">
-              <input type="number" className="w-full border px-2 py-1" placeholder={t("ailivelive.priceforadUnit")} />
-            </div>
+              <div className="mb-4 flex items-center border rounded">
+                <input type="number" className="flex-1 px-2 py-1 border-none outline-none bg-transparent" placeholder={t("ailivelive.priceforad")} />
+                <div className="w-16 border-l border-gray-300">
+                  <TwoLineUnitInput isInput={false} />
+                </div>
+              </div>
+              <div className="mb-4 flex items-center border rounded">
+                <input type="number" className="flex-1 px-2 py-1 border-none outline-none bg-transparent" />
+                <div className="flex items-center border-l border-gray-300">
+                  {(() => {
+                    const unitStr = t("ailivelive.priceforadUnit");
+                    const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                    return m ? (
+                      <div className="flex items-center px-1">
+                        <div className="w-12">
+                          <TwoLineUnitInput isInput={false} />
+                        </div>
+                        <span className="ml-1 text-gray-500 whitespace-nowrap">{m[2]}</span>
+                      </div>
+                    ) : (
+                      <span className="px-2 text-gray-500">{unitStr}</span>
+                    );
+                  })()}
+                </div>
+              </div>
             <div>
               <span className="sr-only">{t("aiLive.adContent")}</span>
               <div className="relative w-full border p-1">

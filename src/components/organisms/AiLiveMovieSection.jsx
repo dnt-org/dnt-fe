@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import TwoLineUnitInput from "../atoms/TwoLineUnitInput"
 
 export default function AiLiveMovieSection({ t, allowAdMovie, onAllowAdMovieChange, movieName, onMovieNameChange, onMovieFileChange }) {
   return (
@@ -15,14 +16,27 @@ export default function AiLiveMovieSection({ t, allowAdMovie, onAllowAdMovieChan
       <div className="bg-cyan-100 p-4 pt-0">
         <span className="sr-only">* {t("aiLive.productOwnership")}</span>
         <div className="relative w-full border p-1 rounded">
-          <label htmlFor="movieFile2" className="inset-y-0 left-2 flex items-center text-gray-400 cursor-pointer ">{t("aiLiveMovie.license")}</label>
+          <label htmlFor="movieFile2" className="inset-y-0 left-2 flex items-center text-gray-400 cursor-pointer "><span className="text-red-500">*</span>{t("aiLiveMovie.license")}</label>
           <input type="file" id="movieFile2" className="hidden" onChange={onMovieFileChange} />
         </div>
       </div>
       <div className="bg-cyan-100 p-4 pt-0 border-gray-300 grid grid-cols-9">
         <div className=" col-span-1 text-gray-500 border p-1 flex items-center justify-start">{t("aiLiveMovie.watchPrice")}</div>
         <input type="number" className="col-span-3 w-full border-t border-b text-right" placeholder="" />
-        <span className="col-span-5 text-gray-500 border pl-1 flex items-center justify-start">{t("aiLiveMovie.watchPricead")}</span>
+        <span className="col-span-5 text-gray-500 border pl-1 flex items-center justify-start">
+          {(() => {
+            const unitStr = t("aiLiveMovie.watchPricead");
+            const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+            return m ? (
+              <div className="flex items-center">
+                <div className="w-10">
+                  <TwoLineUnitInput isInput={false} />
+                </div>
+                <span className="ml-1">{m[2]}</span>
+              </div>
+            ) : unitStr;
+          })()}
+        </span>
       </div>
       <div className="bg-cyan-100 p-4 pt-0 pb-0">
         <label className="inline-flex items-center mb-2">
@@ -40,7 +54,20 @@ export default function AiLiveMovieSection({ t, allowAdMovie, onAllowAdMovieChan
             <div className="bg-cyan-100 pt-0 col-span-5 border-gray-300 grid grid-cols-10">
               <div className="col-span-2 border pl-1 flex items-center justify-start">{t("aiLiveMovie.unitad")}</div>
               <input type="number" className="col-span-4 p-1 w-full border-t border-b text-right flex items-center justify-end" placeholder="" />
-              <span className="col-span-3 text-gray-500 border pl-1 flex items-center justify-start">VND</span>
+              <span className="col-span-3 text-gray-500 border pl-1 flex items-center justify-start">
+                {(() => {
+                  const unitStr = t("aiLiveMovie.watchPricead");
+                  const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                  return m ? (
+                    <div className="flex items-center">
+                      <div className="w-10">
+                        <TwoLineUnitInput isInput={false} />
+                      </div>
+                      <span className="ml-1">{m[2]}</span>
+                    </div>
+                  ) : unitStr;
+                })()}
+              </span>
             </div>
             <div className="bg-cyan-100 pt-0 col-span-5 border-gray-300 grid grid-cols-10">
               <label htmlFor="contentad" className="col-span-10 border pl-1 flex items-center justify-center cursor-pointer">{t("aiLiveMovie.contentad")}</label>
