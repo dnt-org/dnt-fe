@@ -44,7 +44,9 @@
     "open": "Mở",
     "viewFile": "Xem file",
     "downloadFile": "Tải file",
-    "add": "Thêm"
+    "add": "Thêm",
+    "pinLocation": "GHIM VỊ TRÍ",
+    "agreementText": "Tôi cam kết những thông tin trên là hoàn toàn đúng sự thật và đồng ý, chấp nhận tuân theo các điều khoản của hợp đồng cũng như mọi điều khoản và điều kiện do Sàn thương mại yêu cầu. Tôi thực hiện mọi thủ tục hành chính liên quan đến công việc đăng tải và bên nhận việc chỉ thực hiện đúng công việc được giao. Tôi xin chịu hoàn toàn trách nhiệm trước pháp luật về công việc, hàng hóa và các thông tin liên quan."
   },
   "hero": {
     "mainTitle": "CÔNG BẰNG LỚN - UY TÍN LỚN",

@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { createFreelancer } from "../services/freelancerService";
 import { useTranslation } from "react-i18next";
+import PinLocationButton from "./PinLocationButton";
+import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
+import TermsAgreementCheckbox from "./atoms/TermsAgreementCheckbox";
 
 const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
   const { t } = useTranslation();
@@ -18,6 +21,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
     serviceFee: 250.0,
     type: "offline",
   });
+  const [isAgreed, setIsAgreed] = useState(false);
 
   const handleSubmit = async (e) => {
     const token = localStorage.getItem("authToken");
@@ -173,11 +177,12 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 <div className="flex items-center">
                   <input
                     type="text"
-                    className="w-full p-2 border-gray-300 rounded"
+                    className="flex-1 min-w-0 p-2 border-gray-300 rounded"
                     placeholder={t(
                       "newFreelancerDirect.startLocationPlaceholder"
                     )}
                   />
+                  <PinLocationButton />
                 </div>
               </div>
               <div>
@@ -185,11 +190,12 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 <div className="flex items-center">
                   <input
                     type="text"
-                    className="w-full p-2 border-gray-300 rounded"
+                    className="w-full min-w-0 p-2 border-gray-300 rounded"
                     placeholder={t(
                       "newFreelancerDirect.finishLocationPlaceholder"
                     )}
                   />
+                  <PinLocationButton />
                 </div>
               </div>
             </div>
@@ -212,18 +218,34 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 type="number"
                 min="1"
                 max="23"
-                className="w-12 p-2 border-gray-300 rounded text-center"
+                className="w-full p-2 border-gray-300 rounded text-center"
                 placeholder="HH"
                 onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (parseInt(value, 10) > 23) {
+                    e.target.value = "23";
+                  } else if (parseInt(value, 10) < 1 && value.length > 0) {
+                    e.target.value = "1";
+                  }
+                }}
               />
               <span>:</span>
               <input
                 type="number"
                 min="0"
                 max="59"
-                className="w-12 p-2 border-gray-300 rounded text-center"
+                className="w-full p-2 border-gray-300 rounded text-center"
                 placeholder="MM"
                 onKeyDown={(e) => { if (["e","E","+","-","."].includes(e.key)) e.preventDefault(); }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (parseInt(value, 10) > 59) {
+                    e.target.value = "59";
+                  } else if (parseInt(value, 10) < 0 && value.length > 0) {
+                    e.target.value = "0";
+                  }
+                }}
               />
             </div>
           </div>
@@ -293,7 +315,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
         </div>
 
 
-        {/* Field 10: ĐẶT CỌC 02 BÊN */}
+        {/* Field 11: ĐẶT CỌC 02 BÊN */}
         <div className="grid grid-cols-30 border-gray-300">
           <div className="col-span-1 border border-gray-300 p-2 flex items-center justify-center font-bold">
             11 <span className="text-red-500 font-bold">*</span>
@@ -306,7 +328,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
               type="number"
               min="1"
               step="1"
-              className="w-full border-gray-300  text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
               placeholder={t("newFreelancerDirect.depositPlaceholder")}
               onKeyDown={(e) => {
                 // Prevent negative sign, decimal point, and non-numeric characters
@@ -332,8 +354,14 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 }
               }}
             />
-            {t("common.currency", "VND")}{" "}
-
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-1 p-2 flex items-center">
 
@@ -352,7 +380,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
               type="number"
               min="1"
               step="1"
-              className="w-full border-gray-300 rounded text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
               placeholder={t("newFreelancerDirect.pricePlaceholder")}
               onKeyDown={(e) => {
                 // Prevent negative sign, decimal point, and non-numeric characters
@@ -378,7 +406,14 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 }
               }}
             />
-            {t("common.currency", "VND")}{" "}
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-4 p-2 flex items-center">
             <div className="text-left w-full">
@@ -387,7 +422,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
           </div>
         </div>
 
-        {/* Field 11: PHÍ KHÁC */}
+        {/* Field 13: PHÍ KHÁC */}
         <div className="grid grid-cols-30 border-gray-300">
           {/* Cột trái: số thứ tự */}
           <div className="col-span-1 row-span-8 border border-gray-300 p-2 flex items-center justify-center font-bold">
@@ -437,7 +472,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
               min="0"
               step="1"
               defaultValue={0}
-              className="w-full p-2 pr-0 border-gray-300 rounded text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
               onKeyDown={(e) => {
                 if (
                   e.key === "-" ||
@@ -459,7 +494,14 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 }
               }}
             />
-            <span>{t("common.currency")}</span>
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-12 flex items-center justify-center border-t border-b border-r border-gray-300">
             {t("newFreelancerDirect.prepay")}
@@ -469,13 +511,13 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
           <div className="col-span-6 font-bold border-b border-r border-gray-300 bg-gray-50 flex items-center pl-2">
             {t("newFreelancerDirect.successFee")}
           </div>
-          <div className="col-span-11 border-b border-r border-gray-300 flex items-center">
+          <div className="col-span-11 border-b border-r border-gray-300 flex items-center pr-2">
             <input
               type="number"
               min="0"
               step="1"
               defaultValue={0}
-              className="w-full p-2 pr-0 border-gray-300 text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
               onKeyDown={(e) => {
                 if (
                   e.key === "-" ||
@@ -497,7 +539,14 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 }
               }}
             />
-            <span className="pr-2">{t("common.currency")}</span>
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-9 border-gray-300"></div>
 
@@ -505,14 +554,21 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
           <div className="col-span-6 font-bold border-b border-r border-gray-300 bg-gray-50 flex items-center pl-2">
             {t("newFreelancerDirect.taxOtherFees")}
           </div>
-          <div className="col-span-11 border-r border-gray-300 flex items-center">
+          <div className="col-span-11 border-r border-gray-300 flex items-center pr-2">
             <input
               type="number"
               defaultValue={0}
-              className="w-full p-2 pr-0 border-gray-300 text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
               disabled
             />
-            <span className="pr-2">{t("common.currency")}</span>
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-9 border-gray-300"></div>
 
@@ -536,10 +592,17 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
             <input
               type="number"
               defaultValue={0}
-              className="w-full p-2 pr-0  border-gray-300 rounded text-right"
+              className="flex-1 p-2 pr-0 border-gray-300 rounded text-right"
               disabled
             />
-            <span>{t("common.currency")}</span>
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
           </div>
           <div className="col-span-12 flex border-t items-center justify-center border-b border-r border-gray-300">
             {t("newFreelancerDirect.prepay")}
@@ -548,10 +611,14 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
 
 
         {/* Submit Button */}
+        <TermsAgreementCheckbox isChecked={isAgreed} setIsChecked={setIsAgreed} />
         <div className="flex justify-center mt-8">
           <button
             onClick={handleSubmit}
-            className="border border-black px-16 py-2 text-center cursor-pointer hover:bg-gray-100"
+            className={`border border-black px-16 py-2 text-center cursor-pointer ${
+              !isAgreed ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-100"
+            }`}
+            disabled={!isAgreed}
           >
             <div className="font-bold">
               {t("newFreelancerDirect.postButton")}

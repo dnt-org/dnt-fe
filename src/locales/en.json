@@ -44,7 +44,9 @@
     "open": "Open",
     "viewFile": "View file",
     "downloadFile": "Download file",
-    "add": "Add"
+    "add": "Add",
+    "pinLocation": "PIN LOCATION",
+    "agreementText": "I commit that the above information is completely true and agree to comply with the terms of the contract as well as all terms and conditions required by the E-commerce Platform. I will perform all administrative procedures related to the posted job and the worker will only perform the assigned work. I take full responsibility before the law for the work, goods and related information."
   },
   "hero": {
     "mainTitle": "GREAT FAIRNESS - GREAT REPUTATION",
@@ -994,7 +996,6 @@
     "pressToEnterViews": "press = enter views",
     "tick": "* tick",
     "goodsSelling": "GOODS BEING SOLD DURING LIVE"
-    
   },
   "adminControl": {
     "title": "ADMIN CONTROL",
