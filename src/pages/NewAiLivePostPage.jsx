@@ -55,7 +55,7 @@ export default function NewAiLivePostPage() {
         <div className="">
           <PostTypeMenu activeType="ailive" />
         </div>
-        <AiLiveAccount title={t("aiLive.accountOfAiLive")} onTransfer={{}} />
+        <GoodsAccount title={t("aiLive.accountOfAiLive")} onTransfer={{}} />
         <AiLiveTabs t={t} activeTab={activeTab} onChange={setActiveTab} />
         {activeTab === "video" && (
           <AiLiveVideoSection t={t} allowAdVideo={allowAdVideo} onAllowAdVideoChange={setAllowAdVideo} videoName={videoName} onVideoNameChange={(e) => setVideoName(e.target.value)} onVideoFileChange={(e) => setVideoFile(e.target.files[0])} />
