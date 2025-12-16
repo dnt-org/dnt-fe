@@ -16,15 +16,8 @@ export default function TwoLineUnitInput({
   isInput = false
 }) {
   const resolvedCountry = useMemo(() => {
-    if (country && typeof country === "string") return country
-    // Fallback read from localStorage where the app already stores selected country
-    return (
-      getUserCountry() ||
-      localStorage.getItem("nation") ||
-      localStorage.getItem("selectedCountryName") ||
-      ""
-    )
-  }, [country])
+    return getUserCountry();
+  }, [])
 
   return (
     <div className={`w-full flex items-center justify-center relative ${className}`}>
