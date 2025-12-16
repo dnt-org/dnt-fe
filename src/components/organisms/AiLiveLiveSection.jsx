@@ -123,14 +123,24 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
         </label>
         {allowAdLive && (
           <>
-            <div>
-              <input type="number" className="w-full border px-2 py-1" placeholder={t("aiLive.showAd")} />
-            </div>
-            <div>
-              <input type="number" className="w-full border px-2 py-1" placeholder={t("aiLive.startAdvertisingFromSecondsLive")} />
-            </div>
-            <div>
-              <input type="number" className="w-full border px-2 py-1" placeholder={t("aiLive.startAdvertisingFromViewsLive")} />
+            <div className="flex items-center border rounded">
+              <input type="number" className="flex-1 px-2 py-1 border-none outline-none bg-transparent" placeholder={t("aiLive.showAd")} />
+              <div className="border-l border-gray-300">
+                {(() => {
+                    const unitStr = t("ailivelive.priceforadUnit");
+                    const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
+                    return m ? (
+                      <div className="flex items-center px-1">
+                        <div className="w-12">
+                          <TwoLineUnitInput isInput={false} />
+                        </div>
+                        <span className="ml-1 text-gray-500 whitespace-nowrap">{m[2]}</span>
+                      </div>
+                    ) : (
+                      <span className="px-2 text-gray-500">{unitStr}</span>
+                    );
+                  })()}
+              </div>
             </div>
           </>
         )}
@@ -147,7 +157,7 @@ export default function AiLiveLiveSection({ t, allowAdLive, onAllowAdLiveChange,
             {allowAdLiveHome && (<>
               <div className="mb-4 flex items-center border rounded">
                 <input type="number" className="flex-1 px-2 py-1 border-none outline-none bg-transparent" placeholder={t("ailivelive.priceforad")} />
-                <div className="w-16 border-l border-gray-300">
+                <div className="border-l border-gray-300">
                   <TwoLineUnitInput isInput={false} />
                 </div>
               </div>
