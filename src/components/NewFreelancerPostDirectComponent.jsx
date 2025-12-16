@@ -423,13 +423,78 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
         </div>
 
         {/* Field 13: PHÍ KHÁC */}
-        <div className="grid grid-cols-30 border-gray-300">
+        <div className="grid grid-cols-30 border-gray-300 [&_input]:border-0 [&_input]:rounded-none [&_input]:bg-transparent [&_input]:focus:outline-none [&_input]:focus:ring-0">
           {/* Cột trái: số thứ tự */}
           <div className="col-span-1 row-span-8 border border-gray-300 p-2 flex items-center justify-center font-bold">
             13<span className="text-red-500 font-bold">*</span>
           </div>
 
           {/* ==== ROW 1 ==== */}
+          <div className="col-span-6 font-bold border-b border-r border-t border-gray-300 bg-gray-50 flex items-center pl-2">
+            {t("newFreelancerDirect.successFee")}
+          </div>
+          <div className="col-span-11 border-b border-r border-t border-gray-300 flex items-center pr-2">
+            <input
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={0}
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
+              onKeyDown={(e) => {
+                if (
+                  e.key === "-" ||
+                  e.key === "." ||
+                  e.key === "e" ||
+                  e.key === "E" ||
+                  e.key === "+"
+                ) {
+                  e.preventDefault();
+                }
+              }}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (
+                  value &&
+                  (parseFloat(value) < 0 || !Number.isInteger(parseFloat(value)))
+                ) {
+                  e.target.value = "";
+                }
+              }}
+            />
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
+          </div>
+          <div className="col-span-9 border-gray-300"></div>
+
+          {/* ==== ROW 2 ==== */}
+          <div className="col-span-6 font-bold border-r border-gray-300 bg-gray-50 flex items-center pl-2">
+            {t("newFreelancerDirect.taxOtherFees")}
+          </div>
+          <div className="col-span-11 border-r border-gray-300 flex items-center pr-2">
+            <input
+              type="number"
+              defaultValue={0}
+              className="flex-1 p-2 pr-0 border-gray-300 text-right"
+              disabled
+            />
+            <TwoLineUnitInput
+              type="number"
+              min="1"
+              step="1"
+              className="!w-20 border-gray-300 rounded text-right"
+              placeholder={t("newFreelancerDirect.depositPlaceholder")}
+              isInput={false}
+            />
+          </div>
+          <div className="col-span-9 border-gray-300"></div>
+
+          {/* ==== ROW 3 ==== */}
           <div className="col-span-6 font-bold border-t border-b border-r border-gray-300 flex items-center pl-2 bg-gray-50">
             {t("newFreelancerDirect.eventFee")}
           </div>
@@ -503,80 +568,15 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
               isInput={false}
             />
           </div>
-          <div className="col-span-12 flex items-center justify-center border-t border-b border-r border-gray-300">
+          <div className="col-span-12 flex items-center justify-center border-t border-r  border-b border-gray-300">
             {t("newFreelancerDirect.prepay")}
           </div>
-
-          {/* ==== ROW 2 ==== */}
-          <div className="col-span-6 font-bold border-b border-r border-gray-300 bg-gray-50 flex items-center pl-2">
-            {t("newFreelancerDirect.successFee")}
-          </div>
-          <div className="col-span-11 border-b border-r border-gray-300 flex items-center pr-2">
-            <input
-              type="number"
-              min="0"
-              step="1"
-              defaultValue={0}
-              className="flex-1 p-2 pr-0 border-gray-300 text-right"
-              onKeyDown={(e) => {
-                if (
-                  e.key === "-" ||
-                  e.key === "." ||
-                  e.key === "e" ||
-                  e.key === "E" ||
-                  e.key === "+"
-                ) {
-                  e.preventDefault();
-                }
-              }}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (
-                  value &&
-                  (parseFloat(value) < 0 || !Number.isInteger(parseFloat(value)))
-                ) {
-                  e.target.value = "";
-                }
-              }}
-            />
-            <TwoLineUnitInput
-              type="number"
-              min="1"
-              step="1"
-              className="!w-20 border-gray-300 rounded text-right"
-              placeholder={t("newFreelancerDirect.depositPlaceholder")}
-              isInput={false}
-            />
-          </div>
-          <div className="col-span-9 border-gray-300"></div>
-
-          {/* ==== ROW 3 ==== */}
-          <div className="col-span-6 font-bold border-b border-r border-gray-300 bg-gray-50 flex items-center pl-2">
-            {t("newFreelancerDirect.taxOtherFees")}
-          </div>
-          <div className="col-span-11 border-r border-gray-300 flex items-center pr-2">
-            <input
-              type="number"
-              defaultValue={0}
-              className="flex-1 p-2 pr-0 border-gray-300 text-right"
-              disabled
-            />
-            <TwoLineUnitInput
-              type="number"
-              min="1"
-              step="1"
-              className="!w-20 border-gray-300 rounded text-right"
-              placeholder={t("newFreelancerDirect.depositPlaceholder")}
-              isInput={false}
-            />
-          </div>
-          <div className="col-span-9 border-gray-300"></div>
 
           {/* ==== ROW 4 ==== */}
           <div className="col-span-6 font-bold border-b border-r border-gray-300 flex items-center pl-2 bg-gray-50">
             {t("newFreelancerDirect.totalFeesVat")}
           </div>
-          <div className="col-span-3 border-b border-t border-gray-300 flex items-center">
+          <div className="col-span-3 border-b border-gray-300 flex items-center">
             <input
               type="number"
               defaultValue={0}
@@ -585,10 +585,10 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
             />
             <span className=" text-gray-500 pr-2">{t("common.percent")}</span>
           </div>
-          <div className="col-span-1 border-b border-t border-gray-300 flex items-center justify-center">
+          <div className="col-span-1 border-b border-gray-300 flex items-center justify-center">
             {t("common.plus")}
           </div>
-          <div className="col-span-7 border-t border-b border-r pr-2 border-gray-300 flex items-center">
+          <div className="col-span-7 border-b border-r pr-2 border-gray-300 flex items-center">
             <input
               type="number"
               defaultValue={0}
@@ -604,7 +604,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
               isInput={false}
             />
           </div>
-          <div className="col-span-12 flex border-t items-center justify-center border-b border-r border-gray-300">
+          <div className="col-span-12 flex items-center justify-center border-b border-r border-gray-300">
             {t("newFreelancerDirect.prepay")}
           </div>
         </div>
