@@ -169,16 +169,21 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
-              {t("productGrid.lowestHighestAskingPrice")}{" "}
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAskingPrice") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div>{t("productGrid.lowestAmount")}</div>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></div>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-            <div>{isManpower ? t("detailOfGoods.downloadFileHS") : t("detailOfGoods.setPrice")}</div>
-            <small className="text-red-500">sẽ đổi thành tải file với bài tuyển dụng và dòng này được xoá đi</small>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.setQuantity") }} /></div>
+          </div>
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.setUnitPrice") }} /></div>
+          </div>
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div>{t("productGrid.totalAmount")}</div>
           </div>
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
             <div>{t("detailOfGoods.confirm")}</div>
@@ -476,17 +481,41 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 disabled
               />
               {isManpower ? (
-                <button
-                  className="w-full cursor-pointer border border-gray-300 text-center"
-                >{t("detailOfGoods.downloadFile")}</button>
+                 <div className="whitespace-nowrap px-1">
+                 <button
+                   className="w-full cursor-pointer border border-gray-300 text-center bg-gray-100"
+                 >{t("detailOfGoods.downloadFile")}</button>
+                 </div>
               ) : (
                 <input
                   type="number"
                   min="0"
+                  value={item.orderQuantity || ""}
+                  onChange={(e) =>
+                    handleItemChange(item.id, "orderQuantity", e.target.value)
+                  }
                   className="w-full border-t border-b border-r border-gray-300 text-right"
                   placeholder=""
                 />
               )}
+               <input
+                type="number"
+                min="0"
+                value={item.orderUnitPrice || ""}
+                onChange={(e) =>
+                  handleItemChange(item.id, "orderUnitPrice", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                placeholder=""
+                disabled={isManpower}
+              />
+               <input
+                type="text"
+                value={((parseFloat(item.orderQuantity || 0) * parseFloat(item.orderUnitPrice || 0)) || 0).toLocaleString()}
+                readOnly
+                className="w-full border-t border-b border-r border-gray-300 text-right bg-gray-100"
+                placeholder=""
+              />
               <button
                 className="w-full cursor-pointer border border-gray-300 text-center"
               >{t("detailOfGoods.confirm")}</button>

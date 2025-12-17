@@ -398,6 +398,7 @@
     "quantityMinimum": "MINIMUM QUANTITY",
     "unit": "UNIT",
     "unitMarketPrice": "MARKET UNIT PRICE",
+    "lowestHighestAskingPrice": "LOWEST / HIGHEST <br> DESIRED UNIT PRICE",
     "lowestHighestAskingPricelow": "DESIRED UNIT PRICE LOWEST",
     "lowestHighestAskingPricehigh": "DESIRED UNIT PRICE HIGHEST",
     "lowestAmount": "LOWEST DESIRED AMOUNT",
@@ -405,6 +406,9 @@
     "lowestHighestAutoAccept": "LOWEST/HIGHEST AUTO-ACCEPT PRICE",
     "autoRejectPricelow": "HIGHEST AUTO-REJECT PRICE",
     "autoRejectPricehigh": "LOWEST AUTO-REJECT PRICE",
+    "setQuantity": "SET <br> QUANTITY",
+    "setUnitPrice": "SET <br> UNIT PRICE",
+    "totalAmount": "TOTAL AMOUNT",
     "setPrice": "SET PRICE",
     "total": "Total",
     "choose": "Choose",
@@ -828,7 +832,10 @@
       "old": "OLD",
       "unused": "UNUSED"
     },
-    "reviewvideo": "GOODS VERIFY REVIEW VIDEO"
+    "reviewvideo": "GOODS VERIFY REVIEW VIDEO",
+    "clickToOpen": "(open)",
+    "posterBrand": "POSTER'S BRAND",
+    "goodsLivestream": "LIVESTREAM GOODS"
   },
   "rewardList": {
     "title": "REWARD LIST",

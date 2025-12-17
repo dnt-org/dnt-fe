@@ -404,6 +404,7 @@
     "unit": "ĐƠN VỊ TÍNH",
     "unitMarketPrice": "ĐƠN GIÁ THỊ TRƯỜNG",
     "desiredUnitPrice": "ĐƠN GIÁ MONG MUỐN",
+    "lowestHighestAskingPrice": "ĐƠN GIÁ MONG MUỐN <br> THẤP NHẤT / CAO NHẤT",
     "lowestHighestAskingPricelow": "ĐƠN GIÁ MONG MUỐN THẤP NHẤT",
     "lowestHighestAskingPricehigh": "ĐƠN GIÁ MONG MUỐN CAO NHẤT",
     "lowestAmount": "THÀNH TIỀN MONG MUỐN <br> THẤP NHẤT",
@@ -412,6 +413,9 @@
     "highestAutoAccept": "ĐƠN GIÁ TỰ ĐỘNG DUYỆT <br> CAO NHẤT",
     "autoRejectPricelow": "ĐƠN GIÁ TỰ ĐỘNG TỪ CHỐI <br> THẤP NHẤT",
     "autoRejectPricehigh": "ĐƠN GIÁ TỰ ĐỘNG TỪ CHỐI <br> CAO NHẤT",
+    "setQuantity": "ĐẶT <br> SỐ LƯỢNG",
+    "setUnitPrice": "ĐẶT <br> ĐƠN GIÁ",
+    "totalAmount": "THÀNH TIỀN",
     "setPrice": "ĐẶT GIÁ",
     "total": "Tổng",
     "choose": "Chọn",
@@ -900,7 +904,10 @@
       "old": "CŨ",
       "unused": "CHƯA SỬ DỤNG"
     },
-    "reviewvideo": "VIDEO XÁC MINH HÀNG HOÁ"
+    "reviewvideo": "VIDEO XÁC MINH HÀNG HOÁ",
+    "clickToOpen": "(mở xem)",
+    "posterBrand": "THƯƠNG HIỆU NGƯỜI ĐĂNG BÀI",
+    "goodsLivestream": "LIVESTREAM HÀNG HÓA"
   },
   "rewardList": {
     "title": "DANH SÁCH NHẬN THƯỞNG",
