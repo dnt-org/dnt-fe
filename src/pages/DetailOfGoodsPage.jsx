@@ -357,9 +357,9 @@ export default function DetailOfGoodsPage() {
 
         {/* ID Section */}
         <div className="flex items-center border border-gray-300">
-          <label className="w-20 text-center font-bold">ID</label>
+          <label className="w-20 text-center font-bold">ID:</label>
           <div className="w-full p-2  border-gray-300 text-center grid grid-cols-12">
-            <div className="col-span-11">
+            <div className="col-span-11 text-left">
               {product.custom_id}
             </div>
             <div className="col-span-1 flex items-center gap-2 justify-end">
@@ -375,26 +375,26 @@ export default function DetailOfGoodsPage() {
 
         {/* Product Information */}
         <div className="w-full border border-gray-300 mt-4 rounded-md overflow-hidden">
-          <div className="grid grid-cols-20 divide-y divide-gray-300">
-            <div className="p-2 text-left font-bold col-span-5  ">
+          <div className="grid grid-cols-3 divide-y divide-gray-300">
+            <div className="p-2 text-left font-bold">
               {t('detailOfGoods.timeReviewPrice')}:
             </div>
-            <div className="p-2 text-center col-span-6 border-l border-gray-300">
-              <span className="text-sm italic">{product.description}</span>
+            <div className="p-2 text-center border-l border-gray-300">
+              <span className="text-sm italic">{product.priceReviewTime || "24:00"}</span>
             </div>
-            <div className="col-span-9 border-l border-gray-300"></div>
+            <div className="border-l border-gray-300"></div>
 
-            <div className="p-2 text-left font-bold col-span-5 ">
+            <div className="p-2 text-left font-bold">
               {t('detailOfGoods.endTime')}:
             </div>
-            <div className="p-2 text-center col-span-6 border-l border-gray-300">
+            <div className="p-2 text-center border-l border-gray-300">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               }) : ''}
             </div>
-            <div className="p-2 text-center col-span-9 border-l border-gray-300">
+            <div className="p-2 text-center border-l border-gray-300">
               {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
                 hour: '2-digit',
                 minute: '2-digit',
@@ -402,42 +402,36 @@ export default function DetailOfGoodsPage() {
               }) : ''}
             </div>
 
-            <div className="p-2 text-left font-bold col-span-5  ">
+            <div className="p-2 text-left font-bold">
               {t('detailOfGoods.goodsAddress')}:
             </div>
-            <div className="p-2 text-center col-span-6 border-l border-gray-300">
+            <div className="p-2 text-center border-l border-gray-300">
               {product.address}
             </div>
-            <div className="p-2 text-center col-span-9 border-l border-gray-300">
+            <div className="p-2 text-center border-l border-gray-300">
               #Map#
             </div>
 
-            <div className="p-2 text-left font-bold col-span-5  ">
-              {t('detailOfGoods.goodsVerify')}:
-            </div>
-            <div className="p-2 text-center col-span-6 border-l border-gray-300 flex items-center justify-center">
-              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold w-20 rounded">
-                {t('common.viewFile')}
+            {/* Column 1: XÁC MINH HÀNG HÓA */}
+            {/* Column 1: XÁC MINH HÀNG HÓA */}
+            <div className="p-2 text-center flex flex-col items-center justify-center">
+              <div className="font-bold">{t('detailOfGoods.goodsVerify')}</div>
+              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+                {t('detailOfGoods.clickToOpen')}
               </button>
             </div>
-            <div className="col-span-9 row-span-2 border-l border-gray-300 flex items-center justify-center">
-              <video  
-                src="https://www.youtube.com/watch?v=7Sd6wCiSaeI"
-                title={t('detailOfGoods.reviewvideo')}
-                className="w-50 h-50 border"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></video>
+            {/* Column 2: THƯƠNG HIỆU NGƯỜI ĐĂNG BÀI */}
+            <div className="p-2 text-center flex flex-col items-center justify-center border-l border-gray-300">
+              <div className="font-bold">{t('detailOfGoods.posterBrand')}</div>
+              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+                {t('detailOfGoods.clickToOpen')}
+              </button>
             </div>
-
-
-
-            <div className="p-2 text-left font-bold col-span-5  ">
-              {t('detailOfGoods.posterInfo')}:
-            </div>
-            <div className="col-span-6 flex justify-center items-center border-l border-gray-300">
-              <button type="button" className="bg-blue-500 hover:bg-blue-600 text-white font-bold w-20  rounded">
-                {t('common.open')}
+            {/* Column 3: LIVESTREAM HÀNG HÓA */}
+            <div className="p-2 text-center flex flex-col items-center justify-center border-l border-gray-300">
+              <div className="font-bold">{t('detailOfGoods.goodsLivestream')}</div>
+              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+                {t('detailOfGoods.clickToOpen')}
               </button>
             </div>
           </div>
