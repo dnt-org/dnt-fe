@@ -25,7 +25,7 @@ export default function AiLiveMovieSection({ t, allowAdMovie, onAllowAdMovieChan
         <input type="number" className="col-span-3 w-full border-t border-b text-right" placeholder="" />
         <span className="col-span-5 text-gray-500 border pl-1 flex items-center justify-start">
           {(() => {
-            const unitStr = t("aiLiveMovie.watchPricead");
+            const unitStr = t("aiLiveMovie.unitwatch");
             const m = unitStr.match(/^\s*(VND|VNĐ)\s*(.*)$/i);
             return m ? (
               <div className="flex items-center">
