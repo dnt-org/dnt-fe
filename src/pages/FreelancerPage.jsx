@@ -237,13 +237,17 @@ export default function FreelancerPage() {
             </div>
             
         </div>
-        {activeTab === "actual" ? (
-                <FreelancerActuallyComponent freelancers={freelancersOffline} />
+        <div className="max-h-[300px] overflow-auto" style={{ direction: "rtl" }}>
+          <div style={{ direction: "ltr", width: "fit-content" }}>
+            {activeTab === "actual" ? (
+              <FreelancerActuallyComponent freelancers={freelancersOffline} />
             ) : activeTab === "online" ? (
-                <FreelancerOnlineComponent freelancers={freelancersOnline} />
+              <FreelancerOnlineComponent freelancers={freelancersOnline} />
             ) : (
-                <FreelancerShippingComponent freelancers={freelancersOffline} />
+              <FreelancerShippingComponent freelancers={freelancersOffline} />
             )}
+          </div>
+        </div>
         </>
     );
 }

@@ -25,7 +25,7 @@ export default function TwoLineUnitInput({
         <input
           name={name}
           type={type}
-          value={value ?? ""}
+          value={value}
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
@@ -37,7 +37,7 @@ export default function TwoLineUnitInput({
           {value}
         </div>
       )}
-      <div className="absolute inset-y-0 flex flex-col items-center justify-center leading-tight font-bold">
+      <div className="absolute right-1 inset-y-0 flex flex-col items-center justify-center leading-tight font-bold">
         <span className="text-sm">{resolvedCountry}</span>
         <span className="text-sm">{unitBottom}</span>
       </div>
