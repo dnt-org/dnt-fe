@@ -5,11 +5,17 @@ import { useTranslation } from "react-i18next";
 // FilterDropdown component for each column header
 function FilterDropdown({ options, selectedValue, onFilterChange, placeholder }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSelect = (value) => {
     onFilterChange(value);
     setIsOpen(false);
+    setSearchTerm("");
   };
+
+  const filteredOptions = options.filter((option) =>
+    String(option).toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="relative inline-block">
@@ -21,23 +27,41 @@ function FilterDropdown({ options, selectedValue, onFilterChange, placeholder })
       </button>
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-max">
-          <div className="py-1">
+          <div 
+            className="p-2 border-b border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <input
+              type="text"
+              className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:border-blue-500"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <div className="py-1 max-h-60 overflow-y-auto">
             <button
               onClick={() => handleSelect("")}
               className="block w-full text-left px-3 py-1 text-sm hover:bg-gray-100"
             >
               {placeholder || "All"}
             </button>
-            {options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleSelect(option)}
-                className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 ${selectedValue === option ? "bg-blue-100" : ""
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSelect(option)}
+                  className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 ${
+                    selectedValue === option ? "bg-blue-100" : ""
                   }`}
-              >
-                {option}
-              </button>
-            ))}
+                >
+                  {option}
+                </button>
+              ))
+            ) : (
+                <div className="px-3 py-1 text-sm text-gray-500">No results found</div>
+            )}
           </div>
         </div>
       )}

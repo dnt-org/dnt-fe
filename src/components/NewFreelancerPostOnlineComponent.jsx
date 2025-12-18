@@ -3,9 +3,11 @@ import { createFreelancer } from "../services/freelancerService";
 import { useTranslation } from "react-i18next";
 import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 import TermsAgreementCheckbox from "./atoms/TermsAgreementCheckbox";
+import { getUserCountry } from "../utils/user";
 
 const NewFreelancerPostOnlineComponent = ({ freelanceType }) => {
   const { t } = useTranslation();
+  const country = getUserCountry();
 
   const [freelancerData, setFreelancerData] = useState({
     name: "John Doe",
@@ -431,23 +433,26 @@ const NewFreelancerPostOnlineComponent = ({ freelanceType }) => {
           <div className="col-span-6 font-bold border-b border-r border-t border-gray-300 bg-gray-50 flex items-center pl-2">
             {t("newFreelancerDirect.successFee")}
           </div>
-          <div className="col-span-11 border-b border-r border-t border-gray-300 flex items-center pr-2">
-            <input
+          <div className="col-span-3 border-b border-r border-t border-gray-300 relative flex items-center">
+            <TwoLineUnitInput
+              isInput={true}
               type="number"
-              min="0"
-              step="1"
-              defaultValue={0}
-              className="flex-1 p-2 pr-0 border-gray-300 text-right"
-              onKeyDown={(e) => {
-                if (
-                  e.key === "-" ||
-                  e.key === "." ||
-                  e.key === "e" ||
-                  e.key === "E" ||
-                  e.key === "+"
-                ) {
-                  e.preventDefault();
-                }
+              inputProps={{
+                className: "w-full p-2 pr-16 border-0 text-right bg-transparent focus:outline-none",
+                min: "0",
+                step: "1",
+                defaultValue: 0,
+                onKeyDown: (e) => {
+                  if (
+                    e.key === "-" ||
+                    e.key === "." ||
+                    e.key === "e" ||
+                    e.key === "E" ||
+                    e.key === "+"
+                  ) {
+                    e.preventDefault();
+                  }
+                },
               }}
               onChange={(e) => {
                 const value = e.target.value;
@@ -459,38 +464,25 @@ const NewFreelancerPostOnlineComponent = ({ freelanceType }) => {
                 }
               }}
             />
-            <TwoLineUnitInput
-              type="number"
-              min="1"
-              step="1"
-              className="!w-20 border-gray-300 rounded text-right"
-              placeholder={t("newFreelancerDirect.depositPlaceholder")}
-              isInput={false}
-            />
           </div>
-          <div className="col-span-9 border-gray-300"></div>
+          <div className="col-span-17 border-gray-300"></div>
 
           {/* ==== ROW 2 ==== */}
           <div className="col-span-6 font-bold border-r border-gray-300 bg-gray-50 flex items-center pl-2">
             {t("newFreelancerDirect.taxOtherFees")}
           </div>
-          <div className="col-span-11 border-r border-gray-300 flex items-center pr-2">
-            <input
-              type="number"
-              defaultValue={0}
-              className="flex-1 p-2 pr-0 border-gray-300 text-right"
-              disabled
-            />
+          <div className="col-span-3 border-r border-gray-300 relative flex items-center">
             <TwoLineUnitInput
+              isInput={true}
               type="number"
-              min="1"
-              step="1"
-              className="!w-20 border-gray-300 rounded text-right"
-              placeholder={t("newFreelancerDirect.depositPlaceholder")}
-              isInput={false}
+              disabled
+              inputProps={{
+                className: "w-full p-2 pr-16 border-0 text-right bg-transparent focus:outline-none",
+                defaultValue: 0,
+              }}
             />
           </div>
-          <div className="col-span-9 border-gray-300"></div>
+          <div className="col-span-17 border-gray-300"></div>
 
           {/* ==== ROW 3 ==== */}
           <div className="col-span-6 font-bold border-t border-b border-r border-gray-300 flex items-center pl-2 bg-gray-50">
@@ -502,7 +494,7 @@ const NewFreelancerPostOnlineComponent = ({ freelanceType }) => {
               min="0"
               step="1"
               defaultValue={0}
-              className="w-full p-2 pr-0 border-gray-300 rounded text-right"
+              className="w-full p-2 pr-11 border-gray-300 rounded text-right"
               onKeyDown={(e) => {
                 if (
                   e.key === "-" ||
@@ -578,7 +570,7 @@ const NewFreelancerPostOnlineComponent = ({ freelanceType }) => {
             <input
               type="number"
               defaultValue={0}
-              className="w-full p-2 pr-0 border-gray-300 text-right"
+              className="w-full p-2 pr-11 border-gray-300 text-right"
               disabled
             />
             <span className=" text-gray-500 pr-2">{t("common.percent")}</span>
