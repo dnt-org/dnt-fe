@@ -436,25 +436,22 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
             {t("newFreelancerDirect.successFee")}
           </div>
           <div className="col-span-3 border-b border-r border-t border-gray-300 relative flex items-center">
-            <TwoLineUnitInput
-              isInput={true}
+            <input
               type="number"
-              inputProps={{
-                className: "w-full p-2 pr-16 border-0 text-right bg-transparent focus:outline-none",
-                min: "0",
-                step: "1",
-                defaultValue: 0,
-                onKeyDown: (e) => {
-                  if (
-                    e.key === "-" ||
-                    e.key === "." ||
-                    e.key === "e" ||
-                    e.key === "E" ||
-                    e.key === "+"
-                  ) {
-                    e.preventDefault();
-                  }
-                },
+              className="flex-1 w-full p-2 pr-11 text-right bg-transparent focus:outline-none border-none"
+              min="0"
+              step="1"
+              defaultValue={0}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "-" ||
+                  e.key === "." ||
+                  e.key === "e" ||
+                  e.key === "E" ||
+                  e.key === "+"
+                ) {
+                  e.preventDefault();
+                }
               }}
               onChange={(e) => {
                 const value = e.target.value;
@@ -466,6 +463,7 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
                 }
               }}
             />
+            <span className="pr-2 text-gray-500">%</span>
           </div>
           <div className="col-span-17 border-gray-300"></div>
 
@@ -474,15 +472,13 @@ const NewFreelancerPostDirectComponent = ({ freelanceType }) => {
             {t("newFreelancerDirect.taxOtherFees")}
           </div>
           <div className="col-span-3 border-r border-gray-300 relative flex items-center">
-            <TwoLineUnitInput
-              isInput={true}
+            <input
               type="number"
+              className="flex-1 w-full p-2 pr-11 text-right bg-transparent focus:outline-none border-none"
+              defaultValue={0}
               disabled
-              inputProps={{
-                className: "w-full p-2 pr-16 border-0 text-right bg-transparent focus:outline-none",
-                defaultValue: 0,
-              }}
             />
+            <span className="pr-2 text-gray-500">%</span>
           </div>
           <div className="col-span-17 border-gray-300"></div>
 
