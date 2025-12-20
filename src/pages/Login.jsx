@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState(null);
-  const [isShowRecover, setIsShowRecover] = useState(true);
+  const [isShowRecover, setIsShowRecover] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
