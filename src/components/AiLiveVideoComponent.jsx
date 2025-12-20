@@ -36,11 +36,11 @@ export default function AiLiveVideoComponent() {
   const [completedFolders, setCompletedFolders] = useState([])
   const [violations, setViolations] = useState([])
   const [reports, setReports] = useState([])
-  const [openFollow, setOpenFollow] = useState(false)
   const [activeSection, setActiveSection] = useState(null)
   const [streams, setStreams] = useState([])
   const [isExpend, setIsExpend] = useState(false)
   const categories = [
+    ["THƯƠNG HIỆU CÁ NHÂN", "Personal Brand"],
     ["KINH TẾ & XÃ HỘI", "Economy & Society"],
     ["THỂ THAO", "Sport"],
     ["GIẢI TRÍ", "Entertainment"],
@@ -225,293 +225,298 @@ export default function AiLiveVideoComponent() {
         <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start gap-2">
           <div className="w-full flex  items-end gap-1">
             <img
-            src={activeUser?.avatar}
-            className="w-12 h-12 ring-2 ring-blue-500"
-          />
-          2342958
+              src={activeUser?.avatar}
+              className="w-12 h-12 ring-2 ring-blue-500"
+            />
+            2342958
           </div>
         </div>
 
         <div className={`col-span-9 flex justify-between ${isExpend ? 'block' : 'hidden'}`} >
           <div className=" rounded-lg p-3">
-            <button className=" border p-2 relative " onClick={() => setOpenFollow(v => !v)}>
+            <button className={`border p-2 relative ${activeSection === 'follow' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'follow' ? null : 'follow')}>
               <Users className="w-5 h-5" />
-              <span style={{right: '-40px'}} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
+              <span style={{ right: '-40px' }} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
             </button>
-            {openFollow && (
-              <div className="mt-3">
-                <div className="flex border items-center gap-3 text-gray-800">
-                  <span className="font-semibold">{followedByCount} người theo dõi mình</span>
-                </div>
-                <div className="text-sm text-gray-600 mb-2 mt-2">98765 theo dõi ai</div>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2">
-                  {sortedFollowed.map(u => (
-                    <div key={u.id} className="relative flex-shrink-0">
-                      <img
-                        src={u.avatar}
-                        alt="avatar"
-                        className={`w-12 h-12 rounded-full ring-2 ${activeUserId === u.id ? "ring-blue-500" : "ring-gray-300"}`}
-                        onClick={() => { setActiveUserId(u.id); setActiveStreamIndex(0) }}
-                      />
-                      <button
-                        className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
-                        onClick={() => handleUnfollow(u.id)}
-                        aria-label="Xóa"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                      {u.streams.length > 0 && (
-                        <div className="absolute -top-2 left-1 text-xs bg-gray-800 text-white px-1 rounded">
-                          {u.streams.length}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {activeUser && (
-                  <div
-                    className="mt-3 border rounded p-3"
-                    onTouchStart={onTouchStart}
-                    onTouchEnd={onTouchEnd}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-medium">{activeUser.name}</div>
-                      <div className="text-xs text-gray-500">{activeUser.streams.length} livestream</div>
-                    </div>
-                    <div className="mt-2">
-                      {activeStream && (
-                        <button
-                          className="w-full flex items-center justify-between px-3 py-2 border rounded hover:bg-gray-50"
-                          onClick={() => openStream(activeStream.id)}
-                        >
-                          <span>{activeStream.title}</span>
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      )}
-                      <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
-                        <span>Gạt lên để đến livestream tiếp theo</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
-          <div className={` rounded-lg p-3 `}>
-            <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'package' ? null : 'package')}>
+          <div className=" rounded-lg p-3">
+            <button className={`border p-2 ${activeSection === 'package' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'package' ? null : 'package')}>
               <Package className="w-5 h-5" />
             </button>
-            {activeSection === 'package' && (
-              <div className="mt-3">
-                <div className="space-y-2">
-                  {categories.map(([vi, en], idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between">
-                        <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenPackageCategory(prev => prev === idx ? null : idx)}>
-                          <span>• {vi}</span>
-                          <ChevronRight className={`w-4 h-4 ${openPackageCategory === idx ? "rotate-90" : ""}`} />
-                        </button>
-                      </div>
-                      {openPackageCategory === idx && (
-                        <div className="pl-6 mt-1 space-y-1">
-                          {sortedFolders.map(f => (
-                            <div key={f.id}>
-                              <div className="flex items-center justify-between">
-                                <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
-                                  <span>• {f.name}</span>
-                                  <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
-                                </button>
-                                <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
-                              </div>
-                              {openFolderId === f.id && (
-                                <div className="pl-6 mt-1 space-y-1">
-                                  {f.videos.map(v => (
-                                    <div key={v.id} className="flex items-center justify-between">
-                                      <span className="text-sm">{v.title}</span>
-                                      <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
-                                        <Play className="w-4 h-4" /> Phát
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className={` rounded-lg p-3`}>
-            <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'products' ? null : 'products')}>
+          <div className=" rounded-lg p-3">
+            <button className={`border p-2 ${activeSection === 'products' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'products' ? null : 'products')}>
               <Bookmark className="w-5 h-5" />
             </button>
-            {activeSection === 'products' && (
-              <div className="mt-3">
-                <div className="space-y-2">
-                  {categories.map(([vi, en], idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between">
-                        <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenProductsCategory(prev => prev === idx ? null : idx)}>
-                          <span>• {vi}</span>
-                          <ChevronRight className={`w-4 h-4 ${openProductsCategory === idx ? "rotate-90" : ""}`} />
-                        </button>
-                      </div>
-                      {openProductsCategory === idx && (
-                        <div className="pl-6 mt-1 space-y-1">
-                          {sortedFolders.map(f => (
-                            <div key={f.id}>
-                              <div className="flex items-center justify-between">
-                                <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
-                                  <span>• {f.name}</span>
-                                  <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
-                                </button>
-                                <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
-                              </div>
-                              {openFolderId === f.id && (
-                                <div className="pl-6 mt-1 space-y-1">
-                                  {f.videos.map(v => (
-                                    <div key={v.id} className="flex items-center justify-between">
-                                      <span className="text-sm">{v.title}</span>
-                                      <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
-                                        <Play className="w-4 h-4" /> Phát
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className={` rounded-lg p-3 `}>
-            <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'completed' ? null : 'completed')}>
+          <div className=" rounded-lg p-3">
+            <button className={`border p-2 ${activeSection === 'completed' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'completed' ? null : 'completed')}>
               <Save className="w-5 h-5" />
             </button>
-            {activeSection === 'completed' && (
-              <div className="mt-3">
-                <div className="space-y-2">
-                  {categories.map(([vi, en], idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between">
-                        <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenCompletedCategory(prev => prev === idx ? null : idx)}>
-                          <span>• {vi}</span>
-                          <ChevronRight className={`w-4 h-4 ${openCompletedCategory === idx ? "rotate-90" : ""}`} />
-                        </button>
-                      </div>
-                      {openCompletedCategory === idx && (
-                        <div className="pl-6 mt-1 space-y-1">
-                          {completedFolders.map(f => (
-                            <div key={f.id} className="flex items-center justify-between">
-                              <span>• {f.name}</span>
-                              <button className="flex items-center gap-1 text-red-600 text-sm" onClick={() => deleteCompleted(f.id)}>
-                                <Trash2 className="w-4 h-4" /> Xóa
-                              </button>
-                            </div>
-                          ))}
-                          {completedFolders.length === 0 && (
-                            <div className="text-sm text-gray-500">Rỗng</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className={` rounded-lg p-3 `}>
-            <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'violations' ? null : 'violations')}>
+          <div className=" rounded-lg p-3">
+            <button className={`border p-2 ${activeSection === 'violations' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'violations' ? null : 'violations')}>
               <FlagOff className="w-5 h-5" />
             </button>
-            {activeSection === 'violations' && (
-              <div className="mt-3">
-                <div className="space-y-2">
-                  {categories.map(([vi, en], idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between">
-                        <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenViolationsCategory(prev => prev === idx ? null : idx)}>
-                          <span>• {vi}</span>
-                          <ChevronRight className={`w-4 h-4 ${openViolationsCategory === idx ? "rotate-90" : ""}`} />
-                        </button>
-                      </div>
-                      {openViolationsCategory === idx && (
-                        <div className="pl-6 mt-1 space-y-1">
-                          {violations.map(v => (
-                            <div key={v.id}>
-                              <div className="flex items-center justify-between">
-                                <span>• {v.id}</span>
-                                <span className="text-xs text-gray-500">{v.note}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {violations.length === 0 && (
-                            <div className="text-sm text-gray-500">Rỗng</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className={` rounded-lg p-3`}>
-            <button className="border p-2" onClick={() => setActiveSection(prev => prev === 'reports' ? null : 'reports')}>
+          <div className=" rounded-lg p-3">
+            <button className={`border p-2 ${activeSection === 'reports' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveSection(prev => prev === 'reports' ? null : 'reports')}>
               <Flag className="w-5 h-5" />
             </button>
-            {activeSection === 'reports' && (
-              <div className="mt-3">
-                <div className="space-y-2">
-                  {categories.map(([vi, en], idx) => (
-                    <div key={idx}>
-                      <div className="flex items-center justify-between">
-                        <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenReportsCategory(prev => prev === idx ? null : idx)}>
-                          <span>• {vi}</span>
-                          <ChevronRight className={`w-4 h-4 ${openReportsCategory === idx ? "rotate-90" : ""}`} />
-                        </button>
-                      </div>
-                      {openReportsCategory === idx && (
-                        <div className="pl-6 mt-1 space-y-1">
-                          {reports.map(v => (
-                            <div key={v.id}>
-                              <div className="flex items-center justify-between">
-                                <span>• {v.id}</span>
-                                <span className="text-xs text-gray-500">{v.note}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {reports.length === 0 && (
-                            <div className="text-sm text-gray-500">Rỗng</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
+      {activeSection === 'follow' && (
+        <div className="mt-3">
+          <div className="flex border items-center gap-3 text-gray-800">
+            <span className="font-semibold">{followedByCount} người theo dõi mình</span>
+          </div>
+          <div className="text-sm text-gray-600 mb-2 mt-2">98765 theo dõi ai</div>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            {sortedFollowed.map(u => (
+              <div key={u.id} className="relative flex-shrink-0">
+                <img
+                  src={u.avatar}
+                  alt="avatar"
+                  className={`w-12 h-12 rounded-full ring-2 ${activeUserId === u.id ? "ring-blue-500" : "ring-gray-300"}`}
+                  onClick={() => { setActiveUserId(u.id); setActiveStreamIndex(0) }}
+                />
+                <button
+                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
+                  onClick={() => handleUnfollow(u.id)}
+                  aria-label="Xóa"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+                {u.streams.length > 0 && (
+                  <div className="absolute -top-2 left-1 text-xs bg-gray-800 text-white px-1 rounded">
+                    {u.streams.length}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {activeUser && (
+            <div
+              className="mt-3 border rounded p-3"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-medium">{activeUser.name}</div>
+                <div className="text-xs text-gray-500">{activeUser.streams.length} livestream</div>
+              </div>
+              <div className="mt-2">
+                {activeStream && (
+                  <button
+                    className="w-full flex items-center justify-between px-3 py-2 border rounded hover:bg-gray-50"
+                    onClick={() => openStream(activeStream.id)}
+                  >
+                    <span>{activeStream.title}</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+                <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                  <span>Gạt lên để đến livestream tiếp theo</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
+      {activeSection === 'package' && (
+        <div className="mt-3">
+          <div className="space-y-2">
+            {categories.map(([vi, en], idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between">
+                  <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenPackageCategory(prev => prev === idx ? null : idx)}>
+                    <span>• {vi}</span>
+                    <ChevronRight className={`w-4 h-4 ${openPackageCategory === idx ? "rotate-90" : ""}`} />
+                  </button>
+                </div>
+                {openPackageCategory === idx && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {sortedFolders.map(f => (
+                      <div key={f.id}>
+                        <div className="flex items-center justify-between">
+                          <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
+                            <span>• {f.name}</span>
+                            <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
+                          </button>
+                          <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
+                        </div>
+                        {openFolderId === f.id && (
+                          <div className="pl-6 mt-1 space-y-1">
+                            {f.videos.map(v => (
+                              <div key={v.id} className="flex items-center justify-between">
+                                <span className="text-sm">{v.title}</span>
+                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
+                                  <Play className="w-4 h-4" /> Phát
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'products' && (
+        <div className="mt-3">
+          <div className="space-y-2">
+            {categories.map(([vi, en], idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between">
+                  <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenProductsCategory(prev => prev === idx ? null : idx)}>
+                    <span>• {vi}</span>
+                    <ChevronRight className={`w-4 h-4 ${openProductsCategory === idx ? "rotate-90" : ""}`} />
+                  </button>
+                </div>
+                {openProductsCategory === idx && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {sortedFolders.map(f => (
+                      <div key={f.id}>
+                        <div className="flex items-center justify-between">
+                          <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
+                            <span>• {f.name}</span>
+                            <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
+                          </button>
+                          <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
+                        </div>
+                        {openFolderId === f.id && (
+                          <div className="pl-6 mt-1 space-y-1">
+                            {f.videos.map(v => (
+                              <div key={v.id} className="flex items-center justify-between">
+                                <span className="text-sm">{v.title}</span>
+                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
+                                  <Play className="w-4 h-4" /> Phát
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'completed' && (
+        <div className="mt-3">
+          <div className="space-y-2">
+            {categories.map(([vi, en], idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between">
+                  <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenCompletedCategory(prev => prev === idx ? null : idx)}>
+                    <span>• {vi}</span>
+                    <ChevronRight className={`w-4 h-4 ${openCompletedCategory === idx ? "rotate-90" : ""}`} />
+                  </button>
+                </div>
+                {openCompletedCategory === idx && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {completedFolders.map(f => (
+                      <div key={f.id} className="flex items-center justify-between">
+                        <span>• {f.name}</span>
+                        <button className="flex items-center gap-1 text-red-600 text-sm" onClick={() => deleteCompleted(f.id)}>
+                          <Trash2 className="w-4 h-4" /> Xóa
+                        </button>
+                      </div>
+                    ))}
+                    {completedFolders.length === 0 && (
+                      <div className="text-sm text-gray-500">Rỗng</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'violations' && (
+        <div className="mt-3">
+          <div className="space-y-2">
+            {categories.map(([vi, en], idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between">
+                  <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenViolationsCategory(prev => prev === idx ? null : idx)}>
+                    <span>• {vi}</span>
+                    <ChevronRight className={`w-4 h-4 ${openViolationsCategory === idx ? "rotate-90" : ""}`} />
+                  </button>
+                </div>
+                {openViolationsCategory === idx && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {violations.map(v => (
+                      <div key={v.id}>
+                        <div className="flex items-center justify-between">
+                          <span>• {v.id}</span>
+                          <span className="text-xs text-gray-500">{v.note}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {violations.length === 0 && (
+                      <div className="text-sm text-gray-500">Rỗng</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {activeSection === 'reports' && (
+        <div className="mt-3">
+          <div className="space-y-2">
+            {categories.map(([vi, en], idx) => (
+              <div key={idx}>
+                <div className="flex items-center justify-between">
+                  <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenReportsCategory(prev => prev === idx ? null : idx)}>
+                    <span>• {vi}</span>
+                    <ChevronRight className={`w-4 h-4 ${openReportsCategory === idx ? "rotate-90" : ""}`} />
+                  </button>
+                </div>
+                {openReportsCategory === idx && (
+                  <div className="pl-6 mt-1 space-y-1">
+                    {reports.map(v => (
+                      <div key={v.id}>
+                        <div className="flex items-center justify-between">
+                          <span>• {v.id}</span>
+                          <span className="text-xs text-gray-500">{v.note}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {reports.length === 0 && (
+                      <div className="text-sm text-gray-500">Rỗng</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <AiLiveVideoList videos={streams.filter(v => !v.isGoods)} />
+
     </div>
   )
 }

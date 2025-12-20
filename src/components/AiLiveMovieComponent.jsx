@@ -1,207 +1,408 @@
-import React, { useState } from "react";
-import { Eye, HandHeart, BookOpen, Share, Flag, Plus } from "lucide-react";
-import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useMemo, useRef } from "react"
+import { useTranslation } from "react-i18next"
+import { useNavigate } from "react-router-dom"
+import {
+    Users,
+    X,
+    ChevronRight,
+    Bookmark,
+    Flag,
+    FileWarning,
+    Trash2,
+    Play,
+    SearchIcon,
+    Mic,
+    FlagOff,
+    Save,
+    Package
+} from "lucide-react"
+import AiLiveVideoList from "./AiLiveVideoList.jsx";
+
+
 
 export default function AiLiveMovieComponent() {
-  const { t } = useTranslation();
-  const [showModal, setShowModal] = useState(false);
+    const { t } = useTranslation()
+    const navigate = useNavigate()
 
-  return (
-    <div className="p-6">
-      {/* Dòng AVATAR */}
-      <div className="grid grid-cols-2 border border-black">
-        <div className="border-r border-black p-4 font-bold">{t('aiLive.avatar', 'AVATAR')}</div>
-        <div className="p-4 text-sm text-black space-y-2">
-          <div>
-            <span className="text-yellow-600">{t('aiLive.clickStats', 'ấn = vào bảng thống kê')}</span>
-          </div>
-          <ul className="list-disc ml-4 space-y-1">
-            <li>
-              <strong>{t('aiLive.whoFollowsMe', 'THƯ MỤC AI THEO DÕI')}:</strong> {t('aiLive.whoFollowsMeDesc', 'Có cập nhật và hiển thị số lượng người đang theo dõi mình lên trên thư mục. Ấn vào thư mục để hiển thị AVATAR người theo dõi mình trong thư mục này.')}
-            </li>
-            <li>
-              <strong>{t('aiLive.whoIFollow', 'THƯ MỤC THEO DÕI AI')}:</strong> {t('aiLiveMovie.whoIFollowDesc', 'Có cập nhật và hiển thị số lượng người mình đang theo dõi lên trên thư mục. Ấn vào thư mục để hiển thị AVATAR người mình theo dõi trong thư mục này. Trên đầu các AVATAR này hiển thị số cập nhật bài đăng PHIM mới của người này mà mình chưa xem. Ấn vào các AVATAR của họ đến đến trang 8 - Ai LIVE - PHIM của họ để xem các thư mục chứa cácPHIM của họ (không xem được họ đang theo dõi ai và ai đang theo dõi họ). Ấn vào các thư mục chứa PHIM này để xem cácPHIM của họ.')}
-            </li>
-            <li>
-              Trên mỗi AVATAR của người mình đang theo dõi có nút XÓA (gạch chéo) để loại người đó khỏi danh sách mình theo dõi, và AVATAR của mình sẽ tự động mất ở THƯ MỤC THEO DÕI của họ (người mình đang theo dõi).
-            </li>
-            <li>
-              <strong>{t('aiLiveMovie.movieFolders', 'Các THƯ MỤC PHIM')}:</strong> {t('aiLiveMovie.movieFoldersDesc', 'có hiển thị tổng số lượt xem và chứa các PHIM mình đăng được sắp xếp theo thời gian đăng bài.')}
-            </li>
-            <li>
-                Thời hạn tồn tại của các PHIM là 365 ngày, sau đó hệ thống sẽ tự động XÓA, và đã đăng PHIM thì không xóa được (trừ admin).
-            </li>
-            <li>
-              <strong>{t('aiLiveMovie.savedFolder', 'THƯ MỤC LƯU')}:</strong> {t('aiLiveMovie.savedFolderDesc', 'hiển thị số lượng PHIM đã lưu. Ấn để vào bên trong chứa các PHIM đã lưu. Ấn vào để bắt đầu xem như xem 1 phim mới.')}
-            </li>
-            <li>
-              <strong>{t('aiLiveMovie.violationFolder', 'THƯ MỤC VI PHẠM')}:</strong> {t('aiLiveMovie.violationFolderDesc', 'Các PHIM bị báo cáo 1 lần vi phạm sẽ chuyển sang mục này.')}
-            </li>
-          </ul>
-        </div>
-      </div>
+    const [followedByCount] = useState(123456)
+    const [followedUsers, setFollowedUsers] = useState([])
+    const [activeUserId, setActiveUserId] = useState(null)
+    const [activeStreamIndex, setActiveStreamIndex] = useState(0)
+    const swipeStartY = useRef(null)
 
-      {/* Phần tìm kiếm */}
-      <div className="border-l border-r border-b border-black">
-        <div className="p-2 text-sm flex items-center gap-2">
-          <span className="font-bold">{t('aiLive.search', 'TÌM KIẾM')} ({t('aiLive.searchEn', 'Search')}):</span>
-          <input
-            type="text"
-            placeholder={t('aiLive.searchPlaceholder', 'nhập TÊN THƯ MỤC PHIM')}
-            className="flex-1 border border-gray-300 px-2 py-1 rounded text-sm"
-          />
-        </div>
-      </div>
+    const [productFolders, setProductFolders] = useState([])
+    const [openFolderId, setOpenFolderId] = useState(null)
+    const [completedFolders, setCompletedFolders] = useState([])
+    const [violations, setViolations] = useState([])
+    const [reports, setReports] = useState([])
+    const [activeTab, setActiveTab] = useState(null)
+    const [streams, setStreams] = useState([])
+    const [isExpend, setIsExpend] = useState(false)
+    useEffect(() => {
+        const now = Date.now()
+        const makeStreams = (u) => (
+            Array.from({ length: u }, (_, i) => ({
+                id: Number(`${u}${i}${i + 1}`),
+                isGoods: true,
+                viewers: 123456,
+                title: `${t("aiLiveVideo.video", "VIDEO")} ${i + 1}`,
+                productId: `PRD-${String(i + 1).padStart(3, "0")}`,
+                startedAt: new Date(now - i * 3600_000).toISOString(),
+            }))
+        )
 
-      {/* Danh sách hàng hóa và VIDEO LIVESTREAM */}
-      <div className="grid grid-cols-2 border-l border-r border-b border-black">
-        {/* Cột trái - Danh sách hàng hóa */}
-        <div className="border-r border-black">
-          <div className="p-2 text-sm">
-            <div className="mb-2">
-              <span className="font-bold">
-                {t('aiLive.productListDesc', 'Danh sách tên các hàng hóa đang LIVESTREAM được sắp xếp theo thứ tự')}
-              </span>
-              <div className="text-yellow-600 ml-4">
-                1 - Nạp tiền quảng cáo lớn - 2 - Số lượng phí trả sau lời - 3 -
-                Gần trị hàng hóa lời - 4 - Thứ tự bán hàng
-              </div>
-              <div className="text-yellow-600 ml-4">
-                (5 - Số bài viết (6 - 6 - Người theo dõi lời )
-              </div>
-            </div>
-          </div>
+        setStreams(makeStreams(12))
 
-          {/* 10 dòng hàng hóa */}
-          {Array.from({ length: 10 }, (_, index) => (
-            <div key={index} className="border-t border-gray-300 p-2 text-sm">
-              <div>- {t('aiLive.firstProduct', 'Tên hàng hóa đầu tiên')}</div>
-              <div className="ml-4">- {t('aiLive.productId', 'ID hàng hóa')}</div>
-              <div className="ml-4">- {t('aiLive.viewerCount', 'hiển thị số người đang xem')}</div>
-            </div>
-          ))}
+        setFollowedUsers([
+            { id: 1, name: "A", avatar: "https://i.pravatar.cc/100?u=1", streams: makeStreams(3) },
+            { id: 2, name: "B", avatar: "https://i.pravatar.cc/100?u=2", streams: makeStreams(1) },
+            { id: 3, name: "C", avatar: "https://i.pravatar.cc/100?u=3", streams: makeStreams(2) },
+            { id: 4, name: "D", avatar: "https://i.pravatar.cc/100?u=4", streams: makeStreams(5) },
+            { id: 5, name: "E", avatar: "https://i.pravatar.cc/100?u=5", streams: makeStreams(0) },
+        ])
 
-          {/* Phân trang */}
-          <div className="border-t border-gray-300 p-2 text-center">
-            <span className="text-sm">{t('aiLive.page', 'Trang')} / {t('aiLive.pageEn', 'Page')}: 2, 3, 4, 5, 6 ...</span>
-          </div>
-        </div>
+        setProductFolders([
+            {
+                id: "PRD-101",
+                name: "Tên hàng hóa – ID hàng hóa 1",
+                registeredAt: now - 86_400_000 * 2,
+                videos: [
+                    { id: 1001, title: "VIDEO LIVESTREAM 1" },
+                    { id: 1002, title: "VIDEO LIVESTREAM 2" },
+                ],
+            },
+            {
+                id: "PRD-102",
+                name: "Tên hàng hóa – ID hàng hóa 2",
+                registeredAt: now - 86_400_000,
+                videos: [
+                    { id: 2001, title: "VIDEO LIVESTREAM 1" },
+                ],
+            },
+        ])
 
-        {/* Cột phải - VIDEO LIVESTREAM */}
-        <div className="p-4 h-screen flex flex-col">
-          <div className="text-center font-bold mb-4">{t('aiLiveMovie.movie', 'PHIM')}</div>
+        setCompletedFolders([
+            {
+                id: "PRD-090",
+                name: "Đã hoàn thành – ID 90",
+                movedAt: now - 86_400_000 * 4,
+                videos: [{ id: 9001, title: "VIDEO LIVESTREAM 1" }],
+            },
+        ])
 
-          <div className="border border-black p-4 flex-1 flex flex-col">
-            <div className="mb-4">
-              <div className="text-sm mb-2 text-center">
-                <span className="font-bold">{t('aiLive.avatar', 'AVATAR')}:</span> {t('aiLiveMovie.movieName', 'Tên PHIM')}
-              </div>
-              <div className="text-sm flex items-center justify-end">
-                <Eye size={16} />
-              </div>
-            </div>
+        setViolations([
+            { id: "PRD-777", note: "Nội dung vi phạm mục 3", videos: [{ id: 77701, title: "Video" }] },
+        ])
+        setReports([
+            { id: "PRD-888", note: "Báo cáo spam tại phút 1:23", videos: [{ id: 88801, title: "Video" }] },
+        ])
+    }, [t])
 
-            <div className="mb-4">
-              <div className="text-sm flex items-center justify-end">
-                <Plus size={16} />
-              </div>
-            </div>
+    const sortedFollowed = useMemo(() => {
+        return [...followedUsers].sort((a, b) => {
+            const ca = a.streams.length
+            const cb = b.streams.length
+            if (cb !== ca) return cb - ca
+            const la = a.streams[0]?.startedAt ? new Date(a.streams[0].startedAt).getTime() : 0
+            const lb = b.streams[0]?.startedAt ? new Date(b.streams[0].startedAt).getTime() : 0
+            return lb - la
+        })
+    }, [followedUsers])
 
-            <div className="mb-4">
-              <div className="text-sm flex items-center justify-end mb-2">
-                <BookOpen size={16} />
-              </div>
-              <div className="text-sm flex items-center justify-end">
-                <Share size={16} />
-              </div>
-            </div>
+    const activeUser = useMemo(() => sortedFollowed.find(u => u.id === activeUserId) || null, [sortedFollowed, activeUserId])
+    const activeStream = useMemo(() => activeUser?.streams?.[activeStreamIndex] || null, [activeUser, activeStreamIndex])
 
-            <div className="mb-4">
-              <div className="text-sm flex items-center justify-end mb-2">
-                <Flag size={16} />
-              </div>
-              <div className="text-sm ml-4">- {t('aiLive.lawViolation', 'Vi phạm pháp luật')}</div>
-              <div className="text-sm ml-4">- {t('aiLive.contactInfo', 'Thông tin liên lạc')}</div>
-              <div className="text-sm ml-4">- {t('aiLive.advertisement', 'Quảng cáo')}</div>
-            </div>
+    useEffect(() => {
+        const now = Date.now()
+        setCompletedFolders(prev => prev.filter(f => now - f.movedAt < 86_400_000 * 3))
+    }, [])
 
-            <div className="text-sm mb-4">
-              <div className="font-bold">{t('aiLive.products', 'HÀNG HÓA')}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-50">
-          <div className="bg-white w-[500px] border border-black p-4 rounded shadow-lg">
-            <div className="grid grid-cols-3 text-xs text-center border border-black">
-              <div className="bg-sky-500 text-white p-2 border-r border-black row-span-2">
-                {t('aiLiveMovie.noAds', 'KHÔNG XEM')}
-                <br />
-                {t('aiLiveMovie.advertising', 'QUẢNG CÁO')}
-                <br />
-                <div className="text-[10px]">
-                  (Advertising do not allow display)
+    const handleUnfollow = (id) => {
+        setFollowedUsers(prev => prev.filter(u => u.id !== id))
+        if (activeUserId === id) {
+            setActiveUserId(null)
+            setActiveStreamIndex(0)
+        }
+    }
+
+    const openStream = (streamId) => {
+        navigate(`/ai-live/video/${streamId}`)
+    }
+
+    const confirmAndOpen = (videoId) => {
+        const ok = window.confirm("Xác nhận phát livestream?")
+        if (ok) navigate(`/ai-live/video/${videoId}`)
+    }
+
+    const onTouchStart = (e) => {
+        swipeStartY.current = e.touches[0].clientY
+    }
+    const onTouchEnd = (e) => {
+        if (swipeStartY.current == null) return
+        const dy = swipeStartY.current - e.changedTouches[0].clientY
+        if (Math.abs(dy) > 30 && activeUser) {
+            setActiveStreamIndex(prev => {
+                const next = dy > 0 ? prev + 1 : prev - 1
+                const total = activeUser.streams.length
+                if (next < 0) return 0
+                if (next >= total) return total - 1
+                return next
+            })
+        }
+        swipeStartY.current = null
+    }
+
+    const sortedFolders = useMemo(() => {
+        return [...productFolders].sort((a, b) => a.registeredAt - b.registeredAt)
+    }, [productFolders])
+
+    const moveFolderToCompleted = (id) => {
+        const f = productFolders.find(x => x.id === id)
+        if (!f) return
+        setProductFolders(prev => prev.filter(x => x.id !== id))
+        setCompletedFolders(prev => [{ ...f, movedAt: Date.now() }, ...prev])
+        if (openFolderId === id) setOpenFolderId(null)
+    }
+
+    const deleteCompleted = (id) => {
+        setCompletedFolders(prev => prev.filter(x => x.id !== id))
+    }
+
+    return (
+        <div className="space-y-1 ">
+            <div className="mt-1 border-1 border-gray-300">
+                <div className="flex items-center">
+                    <SearchIcon size={24} className="text-gray-400" />
+                    <Mic size={24} className="text-gray-400 hover:text-gray-600" />
+                    <input
+                        type="text"
+                        // placeholder={t('goods.searchPlaceholder')} 
+                        className="flex-1 p-2 rounded"
+                    />
                 </div>
-              </div>
-            <div className="bg-sky-300 text-black p-2 border-b border-black flex flex-col items-center">
-            <label className="text-xs font-semibold">{t('aiLiveMovie.topUp', 'NẠP TIỀN')}<br /><span className="text-[10px]">(Deposit)</span></label>
-            <input
-                type="number"
-                placeholder={t('aiLiveMovie.enterAmount', 'Nhập số tiền')}
-                className="mt-1 w-24 text-right text-xs border border-black rounded px-1 py-0.5"
-            />
             </div>
-
-              <div className="bg-sky-300 text-black p-2">
-                {t('aiLiveMovie.unitPrice', 'ĐƠN GIÁ')}
-                <br />
-                <div className="text-[10px]">
-                  (Unit price)
-                  <br />
-                  (VNĐ / GIÂY ($))
+            <div className="grid grid-cols-10">
+                <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start gap-2">
+                    <div className="w-full flex  items-end gap-1">
+                        <img
+                            src={activeUser?.avatar}
+                            className="w-12 h-12 ring-2 ring-blue-500"
+                        />
+                        2342958
+                    </div>
                 </div>
-              </div>
+                <div className={`col-span-9 flex justify-between ${isExpend ? 'block' : 'hidden'}`} >
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 relative ${activeTab === 'follow' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'follow' ? null : 'follow')}>
+                            <Users className="w-5 h-5" />
+                            <span style={{ right: '-40px' }} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
+                        </button>
+
+                    </div>
+
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 ${activeTab === 'package' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'package' ? null : 'package')}>
+                            <Package className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 ${activeTab === 'products' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'products' ? null : 'products')}>
+                            <Bookmark className="w-5 h-5" />
+                        </button>
+
+                    </div>
+
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 ${activeTab === 'completed' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'completed' ? null : 'completed')}>
+                            <Save className="w-5 h-5" />
+                        </button>
+
+                    </div>
+
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 ${activeTab === 'violations' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'violations' ? null : 'violations')}>
+                            <FlagOff className="w-5 h-5" />
+                        </button>
+
+                    </div>
+
+                    <div className=" rounded-lg p-3">
+                        <button className={`border p-2 ${activeTab === 'reports' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'reports' ? null : 'reports')}>
+                            <Flag className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-3 text-xs text-center border border-black border-t-0">
-              <div className="col-span-3 flex">
-                <button className="flex-1 border bg-gray-200 p-2 text-sm font-bold hover:bg-blue-100 cursor-pointer">
-                  {t('aiLiveMovie.send', 'GỬI')}
-                  <br />
-                  (Send)
-                </button>
-              </div>
-              <div className="border border-black p-2 text-sm">
-                {t('aiLiveMovie.receiveCode', 'NHẬN MÃ')}
-                <br />
-                (Code)
-              </div>
-              <div className="border border-black p-2 text-sm">
-                <input
-                    type="text"
-                    placeholder={t('aiLiveMovie.inputCodePlaceholder', 'NHẬP MÃ (Input code)')}
-                    className="mt-1 w-24 text-center text-xs border border-black rounded px-1 py-0.5"
-                />
-              </div>
-              <div className="border border-black bg-gray-200 p-2 text-sm hover:bg-blue-100 cursor-pointer">
-                {t('aiLiveMovie.confirm', 'XÁC NHẬN')}
-                <br />
-                (Confirm)
-              </div>
-            </div>
-
-            <div className="text-center mt-4">
-              <button
-                className="text-red-500 underline text-sm"
-                onClick={() => setShowModal(false)}
-              >
-                {t('common.close', 'Đóng')}
-              </button>
-            </div>
-          </div>
+            {activeTab === 'follow' && (
+                <div className="mt-3">
+                    <div className="flex border items-center gap-3 text-gray-800">
+                        <span className="font-semibold">{followedByCount} người theo dõi mình</span>
+                    </div>
+                    <div className="text-sm text-gray-600 mb-2 mt-2">98765 theo dõi ai</div>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                        {sortedFollowed.map(u => (
+                            <div key={u.id} className="relative flex-shrink-0">
+                                <img
+                                    src={u.avatar}
+                                    alt="avatar"
+                                    className={`w-12 h-12 rounded-full ring-2 ${activeUserId === u.id ? "ring-blue-500" : "ring-gray-300"}`}
+                                    onClick={() => { setActiveUserId(u.id); setActiveStreamIndex(0) }}
+                                />
+                                <button
+                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1"
+                                    onClick={() => handleUnfollow(u.id)}
+                                    aria-label="Xóa"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                                {u.streams.length > 0 && (
+                                    <div className="absolute -top-2 left-1 text-xs bg-gray-800 text-white px-1 rounded">
+                                        {u.streams.length}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {activeUser && (
+                        <div
+                            className="mt-3 border rounded p-3"
+                            onTouchStart={onTouchStart}
+                            onTouchEnd={onTouchEnd}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="font-medium">{activeUser.name}</div>
+                                <div className="text-xs text-gray-500">{activeUser.streams.length} livestream</div>
+                            </div>
+                            <div className="mt-2">
+                                {activeStream && (
+                                    <button
+                                        className="w-full flex items-center justify-between px-3 py-2 border rounded hover:bg-gray-50"
+                                        onClick={() => openStream(activeStream.id)}
+                                    >
+                                        <span>{activeStream.title}</span>
+                                        <ChevronRight className="w-4 h-4" />
+                                    </button>
+                                )}
+                                <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                    <span>Gạt lên để đến livestream tiếp theo</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+            {activeTab === 'package' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {sortedFolders.map(f => (
+                            <div key={f.id}>
+                                <div className="flex items-center justify-between">
+                                    <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
+                                        <span>• {f.name}</span>
+                                        <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
+                                    </button>
+                                    <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
+                                </div>
+                                {openFolderId === f.id && (
+                                    <div className="pl-6 mt-1 space-y-1">
+                                        {f.videos.map(v => (
+                                            <div key={v.id} className="flex items-center justify-between">
+                                                <span className="text-sm">{v.title}</span>
+                                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
+                                                    <Play className="w-4 h-4" /> Phát
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'products' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {sortedFolders.map(f => (
+                            <div key={f.id}>
+                                <div className="flex items-center justify-between">
+                                    <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
+                                        <span>• {f.name}</span>
+                                        <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
+                                    </button>
+                                    <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
+                                </div>
+                                {openFolderId === f.id && (
+                                    <div className="pl-6 mt-1 space-y-1">
+                                        {f.videos.map(v => (
+                                            <div key={v.id} className="flex items-center justify-between">
+                                                <span className="text-sm">{v.title}</span>
+                                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
+                                                    <Play className="w-4 h-4" /> Phát
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'completed' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {completedFolders.map(f => (
+                            <div key={f.id} className="flex items-center justify-between">
+                                <span>• {f.name}</span>
+                                <button className="flex items-center gap-1 text-red-600 text-sm" onClick={() => deleteCompleted(f.id)}>
+                                    <Trash2 className="w-4 h-4" /> Xóa
+                                </button>
+                            </div>
+                        ))}
+                        {completedFolders.length === 0 && (
+                            <div className="text-sm text-gray-500">Rỗng</div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'violations' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {violations.map(v => (
+                            <div key={v.id}>
+                                <div className="flex items-center justify-between">
+                                    <span>• {v.id}</span>
+                                    <span className="text-xs text-gray-500">{v.note}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {violations.length === 0 && (
+                            <div className="text-sm text-gray-500">Rỗng</div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'reports' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {reports.map(v => (
+                            <div key={v.id}>
+                                <div className="flex items-center justify-between">
+                                    <span>• {v.id}</span>
+                                    <span className="text-xs text-gray-500">{v.note}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {reports.length === 0 && (
+                            <div className="text-sm text-gray-500">Rỗng</div>
+                        )}
+                    </div>
+                </div>
+            )}
+            <AiLiveVideoList videos={streams.filter(v => v.isGoods)} />
         </div>
-      )}
-    </div>
-  );
+    )
 }

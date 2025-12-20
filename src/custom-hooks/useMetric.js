@@ -1,28 +1,46 @@
-// useNotifications.js
-import { useEffect, useState } from "react";
-import { db } from "../config/firebase-config";
-import { onChildAdded, ref, onValue } from "firebase/database";
+import { useEffect, useState } from "react"
+import { supabase } from "../config/supabase-client"
 
 const useMetric = () => {
-    
-    const [metrics, setMetrics] = useState([]);
+  const [metrics, setMetrics] = useState({})
 
-    useEffect(() => {
-        const metricRef = ref(db, `metrics`); // Example path: /metrics
+  useEffect(() => {
+    let channel = null
+    let mounted = true
 
-        const unsubscribe = onValue(metricRef, (snapshot) => {
-            const data = snapshot.val() || {};
-            console.log(data);
-            setMetrics(data);
-        });
+    const init = async () => {
+      if (!supabase) return
 
-        // Cleanup not needed for onChildAdded, but you can stop listening if needed
-        return () => {
-            // You can implement unsubscribe logic if needed
-        };
-    }, []);
+      const { data, error } = await supabase.from("system-infos").select("*").limit(1)
+      if (!error && data && mounted) {
+        const row = Array.isArray(data) ? data[0] : data
+        if (row) setMetrics(row)
+      }
 
-    return metrics;
-};
+      channel = supabase
+        .channel("metrics-changes")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "metrics" },
+          (payload) => {
+            const next = payload?.new ?? payload?.old ?? {}
+            setMetrics(next || {})
+          }
+        )
+        .subscribe()
+    }
 
-export default useMetric;
+    init()
+
+    return () => {
+      mounted = false
+      try {
+        if (channel) supabase?.removeChannel(channel)
+      } catch {}
+    }
+  }, [])
+
+  return metrics
+}
+
+export default useMetric

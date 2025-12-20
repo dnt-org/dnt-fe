@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Eye, Flag, Handshake, UserCheck,Forward , Save, Clock , MapPinned } from "lucide-react"
+import { Eye, Flag, Handshake, UserCheck,Forward , Save, Clock , MapPinned, X } from "lucide-react"
 import ContactListModal from "../components/molecules/ContactListModal.jsx"
 import ViolationReportModal from "../components/molecules/ViolationReportModal.jsx"
 import LiveGoodsTable from "../components/organisms/LiveGoodsTable.jsx"
@@ -74,6 +74,16 @@ export default function AiLiveVideoDetailPageSpec() {
     setShowMoneyInput(true)
   }
   const [showMoneyInput, setShowMoneyInput] = useState(false)
+  const [showCloseAd, setShowCloseAd] = useState(false)
+  const [isAdVisible, setIsAdVisible] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowCloseAd(true)
+    }, 5000)
+    return () => clearTimeout(timer)
+  }, [])
+
   const [messageType, setMessageType] = useState("THUONG")
   const [messageText, setMessageText] = useState("")
   const [messageList, setMessageList] = useState([
@@ -108,10 +118,7 @@ export default function AiLiveVideoDetailPageSpec() {
       </div> */}
 
       <div className="grid grid-cols-1 gap-6">
-        <div 
-        onDoubleClick={() => onDisableAd()}
-
-        className="relative border border-black h-screen">
+        <div className="relative border border-black h-screen">
           <div className="text-xs flex  items-start justify-start">
             <img className="w-8 h-8 rounded-full" src={{}} />
             <div className="font-bold ml-2">{name}</div>
@@ -169,9 +176,19 @@ export default function AiLiveVideoDetailPageSpec() {
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowShare(true)}><Forward size={18} /></button>
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowReport(true)}><Flag size={18} /></button>
           </div>
-          <div className="absolute bg-gray-200 bottom-3 p-3 w-full text-center">
-          Quảng cáo
-          </div>
+          {isAdVisible && (
+            <div className="absolute bg-gray-200 bottom-3 p-3 w-full text-center">
+              {showCloseAd && (
+                <button
+                  onClick={() => setIsAdVisible(false)}
+                  className="absolute top-0 left-0 bg-gray-800 text-white rounded-br p-1 hover:bg-gray-700"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              Quảng cáo
+            </div>
+          )}
         </div>
       </div>
       

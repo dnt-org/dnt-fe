@@ -1,9 +1,13 @@
-import { useTranslation } from 'react-i18next';
-import useMetric from "../custom-hooks/useMetric";
+import { useTranslation } from 'react-i18next'
+import { useSystemInfos } from "../custom-hooks/useSystemInfos"
+
 
 const DataTableComponent = () => {
-  const { t } = useTranslation();
-  const metric = useMetric();
+  const { t } = useTranslation()
+  const infos = useSystemInfos()
+  const metric = Array.isArray(infos) ? (infos[0] || {}) : (infos || {})
+
+  if (!metric || Object.keys(metric).length === 0) return null
 
   return (
       <div

@@ -14,6 +14,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@microblink/blinkid": "^7.4.3",
     "@reduxjs/toolkit": "^2.8.2",
+    "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/vite": "^4.0.11",
     "@uiw/react-color-wheel": "^2.4.0",
     "@zxing/library": "^0.21.3",

@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [isShowRecover, setIsShowRecover] = useState(true);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -109,7 +110,7 @@ export default function LoginPage() {
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
         <PageHeaderWithOutColorPicker
-          color={color} 
+          color={color}
           onColorChange={handleChangeColor}
           titlePrefix="2"
           title={t('auth.loginTitle', 'ĐĂNG NHẬP')}
@@ -159,15 +160,32 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {!isShowRecover && (
               <div className="text-center mt-4">
-                  <button
-                      className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
-                      onClick={handleLogin}
+                <button
+                  className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
+                  onClick={handleLogin}
 
-                  >
-                      {t('auth.login', 'ĐĂNG NHẬP')} <br />
-                  </button>
+                >
+                  {t('auth.login', 'ĐĂNG NHẬP')} <br />
+                </button>
               </div>
+            )}
+            {isShowRecover && (
+              <div className="text-center mt-4 flex justify-center items-center gap-4">
+                <div className="flex-1/2">
+                <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
+                </div>
+                <button
+                  className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
+                  onClick={handleLogin}
+
+                >
+                  {t('common.confirm', 'MỞ KHOÁ TÀI KHOẢN')} <br />
+                </button>
+              </div>
+            )}
+
             {errorMessage && (
               <h2 className="text-xl text-center text-red-500">
                 {t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI')} <br />

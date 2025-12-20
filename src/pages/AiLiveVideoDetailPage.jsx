@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Eye, Flag, Handshake, UserCheck, ArrowRight } from "lucide-react"
+import { Eye, Flag, Handshake, UserCheck, ArrowRight, Save } from "lucide-react"
 import ContactListModal from "../components/molecules/ContactListModal.jsx"
 import ViolationReportModal from "../components/molecules/ViolationReportModal.jsx"
 import LiveGoodsTable from "../components/organisms/LiveGoodsTable.jsx"
@@ -16,6 +16,7 @@ export default function AiLiveVideoDetailPage() {
   const [confirmSeconds, setConfirmSeconds] = useState(300)
   const [locked, setLocked] = useState(false)
   const [blink, setBlink] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
   const [audioOn, setAudioOn] = useState(false)
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
   const [ownerDecision, setOwnerDecision] = useState("none")
@@ -37,6 +38,11 @@ export default function AiLiveVideoDetailPage() {
         o.stop(ctx.currentTime + 0.3)
       }, 250)
     } catch { }
+  }
+
+  const onSaveHandle = () => {
+    console.log("Save")
+    setIsSaved(!isSaved)
   }
 
   useEffect(() => {
@@ -87,17 +93,18 @@ export default function AiLiveVideoDetailPage() {
       <div className="grid grid-cols-1 gap-6">
         <div className="relative border border-black min-h-[420px]">
           <div className="text-xs flex  items-start justify-start">
-          <img className="w-8 h-8 rounded-full" src={{}} />
-          <div className="font-bold ml-2">{name}</div>
-          <div className="font-bold ml-2">{productId}</div>
+            <img className="w-8 h-8 rounded-full" src={{}} />
+            <div className="font-bold ml-2">{name}</div>
+            <div className="font-bold ml-2">{productId}</div>
 
-        </div>
+          </div>
           <div className="absolute left-2 top-10 space-y-2 text-xs">
             <div className="flex items-center gap-1"><Eye size={24} /><span>{viewers} đang xem</span></div>
             <div className="flex items-center gap-1"><Handshake size={24} /><span className="font-semibold">{reactions}</span></div>
           </div>
           <div className="absolute right-3 bottom-3 flex flex-col items-center gap-2">
             <button onClick={() => onFollowHandle()} className={`border border-black p-2 rounded  text-sm font-bold ${isFollowed ? "bg-blue-300" : "bg-white"}`}><UserCheck size={18} /></button>
+            <button onClick={() => onSaveHandle()} className={`border border-black p-2 rounded  text-sm font-bold ${isSaved ? "bg-blue-300" : "bg-white"}`}><Save size={18} /></button>
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowShare(true)}><ArrowRight size={18} /></button>
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowReport(true)}><Flag size={18} /></button>
           </div>
@@ -130,7 +137,7 @@ export default function AiLiveVideoDetailPage() {
         )}
       </div>
 
-       <div className="grid grid-cols-3 mt-2">
+      <div className="grid grid-cols-3 mt-2">
         <div />
         <div className="p-2 text-center" style={{ backgroundColor: "#06b6d4", color: "#002855" }}>
           <button className="underline" onClick={() => navigate(`/list-of-goods/${id}`)}>{t("customerConfirm.goToDetail", "ĐẾN CHI TIẾT BÀI ĐĂNG")}</button>
