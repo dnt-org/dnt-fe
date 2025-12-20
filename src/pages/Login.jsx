@@ -58,6 +58,7 @@ export default function LoginPage() {
         }
 
       } else {
+        setIsShowRecover(true);
         alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
       }
     } catch (error) {
