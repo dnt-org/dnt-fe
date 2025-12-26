@@ -267,8 +267,11 @@
     "condition": {
       "scrap": "SCRAP",
       "new": "NEW",
+      "noteNew": "< 7 years from production date",
       "old": "OLD",
-      "unused": "UNUSED"
+      "noteOld": "Operating normally",
+      "unused": "UNUSED",
+      "noteUnused": "> 7 years from production date"
     },
     "title": "Products",
     "newProduct": "New Product",

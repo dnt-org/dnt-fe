@@ -30,9 +30,9 @@ const subcategories = {
 
 const conditions = {
   "SCRAP": { vi: "PHẾ LIỆU", en: "Scrap" },
-  "NEW": { vi: "MỚI", en: "New" },
-  "OLD": { vi: "CŨ", en: "Old" },
-  "UNUSED": { vi: "CHƯA SỬ DỤNG", en: "Unused" },
+  "NEW": { vi: "MỚI", en: "New", noteVi: "< 7 năm từ ngày sản xuất", noteEn: "< 7 years from production date" },
+  "OLD": { vi: "CŨ", en: "Old", noteVi: "Hoạt động bình thường", noteEn: "Operating normally" },
+  "UNUSED": { vi: "CHƯA SỬ DỤNG", en: "Unused", noteVi: "> 7 năm từ ngày sản xuất", noteEn: "> 7 years from production date" },
 };
 
 export default function ListOfGoodsPage() {
@@ -236,19 +236,28 @@ export default function ListOfGoodsPage() {
     
     // Set condition if exists and is valid
     if (condition) {
+      // Extract base condition value (before parentheses) in case it includes notes
+      const baseCondition = condition.split(" (")[0].toUpperCase();
+      
       // Try direct key match first
       if (conditions[condition]) {
         setSelectedCondition(condition);
+      } else if (conditions[baseCondition]) {
+        // Try match with base condition (without notes)
+        setSelectedCondition(baseCondition);
       } else {
         // Try to find by normalizing
         const normalized = condition.toUpperCase();
         if (conditions[normalized]) {
           setSelectedCondition(normalized);
         } else {
-          // Try finding by key value
+          // Try finding by key value - compare with base en value (before parentheses)
           const foundCondition = Object.keys(conditions).find(
-            key => key.toUpperCase() === condition.toUpperCase() ||
-                   conditions[key]?.en?.toUpperCase() === condition.toUpperCase()
+            key => {
+              const baseEnValue = conditions[key]?.en?.split(" (")[0]?.toUpperCase();
+              return key.toUpperCase() === baseCondition ||
+                     baseEnValue === baseCondition;
+            }
           );
           if (foundCondition) {
             setSelectedCondition(foundCondition);
@@ -341,11 +350,16 @@ export default function ListOfGoodsPage() {
                 onChange={(e) => setSelectedCondition(e.target.value)}
               >
                 <option value="">{t('goods.selectCondition')}</option>
-                {Object.entries(conditions).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {t(`goods.condition.${key.toLowerCase()}`)}
-                  </option>
-                ))}
+                {Object.entries(conditions).map(([key, value]) => {
+                  const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
+                  const label = isVi ? value.vi : value.en;
+                  const note = isVi ? value.noteVi : value.noteEn;
+                  return (
+                    <option key={key} value={key}>
+                      {note ? `${label} (${note})` : label}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
