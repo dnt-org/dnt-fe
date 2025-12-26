@@ -119,9 +119,9 @@ export default function DetailOfGoodsPage() {
 
   const conditions = {
     scrap: { vi: "PHẾ LIỆU", en: "Scrap" },
-    new: { vi: "MỚI", en: "New" },
-    old: { vi: "CŨ", en: "Old" },
-    unused: { vi: "CHƯA SỬ DỤNG", en: "Unused" }
+    new: { vi: "MỚI", en: "New", noteVi: "< 7 năm từ ngày sản xuất", noteEn: "< 7 years from production date" },
+    old: { vi: "CŨ", en: "Old", noteVi: "Hoạt động bình thường", noteEn: "Operating normally" },
+    unused: { vi: "CHƯA SỬ DỤNG", en: "Unused", noteVi: "> 7 năm từ ngày sản xuất", noteEn: "> 7 years from production date" }
   };
 
   const handleChangeColor = (e) => {

@@ -272,8 +272,11 @@
     "condition": {
       "scrap": "PHẾ LIỆU",
       "new": "MỚI",
+      "noteNew": "< 7 năm từ ngày sản xuất",
       "old": "CŨ",
-      "unused": "CHƯA SỬ DỤNG"
+      "noteOld": "Hoạt động bình thường",
+      "unused": "CHƯA SỬ DỤNG",
+      "noteUnused": "> 7 năm từ ngày sản xuất"
     },
     "title": "Sản phẩm",
     "newProduct": "Sản phẩm mới",

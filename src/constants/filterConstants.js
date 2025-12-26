@@ -53,16 +53,16 @@ export const conditions = [
         en: "SCRAP",
     },
     {
-        vi: "MỚI",
-        en: "NEW",
+        vi: "MỚI (< 7 năm từ ngày sản xuất)",
+        en: "NEW (< 7 years from production date)",
     },
     {
-        vi: "CŨ",
-        en: "OLD",
+        vi: "CŨ (Hoạt động bình thường)",
+        en: "OLD (Operating normally)",
     },
     {
-        vi: "CHƯA SỬ DỤNG",
-        en: "UNUSED",
+        vi: "CHƯA SỬ DỤNG (> 7 năm từ ngày sản xuất)",
+        en: "UNUSED (> 7 years from production date)",
     },
 ];
 
