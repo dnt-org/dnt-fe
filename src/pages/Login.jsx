@@ -2,12 +2,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { login } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { generateQrSession } from "../services/authService";
+import { generateQrSession, checkQrStatus, verifyQrSession } from "../services/authService";
 import QRModalComponent from '../components/QRModalComponent';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
 
@@ -22,8 +22,10 @@ export default function LoginPage() {
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [qrSessionId, setQrSessionId] = useState(null);
   const [isShowRecover, setIsShowRecover] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const auth = useSelector(state => state.auth);
@@ -37,6 +39,37 @@ export default function LoginPage() {
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
+
+  // Check for sessionId in query params and verify QR login
+  useEffect(() => {
+    const checkSessionAndVerify = async () => {
+      const searchParams = new URLSearchParams(location.search);
+      const sessionId = searchParams.get('sessionId');
+
+      if (sessionId) {
+        const token = localStorage.getItem("authToken");
+        if (token) {
+          try {
+            await verifyQrSession(sessionId);
+            // After successful verification, we can optionally clear the query param
+            // or show a success message. For now, we'll just log it.
+            console.log("QR Session verified successfully");
+             // Navigate to home or remove query param to prevent re-verification
+             navigate('/', { replace: true });
+          } catch (error) {
+            console.error("QR Verification failed:", error);
+            // Optionally show error to user
+          }
+        } else {
+           // If no token, just show normal login screen (which is this page)
+           // We might want to remove the sessionId from URL to avoid confusion?
+           // For now, leaving it as per requirement "if authtoken not available, show screen login nomal"
+        }
+      }
+    };
+
+    checkSessionAndVerify();
+  }, [location.search, navigate]);
 
   const handleLogin = async () => {
     try {
@@ -71,6 +104,7 @@ export default function LoginPage() {
     setIsQrLoading(true);
     setQrError("");
     setQrDataUrl(null);
+    setQrSessionId(null);
     try {
       const deviceInfo = navigator.userAgent || 'Unknown Device';
       let ipAddress = null;
@@ -82,8 +116,13 @@ export default function LoginPage() {
       }
       const response = await generateQrSession(deviceInfo, ipAddress);
       const qrCode = response.data?.qrCode;
+      const sessionId = response.data?.sessionId;
+      
       if (qrCode) {
         setQrDataUrl(qrCode);
+        if (sessionId) {
+          setQrSessionId(sessionId);
+        }
       } else {
         setQrError(t('auth.qrError', 'Không lấy được mã QR, vui lòng thử lại'));
       }
@@ -99,7 +138,37 @@ export default function LoginPage() {
     setQrDataUrl(null);
     setQrError("");
     setIsQrLoading(false);
+    setQrSessionId(null);
   };
+
+  // Poll for QR login status
+  useEffect(() => {
+    let pollInterval;
+
+    if (isQrModalOpen && qrSessionId && !isQrLoading) {
+      pollInterval = setInterval(async () => {
+        try {
+          const response = await checkQrStatus(qrSessionId);
+          if (response?.status === 200 && response.data?.token) {
+             // Login success
+             clearInterval(pollInterval);
+             handleCloseQrModal();
+             
+             localStorage.setItem("authToken", response.data.token);
+             localStorage.setItem("user", JSON.stringify(response.data.user));
+             dispatch(loginAction(response.data.user));
+             navigate("/");
+          }
+        } catch (error) {
+          console.error("Polling error:", error);
+        }
+      }, 2000); // Poll every 2 seconds
+    }
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [isQrModalOpen, qrSessionId, isQrLoading, dispatch, navigate]);
 
   const handleScanResult = (result) => {
     console.log('QR Scan Result:', result);
@@ -205,6 +274,7 @@ export default function LoginPage() {
         error={qrError}
         qrDataUrl={qrDataUrl}
         onScanResult={handleScanResult}
+        isAuthenticated={true}
       />
     </div>
   );

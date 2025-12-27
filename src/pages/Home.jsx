@@ -13,6 +13,7 @@ import EventComponent from "../components/EventComponent";
 import AdBanner from "../components/AdBaner";
 import HeaderComponent from "../components/HeaderComponent";
 import QRModalComponent from "../components/QRModalComponent";
+import ScanResultModal from "../components/ScanResultModal";
 import FooterComponent from "../components/FooterComponent";
 import DataTableComponent from "../components/DataTableComponent";
 import HomeBody from "../components/HomeBody";
@@ -36,6 +37,10 @@ function HomePage() {
     const [isQrLoading, setIsQrLoading] = useState(false);
     const [qrError, setQrError] = useState("");
     const [qrDataUrl, setQrDataUrl] = useState(null);
+    
+    // Scan Result Modal states
+    const [scanResult, setScanResult] = useState(null);
+    const [isScanResultModalOpen, setIsScanResultModalOpen] = useState(false);
 
     // Effects
     useEffect(() => {
@@ -115,12 +120,23 @@ function HomePage() {
         setIsQrLoading(false);
     };
 
-    const handleScanResult = (result) => {
-        console.log('QR Scan Result:', result);
-        // Handle the scanned QR result here
-        // You can process the result, make API calls, or show notifications
-        alert(`QR Code scanned: ${result}`);
+    const handleScanResult = (resultString) => {
+        console.log('QR Scan Result:', resultString);
         handleCloseQrModal();
+
+        try {
+            const result = JSON.parse(resultString);
+            setScanResult(result);
+            setIsScanResultModalOpen(true);
+        } catch (error) {
+            console.error("Failed to parse QR result:", error);
+            alert(`QR Code scanned (raw): ${resultString}`);
+        }
+    };
+
+    const handleCloseScanResultModal = () => {
+        setIsScanResultModalOpen(false);
+        setScanResult(null);
     };
 
     const baseStyle = {
@@ -215,6 +231,12 @@ function HomePage() {
                 qrDataUrl={qrDataUrl}
                 onScanResult={handleScanResult}
                 isAuthenticated={isUserLoggedIn}
+            />
+
+            <ScanResultModal
+                isOpen={isScanResultModalOpen}
+                onClose={handleCloseScanResultModal}
+                result={scanResult}
             />
 
             <HomeBody/>

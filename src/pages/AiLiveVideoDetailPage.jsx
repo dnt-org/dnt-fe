@@ -5,7 +5,7 @@ import { Eye, Flag, Handshake, UserCheck, ArrowRight, Save } from "lucide-react"
 import ContactListModal from "../components/molecules/ContactListModal.jsx"
 import ViolationReportModal from "../components/molecules/ViolationReportModal.jsx"
 import LiveGoodsTable from "../components/organisms/LiveGoodsTable.jsx"
-
+    
 export default function AiLiveVideoDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
