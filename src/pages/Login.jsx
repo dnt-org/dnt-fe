@@ -54,16 +54,16 @@ export default function LoginPage() {
             // After successful verification, we can optionally clear the query param
             // or show a success message. For now, we'll just log it.
             console.log("QR Session verified successfully");
-             // Navigate to home or remove query param to prevent re-verification
-             navigate('/', { replace: true });
+            // Navigate to home or remove query param to prevent re-verification
+            navigate('/', { replace: true });
           } catch (error) {
             console.error("QR Verification failed:", error);
             // Optionally show error to user
           }
         } else {
-           // If no token, just show normal login screen (which is this page)
-           // We might want to remove the sessionId from URL to avoid confusion?
-           // For now, leaving it as per requirement "if authtoken not available, show screen login nomal"
+          // If no token, just show normal login screen (which is this page)
+          // We might want to remove the sessionId from URL to avoid confusion?
+          // For now, leaving it as per requirement "if authtoken not available, show screen login nomal"
         }
       }
     };
@@ -78,6 +78,11 @@ export default function LoginPage() {
 
 
       if (response.status == 200) {
+        if (response.data?.error?.status == 401) {
+          setIsShowRecover(true);
+          alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+          return;
+        }
         if (!response.data?.user?.confirmed) {
           dispatch(changePasswordAction(response.data?.user))
           navigate("/change-password");
@@ -117,7 +122,7 @@ export default function LoginPage() {
       const response = await generateQrSession(deviceInfo, ipAddress);
       const qrCode = response.data?.qrCode;
       const sessionId = response.data?.sessionId;
-      
+
       if (qrCode) {
         setQrDataUrl(qrCode);
         if (sessionId) {
@@ -158,18 +163,18 @@ export default function LoginPage() {
         try {
           const response = await checkQrStatus(qrSessionId);
           if (response?.status === 200 && response.data?.token) {
-             // Login success
-             clearInterval(pollInterval);
-             handleCloseQrModal();
-             
-             localStorage.setItem("authToken", response.data.token);
-             localStorage.setItem("user", JSON.stringify(response.data.user));
-             dispatch(loginAction(response.data.user));
-             navigate("/");
+            // Login success
+            clearInterval(pollInterval);
+            handleCloseQrModal();
+
+            localStorage.setItem("authToken", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            dispatch(loginAction(response.data.user));
+            navigate("/");
           }
         } catch (error) {
           console.error("Polling error:", error);
-        } 
+        }
       }, 2000); // Poll every 2 seconds
     }
 
@@ -252,7 +257,7 @@ export default function LoginPage() {
             {isShowRecover && (
               <div className="text-center mt-4 flex justify-center items-center gap-4">
                 <div className="flex-1/2">
-                <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
+                  <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
                 </div>
                 <button
                   className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
