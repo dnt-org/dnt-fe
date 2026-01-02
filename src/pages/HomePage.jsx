@@ -125,6 +125,12 @@ function HomePageLogin() {
         console.log('QR Scan Result:', resultString);
         handleCloseQrModal();
 
+        // Check if resultString is a URL
+        if (resultString && (resultString.startsWith('http://') || resultString.startsWith('https://'))) {
+            window.open(resultString, '_blank');
+            return;
+        }
+
         try {
             const result = JSON.parse(resultString);
             setScanResult(result);

@@ -71,7 +71,7 @@ const ScanResultModal = ({ isOpen, onClose, result }) => {
                     {/* Actions */}
                     <div className="w-full pt-2">
                         <button
-                            onClick={onClose}
+                            onClick={handleConfirm}
                             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-200"
                         >
                             {t('common.confirm', 'Xác nhận')}
