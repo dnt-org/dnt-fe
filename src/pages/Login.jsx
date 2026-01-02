@@ -144,9 +144,17 @@ export default function LoginPage() {
   // Poll for QR login status
   useEffect(() => {
     let pollInterval;
+    let startTime = Date.now();
 
     if (isQrModalOpen && qrSessionId && !isQrLoading) {
       pollInterval = setInterval(async () => {
+        // Check timeout (60 seconds)
+        if (Date.now() - startTime > 60000) {
+          clearInterval(pollInterval);
+          setQrError(t('auth.qrTimeout', 'Mã QR đã hết hạn. Vui lòng thử lại.'));
+          return;
+        }
+
         try {
           const response = await checkQrStatus(qrSessionId);
           if (response?.status === 200 && response.data?.token) {
@@ -161,14 +169,14 @@ export default function LoginPage() {
           }
         } catch (error) {
           console.error("Polling error:", error);
-        }
+        } 
       }, 2000); // Poll every 2 seconds
     }
 
     return () => {
       if (pollInterval) clearInterval(pollInterval);
     };
-  }, [isQrModalOpen, qrSessionId, isQrLoading, dispatch, navigate]);
+  }, [isQrModalOpen, qrSessionId, isQrLoading, dispatch, navigate, t]);
 
   const handleScanResult = (result) => {
     console.log('QR Scan Result:', result);
