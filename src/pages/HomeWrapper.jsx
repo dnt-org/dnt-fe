@@ -8,10 +8,10 @@ const HomeWrapper = () => {
     const isHomeLogin = (!isUserLogLocal && !isMobile);
     console.log(isHomeLogin, isMobile, isUserLogLocal);
     if (isMobile) {
-        return <HomeDefault />;
+        return <HomeDefault />; //home.jsx
     }
     if (isUserLogLocal) {
-        return <HomeLogin />;
+        return <HomeLogin />; //homepage.jsx
     }
     return (
         <>

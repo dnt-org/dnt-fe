@@ -125,7 +125,7 @@ function HomePage() {
         handleCloseQrModal();
         // Check if resultString is a URL
         if (resultString && (resultString.startsWith('http://') || resultString.startsWith('https://'))) {
-            window.open(resultString, '_blank');
+            window.location.href = resultString;
             return;
         }
 
