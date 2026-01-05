@@ -1086,5 +1086,13 @@
     "adContentEn": "Ad content",
     "allowAdvertisingOnLive": "CHO PHÉP QUẢNG CÁO TRÊN TRỰC TIẾP NÀY",
     "disclaimer": "CAM KẾT BẢN QUYỀN KHÔNG VI PHẠP NHỮNG ĐIỀU PHÁP LUẬT CẤM"
+  },
+  "qr": {
+    "scanTitle": "QUÉT MÃ QR",
+    "scanResultTitle": "Kết quả quét QR",
+    "loginRequest": "Yêu cầu đăng nhập",
+    "scanSuccess": "Quét thành công",
+    "scanning": "Đang quét...",
+    "startScan": "Quét QR Code"
   }
 }

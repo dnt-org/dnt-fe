@@ -7,6 +7,9 @@ import { Provider } from 'react-redux';
 import store from './context/store'
 import './i18n'
 
+const qrloginPaths = import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login';
+
+
 // Simple password gate without blocking initial render
 function PasswordGate({ children }) {
   const pwd = import.meta.env.VITE_REACT_APP_PASSWORD || '123456';
@@ -18,8 +21,13 @@ function PasswordGate({ children }) {
   const [input, setInput] = useState('');
   const [verified, setVerified] = useState(!pwd); // if no password configured, skip gate
   const [error, setError] = useState('');
-
-  if (!verified) {
+  const qrLoginPath = JSON.parse(import.meta.env.VITE_QRLOGIN_PATH);
+  const isQrLoginPath = qrLoginPath.includes(location.pathname);
+  console.log("isQrLoginPath",location.pathname,   isQrLoginPath);
+  if (isQrLoginPath) {
+    return children;
+  }
+  if (!verified && !isQrLoginPath) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f5f5f5' }}>
         <div style={{ background: 'white', padding: 24, borderRadius: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
@@ -70,7 +78,7 @@ createRoot(document.getElementById('root')).render(
     <StrictMode>
       <BrowserRouter>
         <PasswordGate>
-          <App /> 
+          <App />
         </PasswordGate>
       </BrowserRouter>
     </StrictMode>

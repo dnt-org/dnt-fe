@@ -2,12 +2,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { login } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
-import { generateQrSession } from "../services/authService";
+import { generateQrSession, checkQrStatus, verifyQrSession } from "../services/authService";
 import QRModalComponent from '../components/QRModalComponent';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
 
@@ -22,9 +22,11 @@ export default function LoginPage() {
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [qrSessionId, setQrSessionId] = useState(null);
   const [isShowRecover, setIsShowRecover] = useState(false);
   const [recaptchaReady, setRecaptchaReady] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const dispatch = useDispatch();
   const auth = useSelector(state => state.auth);
@@ -78,6 +80,37 @@ export default function LoginPage() {
     return () => clearInterval(checkInterval);
   }, []);
 
+  // Check for sessionId in query params and verify QR login
+  useEffect(() => {
+    const checkSessionAndVerify = async () => {
+      const searchParams = new URLSearchParams(location.search);
+      const sessionId = searchParams.get('sessionId');
+
+      if (sessionId) {
+        const token = localStorage.getItem("authToken");
+        if (token) {
+          try {
+            await verifyQrSession(sessionId);
+            // After successful verification, we can optionally clear the query param
+            // or show a success message. For now, we'll just log it.
+            console.log("QR Session verified successfully");
+            // Navigate to home or remove query param to prevent re-verification
+            navigate('/', { replace: true });
+          } catch (error) {
+            console.error("QR Verification failed:", error);
+            // Optionally show error to user
+          }
+        } else {
+          // If no token, just show normal login screen (which is this page)
+          // We might want to remove the sessionId from URL to avoid confusion?
+          // For now, leaving it as per requirement "if authtoken not available, show screen login nomal"
+        }
+      }
+    };
+
+    checkSessionAndVerify();
+  }, [location.search, navigate]);
+
   const handleLogin = async () => {
     try {
       // Lấy token từ reCAPTCHA widget
@@ -96,6 +129,11 @@ export default function LoginPage() {
       setRecaptchaReady(false);
 
       if (response.status == 200) {
+        if (response.data?.error?.status == 401) {
+          setIsShowRecover(true);
+          alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+          return;
+        }
         if (!response.data?.user?.confirmed) {
           dispatch(changePasswordAction(response.data?.user))
           navigate("/change-password");
@@ -125,6 +163,7 @@ export default function LoginPage() {
     setIsQrLoading(true);
     setQrError("");
     setQrDataUrl(null);
+    setQrSessionId(null);
     try {
       const deviceInfo = navigator.userAgent || 'Unknown Device';
       let ipAddress = null;
@@ -136,8 +175,13 @@ export default function LoginPage() {
       }
       const response = await generateQrSession(deviceInfo, ipAddress);
       const qrCode = response.data?.qrCode;
+      const sessionId = response.data?.sessionId;
+
       if (qrCode) {
         setQrDataUrl(qrCode);
+        if (sessionId) {
+          setQrSessionId(sessionId);
+        }
       } else {
         setQrError(t('auth.qrError', 'Không lấy được mã QR, vui lòng thử lại'));
       }
@@ -153,7 +197,45 @@ export default function LoginPage() {
     setQrDataUrl(null);
     setQrError("");
     setIsQrLoading(false);
+    setQrSessionId(null);
   };
+
+  // Poll for QR login status
+  useEffect(() => {
+    let pollInterval;
+    let startTime = Date.now();
+
+    if (isQrModalOpen && qrSessionId && !isQrLoading) {
+      pollInterval = setInterval(async () => {
+        // Check timeout (60 seconds)
+        if (Date.now() - startTime > 60000) {
+          clearInterval(pollInterval);
+          setQrError(t('auth.qrTimeout', 'Mã QR đã hết hạn. Vui lòng thử lại.'));
+          return;
+        }
+
+        try {
+          const response = await checkQrStatus(qrSessionId);
+          if (response?.status === 200 && response.data?.token) {
+            // Login success
+            clearInterval(pollInterval);
+            handleCloseQrModal();
+
+            localStorage.setItem("authToken", response.data.token);
+            localStorage.setItem("user", JSON.stringify(response.data.user));
+            dispatch(loginAction(response.data.user));
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Polling error:", error);
+        }
+      }, 2000); // Poll every 2 seconds
+    }
+
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
+  }, [isQrModalOpen, qrSessionId, isQrLoading, dispatch, navigate, t]);
 
   const handleScanResult = (result) => {
     console.log('QR Scan Result:', result);
@@ -219,7 +301,7 @@ export default function LoginPage() {
             {isShowRecover && (
               <div className="text-center mt-4 flex justify-center items-center gap-4">
                 <div className="flex-1/2">
-                <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
+                  <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
                 </div>
                 <button
                   className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
@@ -249,6 +331,7 @@ export default function LoginPage() {
         error={qrError}
         qrDataUrl={qrDataUrl}
         onScanResult={handleScanResult}
+        isAuthenticated={true}
       />
     </div>
   );

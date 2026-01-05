@@ -10,7 +10,7 @@ const ProtectedRoute = ({ redirectPath = '/login' }) => {
   const location = useLocation();
 
   if (!token) {
-    return <Navigate to={redirectPath} state={{ from: location }} replace />;
+    return <Navigate to={`${redirectPath}${location.search}`} state={{ from: location }} replace />;
   }
 
   return <Outlet />;

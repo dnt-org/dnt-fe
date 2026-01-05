@@ -28,6 +28,7 @@ function App() {
     <>
      <Routes>
         <Route exact path="/" element={<HomeWrapper />} />
+        <Route exact path={import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login'} element={<LoginPage />} />
         <Route exact path="/register" element={<RegisterPage />} />
         <Route exact path="/login" element={<LoginPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />

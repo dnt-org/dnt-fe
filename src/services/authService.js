@@ -132,6 +132,50 @@ const generateQrSessionInfo = async () => {
     }
 };
 
+const checkQrStatus = async (sessionId) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/auth/check-qr`,
+            { sessionId },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+        return response;
+    } catch (error) {
+         // Return null or throw depending on how we want to handle polling errors
+         // For polling, we might just want to return null/error status without throwing hard
+         return error.response; 
+    }
+};
+
+const verifyQrSession = async (sessionId) => {
+    try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            return null;
+        }
+
+        const response = await axios.post(
+            `${API_URL}/auth/verify-qr`,
+            { sessionId },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw new Error(error.response.data?.error?.message || "QR verification failed");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error setting up QR verification request");
+        }
+    }
+};
+
 /**
  * Update user information
  * @param {string} token - User's authentication token
@@ -170,7 +214,7 @@ const updateAvatar = async (avatarUrl) => {
     );
     return response;
 };
-export {
-    login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
-    , updateUser, updateAvatar
-};
+
+export { login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
+    , updateUser, updateAvatar, checkQrStatus, verifyQrSession
+ };
