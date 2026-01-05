@@ -4,12 +4,13 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
 
 // Authentication service functions
-const login = async (cccd, password) => {
+const login = async (cccd, password, recaptchaToken) => {
     const response = await axios.post(
         `${API_URL}/auth/login`,
         {
             "cccd": cccd,
-            "password": password
+            "password": password,
+            "recaptchaToken": recaptchaToken
         }
     );
     return response;
@@ -213,6 +214,7 @@ const updateAvatar = async (avatarUrl) => {
     );
     return response;
 };
+
 export { login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
     , updateUser, updateAvatar, checkQrStatus, verifyQrSession
  };
