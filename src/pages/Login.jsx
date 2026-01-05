@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [qrError, setQrError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [isShowRecover, setIsShowRecover] = useState(false);
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
@@ -38,11 +39,61 @@ export default function LoginPage() {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
 
+  // Render reCAPTCHA widget khi component mount
+  useEffect(() => {
+    const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+    
+    if (!siteKey) {
+      console.error('reCAPTCHA site key is missing. Please set VITE_RECAPTCHA_SITE_KEY in .env file.');
+      return;
+    }
+
+    const renderRecaptcha = () => {
+      const container = document.getElementById('recaptcha-container');
+      if (container && window.grecaptcha && window.grecaptcha.render) {
+        // Clear any existing content
+        if (!container.hasChildNodes()) {
+          try {
+            window.grecaptcha.render('recaptcha-container', {
+              sitekey: siteKey,
+              callback: () => setRecaptchaReady(true),
+              'expired-callback': () => setRecaptchaReady(false)
+            });
+          } catch (error) {
+            console.log('reCAPTCHA render error:', error.message);
+          }
+        }
+      }
+    };
+
+    // Polling để đợi grecaptcha load
+    const checkInterval = setInterval(() => {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        clearInterval(checkInterval);
+        renderRecaptcha();
+      }
+    }, 100);
+
+    // Cleanup
+    return () => clearInterval(checkInterval);
+  }, []);
+
   const handleLogin = async () => {
     try {
-      const response = await login(cccd, password);
+      // Lấy token từ reCAPTCHA widget
+      const recaptchaToken = window.grecaptcha?.getResponse();
+      
+      if (!recaptchaToken) {
+        alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+        return;
+      }
+
+      const response = await login(cccd, password, recaptchaToken);
       console.log(response);
 
+      // Reset reCAPTCHA sau khi gửi request
+      window.grecaptcha?.reset();
+      setRecaptchaReady(false);
 
       if (response.status == 200) {
         if (!response.data?.user?.confirmed) {
@@ -62,6 +113,9 @@ export default function LoginPage() {
         alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
       }
     } catch (error) {
+      // Reset reCAPTCHA khi có lỗi
+      window.grecaptcha?.reset();
+      setRecaptchaReady(false);
       setErrorMessage(t('auth.invalidCredentials', 'Thông tin đăng nhập không chính xác!'));
     }
   };
@@ -146,19 +200,9 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            <div className="grid grid-cols-1 items-center gap-4">
-              <div className="flex gap-4 w-full">
-                <input
-                  type="text"
-                  className="border p-2 rounded w-full"
-                  placeholder={t('auth.captchaPlaceholder', 'NHẬP MÃ CAPCHA (Input CAPCHA code)')}
-                />
-                <img
-                  src="https://www.tnc.com.vn/uploads/File/Image/c1_2.jpg"
-                  className="w-60"
-                  alt=""
-                />
-              </div>
+            {/* Google reCAPTCHA Widget */}
+            <div className="flex justify-center my-4">
+              <div id="recaptcha-container"></div>
             </div>
 
             {!isShowRecover && (
