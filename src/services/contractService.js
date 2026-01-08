@@ -5,33 +5,33 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
 
 /**
  * Download contract file
- * @returns {Promise<Blob>} - The contract file as a blob
+ * @param {Object} data - The data to generate the contract
+ * @returns {Promise<boolean>} - True if successful
  */
-const downloadContract = async () => {
+const downloadContract = async (data) => {
   try {
-    // Mock implementation - serve file from public directory
-    const response = await axios.get('/hop-dong-mau.docx', {
-      responseType: 'blob',
-      headers: {
-        'Content-Type': 'application/pdf'
-      }
-    });
-    
-    return response;
-    
-    // Original API call (commented out for mock)
-    /*
-    const response = await axios.get(
-      `${API_URL}/contract/download`,
+    const response = await axios.post(
+      `${API_URL}/contract/generate`,
+      data,
       {
-        responseType: 'blob', // Important for file downloads
+        responseType: 'blob',
         headers: {
           'Content-Type': 'application/json'
         }
       }
     );
-    return response;
-    */
+
+    const blob = new Blob([response.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `contract_${data.benAIdentityNumber}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    return true;
   } catch (error) {
     if (error.response) {
       throw new Error(error.response.data?.error?.message || "Contract download failed");

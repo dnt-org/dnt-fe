@@ -5,15 +5,33 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
 
 // Authentication service functions
 const login = async (cccd, password, recaptchaToken) => {
-    const response = await axios.post(
-        `${API_URL}/auth/login`,
-        {
-            "cccd": cccd,
-            "password": password,
-            "recaptchaToken": recaptchaToken
+
+    try {
+        const response = await axios.post(
+            `${API_URL}/auth/login`,
+            {
+                "cccd": cccd,
+                "password": password,
+                "recaptchaToken": recaptchaToken
+            }
+        );
+
+        // Check for soft error (200 OK but contains error data)
+        if (response.data?.error) {
+            const currentAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
+            localStorage.setItem('loginFailedAttempts', (currentAttempts + 1).toString());
+            return response; // Return response so caller can handle specific error codes
         }
-    );
-    return response;
+
+        // Reset attempts on successful login
+        localStorage.removeItem('loginFailedAttempts');
+        return response;
+    } catch (error) {
+        // Increment failed attempts
+        const currentAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
+        localStorage.setItem('loginFailedAttempts', (currentAttempts + 1).toString());
+        throw error;
+    }
 };
 
 const getMe = async (token) => {
@@ -141,9 +159,9 @@ const checkQrStatus = async (sessionId) => {
         );
         return response;
     } catch (error) {
-         // Return null or throw depending on how we want to handle polling errors
-         // For polling, we might just want to return null/error status without throwing hard
-         return error.response; 
+        // Return null or throw depending on how we want to handle polling errors
+        // For polling, we might just want to return null/error status without throwing hard
+        return error.response;
     }
 };
 
@@ -215,6 +233,30 @@ const updateAvatar = async (avatarUrl) => {
     return response;
 };
 
-export { login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
-    , updateUser, updateAvatar, checkQrStatus, verifyQrSession
- };
+const recoverLogin = async (cccd, recoveryCharacter) => {
+    const response = await axios.post(
+        `${API_URL}/auth/verify-recovery-character`,
+        {
+            "cccd": cccd,
+            "recovery_character": recoveryCharacter
+        },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+}
+
+const verifyOtp = async (cccd, otp) => {
+    const response = await axios.post(
+        `${API_URL}/auth/verify-otp`,
+        {
+            "cccd": cccd,
+            "otp": otp
+        },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+}
+export {
+    login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
+    , updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp
+};

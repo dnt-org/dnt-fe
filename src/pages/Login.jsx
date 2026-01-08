@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { login } from "../services/authService";
+import { login, recoverLogin } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -25,6 +25,11 @@ export default function LoginPage() {
   const [qrSessionId, setQrSessionId] = useState(null);
   const [isShowRecover, setIsShowRecover] = useState(false);
   const [recaptchaReady, setRecaptchaReady] = useState(false);
+  const [step, setStep] = useState('LOGIN'); // LOGIN, RECOVERY, OTP
+  const [context, setContext] = useState(null); // wrong_password, post_login
+  const [otp, setOtp] = useState("");
+
+  const [recoveryCharacter, setRecoveryCharacter] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -127,29 +132,39 @@ export default function LoginPage() {
       // Reset reCAPTCHA sau khi gửi request
       window.grecaptcha?.reset();
       setRecaptchaReady(false);
+      if (response.data?.blocked) {
+        alert(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+        return;
+      }
+
+      if (response.data?.require_recovery_character) {
+        setStep('RECOVERY');
+        setContext(response.data.context);
+        return;
+      }
 
       if (response.status == 200) {
-        if (response.data?.error?.status == 401) {
-          setIsShowRecover(true);
-          alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
-          return;
-        }
-        if (!response.data?.user?.confirmed) {
-          dispatch(changePasswordAction(response.data?.user))
-          navigate("/change-password");
-        } else {
-          localStorage.setItem("authToken", response.data.token);
-          // Store complete user data in localStorage for easy access
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          dispatch(loginAction(response.data?.user))
-          console.log(auth);
-          navigate("/"); // Chuyển hướng về trang chủ
+        if (response.data?.error?.status === 401) {
+           // Legacy error handling or unexpected 200 with error
+           alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+           return;
         }
 
-      } else {
-        setIsShowRecover(true);
-        alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
-      }
+        if (response.data?.token) {
+           // Standard login success (if applicable)
+           localStorage.setItem("authToken", response.data.token);
+           localStorage.setItem("user", JSON.stringify(response.data.user));
+           dispatch(loginAction(response.data.user));
+           navigate("/");
+        } else if (response.data?.require_recovery_character) {
+             // Redundant check but safe
+             setStep('RECOVERY');
+             setContext(response.data.context);
+        } else {
+            // Unexpected success without token or flow instructions
+             alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+        }
+      } 
     } catch (error) {
       // Reset reCAPTCHA khi có lỗi
       window.grecaptcha?.reset();
@@ -237,6 +252,79 @@ export default function LoginPage() {
     };
   }, [isQrModalOpen, qrSessionId, isQrLoading, dispatch, navigate, t]);
 
+  const handleRecoverLogin = async () => {
+    if (!recoveryCharacter) {
+      alert(t('auth.enterRecoveryChar', 'Vui lòng nhập ký tự khôi phục'));
+      return;
+    }
+
+    try {
+      const response = await recoverLogin(cccd, recoveryCharacter);
+      const { data } = response || {};
+
+      if (data?.blocked) {
+        alert(data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+        return;
+      }
+
+      if (data?.require_change_password) {
+        dispatch(changePasswordAction({ cccd }));
+        navigate('/change-password', { state: { cccd, context: 'recovery_flow' } });
+        return;
+      }
+
+      if (data?.require_otp) {
+        setStep('OTP');
+        return;
+      }
+
+      if (data?.success === false) {
+         alert(data.message || t('auth.recoverError', 'Ký tự khôi phục không chính xác'));
+      }
+
+    } catch (error) {
+      console.error('Recover login error:', error);
+      const serverMessage = error?.response?.data?.message || t('auth.recoverError', 'Ký tự khôi phục không chính xác');
+      alert(serverMessage);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+      if (!otp) {
+          alert("Vui lòng nhập mã OTP");
+          return;
+      }
+      try {
+          // Import verifyOtp from services if not already imported, or use axios directly here if needed quickly
+          // Assuming I added verifyOtp to authService in the previous step
+          const { verifyOtp } = await import("../services/authService");
+          const response = await verifyOtp(cccd, otp);
+          const { data } = response || {};
+
+          if (data?.blocked) {
+              alert(data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+              return;
+          }
+
+          if (data?.require_change_password) {
+              dispatch(changePasswordAction({ cccd }));
+              navigate('/change-password', { state: { cccd, context: 'otp_flow' } });
+              return;
+          }
+          
+           if (data?.success === false) {
+             alert(data.message || "OTP không chính xác");
+           }
+
+      } catch (error) {
+          console.error("OTP verification error:", error);
+          const serverMessage = error?.response?.data?.message || "OTP verification failed";
+          alert(serverMessage);
+      }
+  }
+
+
+
   const handleScanResult = (result) => {
     console.log('QR Scan Result:', result);
     alert(`QR Code scanned: ${result}`);
@@ -287,7 +375,7 @@ export default function LoginPage() {
               <div id="recaptcha-container"></div>
             </div>
 
-            {!isShowRecover && (
+            {step === 'LOGIN' && !isShowRecover && (
               <div className="text-center mt-4">
                 <button
                   className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
@@ -298,14 +386,22 @@ export default function LoginPage() {
                 </button>
               </div>
             )}
-            {isShowRecover && (
+            
+            {/* Show Recovery Input if explicitly shown OR if step is RECOVERY */}
+            {(isShowRecover || step === 'RECOVERY') && (
               <div className="text-center mt-4 flex justify-center items-center gap-4">
                 <div className="flex-1/2">
-                  <input type="text" className='border p-2 rounded w-full' placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')} />
+                  <input
+                    type="text"
+                    className='border p-2 rounded w-full'
+                    placeholder={t('auth.enter', 'NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN ĐỂ MỞ KHOÁ')}
+                    value={recoveryCharacter}
+                    onChange={(e) => setRecoveryCharacter(e.target.value)}
+                  />
                 </div>
                 <button
                   className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
-                  onClick={handleLogin}
+                  onClick={handleRecoverLogin}
 
                 >
                   {t('common.confirm', 'MỞ KHOÁ TÀI KHOẢN')} <br />
@@ -313,9 +409,30 @@ export default function LoginPage() {
               </div>
             )}
 
+            {step === 'OTP' && (
+              <div className="text-center mt-4 flex justify-center items-center gap-4">
+                <div className="flex-1/2">
+                  <input
+                    type="text"
+                    className='border p-2 rounded w-full'
+                    placeholder="Nhập mã OTP (Check your registered channel)"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                  />
+                </div>
+                <button
+                  className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
+                  onClick={handleVerifyOtp}
+
+                >
+                  {t('common.confirm', 'XÁC NHẬN OTP')} <br />
+                </button>
+              </div>
+            )}
+
             {errorMessage && (
               <h2 className="text-xl text-center text-red-500">
-                {t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI')} <br />
+                {errorMessage} <br />
 
               </h2>
             )}

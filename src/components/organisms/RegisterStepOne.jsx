@@ -6,6 +6,7 @@ export default function RegisterStepOne({
   t,
   error,
   countries,
+  banks,
   selectedCountry,
   setSelectedCountry,
   validationErrors,
@@ -43,12 +44,15 @@ export default function RegisterStepOne({
           <div className="relative w-full flex items-center">
             <select className="border p-2 rounded w-full" name="bank_name" value={formData.bank_name} onChange={handleInputChange}>
               <option value="">{t("register.selectBankPlaceholder", "Chọn ngân hàng (With bank)")}</option>
-              <option value="GPBank">Ngân hàng TNHH MTV Dầu khí toàn cầu (GPBank)</option>
-              <option value="Agribank">Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam (Agribank)</option>
-              <option value="OceanBank">Ngân hàng TNHH MTV Đại Dương (OceanBank)</option>
-              <option value="VietinBank">Ngân hàng TMCP Công thương Việt Nam (VietinBank)</option>
-              <option value="BIDV">Ngân hàng TMCP Đầu tư và Phát triển Việt Nam (BIDV)</option>
-              <option value="Vietcombank">Ngân hàng TMCP Ngoại Thương Việt Nam (Vietcombank)</option>
+              {banks && banks.length > 0 ? (
+                banks.map((bank) => (
+                  <option key={bank.code} value={bank.shortName}>
+                    {bank.name} ({bank.shortName})
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading banks...</option>
+              )}
             </select>
             <span className="text-red-500 ml-2">*</span>
           </div>
@@ -89,6 +93,7 @@ RegisterStepOne.propTypes = {
   t: PropTypes.func.isRequired,
   error: PropTypes.string,
   countries: PropTypes.array.isRequired,
+  banks: PropTypes.array,
   selectedCountry: PropTypes.object,
   setSelectedCountry: PropTypes.func.isRequired,
   validationErrors: PropTypes.object.isRequired,

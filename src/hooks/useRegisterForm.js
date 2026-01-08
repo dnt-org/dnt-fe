@@ -4,6 +4,7 @@ import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { changePasswordAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
+import { getBanks } from "../services/systemService"
 import { downloadContract } from "../services/contractService"
 import { verifyBankNumber } from "../services/authService"
 
@@ -15,6 +16,7 @@ export default function useRegisterForm(t) {
   const [signature, setSignature] = useState()
   const [isReadContract, setIsReadContract] = useState(false)
   const [countries, setCountries] = useState([])
+  const [banks, setBanks] = useState([])
   const [selectedCountry, setSelectedCountry] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
@@ -55,6 +57,7 @@ export default function useRegisterForm(t) {
     const root = document.getElementById("root")
     if (root) root.style.backgroundColor = color
     fetchCountries()
+    fetchBanks()
   }, [color])
 
   const validateRecoveryCharacter = (recoveryChar) => {
@@ -129,17 +132,15 @@ export default function useRegisterForm(t) {
   }
 
   const handleContractDownload = async () => {
+    console.log(formData)
     try {
-      const response = await downloadContract()
-      const blob = new Blob([response.data], { type: "application/pdf" })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.href = url
-      link.download = "hop-dong.docx"
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      await downloadContract({
+        ...formData,
+        benABankNumber: formData.bank_number,
+        country: selectedCountry,
+        benABankName: formData.bank_name,
+        contractAddress: selectedCountry?.value,
+      })
       setIsReadContract(true)
     } catch (error) {
       console.error("Lỗi khi tải hợp đồng:", error)
@@ -202,6 +203,15 @@ export default function useRegisterForm(t) {
     }
   }
 
+  const fetchBanks = async () => {
+    try {
+      const rs = await getBanks()
+      setBanks(rs)
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách ngân hàng:", error)
+    }
+  }
+
   const handleNextClick = async () => {
     if (!validateForm()) return
     setError("")
@@ -230,6 +240,7 @@ export default function useRegisterForm(t) {
     isReadContract,
     setIsReadContract,
     countries,
+    banks,
     selectedCountry,
     setSelectedCountry,
     validationErrors,

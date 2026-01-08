@@ -3,6 +3,7 @@ import "../styles/Register.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getCountries } from "../services/countries";
+import { getBanks } from "../services/systemService";
 import Select from "react-select";
 import { useDispatch, useSelector } from 'react-redux';
 import { changePasswordAction } from "../context/action/authActions";
@@ -53,6 +54,7 @@ function RegisterLegacyPage() {
   const navigate = useNavigate();
   const [isReadContract, setIsReadContract] = useState(false);
   const [countries, setCountries] = useState([]);
+  const [banks, setBanks] = useState([]);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -86,6 +88,7 @@ function RegisterLegacyPage() {
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
     fetchCountries();
+    fetchBanks();
   }, [color]);
 
   // Add recovery character validation state
@@ -310,6 +313,15 @@ function RegisterLegacyPage() {
     }
   }
 
+  const fetchBanks = async () => {
+    try {
+      const rs = await getBanks()
+      setBanks(rs)
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách ngân hàng:", error)
+    }
+  }
+
   const handleNextClick = async () => {
     // Validate form fields first
     if (!validateForm()) return;
@@ -433,25 +445,11 @@ function RegisterLegacyPage() {
                   onChange={handleInputChange}
                 >
                   <option value="">{t('register.selectBankPlaceholder', 'Chọn ngân hàng (With bank)')}</option>
-                  <option value="GPBank">
-                    Ngân hàng TNHH MTV Dầu khí toàn cầu (GPBank)
-                  </option>
-                  <option value="Agribank">
-                    Ngân hàng Nông nghiệp và Phát triển Nông thôn Việt Nam
-                    (Agribank)
-                  </option>
-                  <option value="OceanBank">
-                    Ngân hàng TNHH MTV Đại Dương (OceanBank)
-                  </option>
-                  <option value="VietinBank">
-                    Ngân hàng TMCP Công thương Việt Nam (VietinBank)
-                  </option>
-                  <option value="BIDV">
-                    Ngân hàng TMCP Đầu tư và Phát triển Việt Nam (BIDV)
-                  </option>
-                  <option value="Vietcombank">
-                    Ngân hàng TMCP Ngoại Thương Việt Nam (Vietcombank)
-                  </option>
+                  {banks.map((bank) => (
+                    <option key={bank.code} value={bank.shortName}>
+                      {bank.name} ({bank.shortName})
+                    </option>
+                  ))}
                 </select>
                 <span className="text-red-500 ml-2">*</span>
               </div>
@@ -641,6 +639,7 @@ export default function RegisterPage() {
     handleRegister,
     handleNextClick,
     isReadContract,
+    banks,
   } = useRegisterForm(t);
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -651,6 +650,7 @@ export default function RegisterPage() {
             t={t}
             error={error}
             countries={countries}
+            banks={banks}
             selectedCountry={selectedCountry}
             setSelectedCountry={setSelectedCountry}
             validationErrors={validationErrors}

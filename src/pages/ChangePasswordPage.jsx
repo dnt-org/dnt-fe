@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 import "../styles/Register.css";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useLocation} from "react-router-dom";
 import axios from "axios";
 import {useDispatch, useSelector} from 'react-redux';
 import {changePasswordAction} from "../context/action/authActions";
@@ -16,13 +16,15 @@ export default function ChangePasswordPage() {
     const {user} = useSelector((state) => state.auth);
     const [color, setColor] = useState(localStorage.getItem("selectedColor"));
     const navigate = useNavigate();
+    const location = useLocation();
+
     const [formData, setFormData] = useState({
         username: user?.username,
         email: user?.email,
         password: "123456",
         newPassword: "",
         confirmPassword: "",
-        cccd: user?.cccd,
+        cccd: user?.cccd || location.state?.cccd || "",
         reference_id: user?.reference_id,
         full_name: user?.full_name,
         mobile_number: user?.mobile_number,
@@ -32,6 +34,14 @@ export default function ChangePasswordPage() {
         address_on_map: user?.address_on_map,
     });
     const [error, setError] = useState("");
+    
+    // Update formData if cccd is passed via location state (from recovery flow)
+    useEffect(() => {
+        if (location.state?.cccd) {
+             setFormData(prev => ({ ...prev, cccd: location.state.cccd }));
+        }
+    }, [location.state]);
+
     const [passwordValidation, setPasswordValidation] = useState({
         hasUppercase: false,
         hasLowercase: false,
@@ -104,12 +114,21 @@ export default function ChangePasswordPage() {
             const response = await changePassword(formData.cccd, formData.newPassword, formData.confirmPassword)
             console.log(response.data);
 
+            if (response.data?.blocked) {
+                alert(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+                return;
+            }
 
             alert(t('auth.changePasswordSuccess', 'Đổi mật khẩu thành công!'));
-            navigate("/"); // Chuyển hướng sau khi đăng ký thành công
+            navigate("/login"); // Redirect to login as per spec
         } catch (error) {
             console.error("Lỗi khi đăng ký:", error.response?.data || error.message);
-            setError(t('auth.changePasswordError', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
+            setError(error.response?.data?.message || t('auth.changePasswordError', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
+            
+            // Handle blocked status from error response if it comes as 200 with blocked=true or 400 with blocked=true
+             if (error.response?.data?.blocked) {
+                 alert(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+             }
         }
     };
 
@@ -160,13 +179,13 @@ export default function ChangePasswordPage() {
                             onChange={handleInputChange}
 
                         />
-                        <input
+                        {/* <input
                             type="text"
                             className="border p-2 rounded w-full"
                             placeholder={t('auth.oldPasswordPlaceholder')}
                             value={user?.fullName?.replace(/\s+/g, '') || 'Tran Van A'.replace(/\s+/g, '')}
                             disabled
-                        />
+                        /> */}
 
                         <input
                             type="password"
