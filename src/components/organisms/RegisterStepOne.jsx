@@ -94,17 +94,42 @@ export default function RegisterStepOne({
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
-            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.repeatRecoveryCharacterPlaceholder", "NHẬP LẠI KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Repeat account recovery character)")} name="repeat_recovery_character" value={formData.repeat_recovery_character} onChange={handleInputChange} />
+            <div className="relative w-full">
+              <input
+                type={showRepeatRecovery ? "text" : "password"}
+                className="border p-2 rounded w-full pr-10"
+                placeholder={t("register.repeatRecoveryCharacterPlaceholder", "NHẬP LẠI KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Repeat account recovery character)")}
+                name="repeat_recovery_character"
+                value={formData.repeat_recovery_character}
+                onChange={handleInputChange}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowRepeatRecovery(!showRepeatRecovery)}
+              >
+                {showRepeatRecovery ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             <span className="text-red-500 ml-2">*</span>
           </div>
           {validationErrors.repeat_recovery_character ? <p className="text-red-500 text-sm mt-1">{validationErrors.repeat_recovery_character}</p> : null}
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
+            <button
+              type="button"
+              className="mr-2 p-2 bg-gray-200 rounded hover:bg-gray-300"
+              onClick={() => setIsQrModalOpen(true)}
+              title={t("register.scanQr", "Quét QR")}
+            >
+              <QrCode size={20} />
+            </button>
             <input type="text" className="border p-2 rounded w-full" placeholder={t("register.referrerIdPlaceholder", "ID NGƯỜI GIỚI THIỆU")} name="reference_id" value={formData.reference_id} onChange={handleInputChange} />
             <span className="text-red-500 ml-2"></span>
             <span className="text-red-500 ml-2"> </span>
           </div>
+          {validationErrors.reference_id ? <p className="text-red-500 text-sm mt-1">{validationErrors.reference_id}</p> : null}
         </div>
       </div>
       <div className="text-center mt-4">
@@ -112,6 +137,7 @@ export default function RegisterStepOne({
           {t("register.next", "Tiếp Theo")} <br />
         </button>
       </div>
+      {isQrModalOpen && <QRModalComponent isOpen={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} onScanResult={handleScanResult} />}
     </div>
   )
 }

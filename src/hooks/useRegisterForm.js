@@ -221,6 +221,14 @@ export default function useRegisterForm(t) {
       setPage(2)
     } catch (err) {
       console.error("Lỗi xác thực tài khoản ngân hàng:", err?.response?.data || err?.message)
+      
+      const errorMsg = err?.response?.data?.message || err?.message || "";
+      if (err?.response?.status === 409 || errorMsg.toLowerCase().includes("exist")) {
+         alert(t("auth.userExists", "Tài khoản đã tồn tại. Vui lòng đăng nhập."));
+         navigate("/login");
+         return;
+      }
+
       const errorMessage = t(
         "auth.bankVerifyFailed",
         "VUI LÒNG NHẬP ĐÚNG CÁC THÔNG TIN ĐĂNG KÝ TÀI KHOẢN (Please enter the correct account registration information)"
