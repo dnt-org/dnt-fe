@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { login, recoverLogin } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [color, setColor] = useState(localStorage.getItem("selectedColor"));
   const [cccd, setCccd] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(false);
@@ -361,14 +363,21 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 items-center gap-4">
+            <div className="grid grid-cols-1 items-center gap-4 relative">
               <input
-                type="text"
-                className="border p-2 rounded w-full"
+                type={showPassword ? "text" : "password"}
+                className="border p-2 rounded w-full pr-10"
                 placeholder={t('auth.password', 'MẬT KHẨU (Password)')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
             {/* Google reCAPTCHA Widget */}
             <div className="flex justify-center my-4">
