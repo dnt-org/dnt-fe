@@ -1,6 +1,8 @@
-import React from "react"
+import React, { useState } from "react"
 import PropTypes from "prop-types"
+import { Eye, EyeOff, QrCode } from "lucide-react"
 import RegisterCountrySelect from "../molecules/RegisterCountrySelect"
+import QRModalComponent from "../QRModalComponent"
 
 export default function RegisterStepOne({
   t,
@@ -16,6 +18,15 @@ export default function RegisterStepOne({
   isVerifying,
   handleNextClick,
 }) {
+  const [showRecovery, setShowRecovery] = useState(false)
+  const [showRepeatRecovery, setShowRepeatRecovery] = useState(false)
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false)
+
+  const handleScanResult = (result) => {
+    handleInputChange({ target: { name: "reference_id", value: result } })
+    setIsQrModalOpen(false)
+  }
+
   return (
     <div className="mt-6">
       {error ? <p className="text-red-500">{error}</p> : null}
@@ -60,7 +71,23 @@ export default function RegisterStepOne({
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
-            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.recoveryCharacterPlaceholder", "KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Account recovery character)")} name="recovery_character" value={formData.recovery_character} onChange={handleInputChange} />
+            <div className="relative w-full">
+              <input
+                type={showRecovery ? "text" : "password"}
+                className="border p-2 rounded w-full pr-10"
+                placeholder={t("register.recoveryCharacterPlaceholder", "KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Account recovery character)")}
+                name="recovery_character"
+                value={formData.recovery_character}
+                onChange={handleInputChange}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowRecovery(!showRecovery)}
+              >
+                {showRecovery ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
             <span className="text-red-500 ml-2">*</span>
           </div>
           {validationErrors.recovery_character ? <p className="text-red-500 text-sm mt-1">{validationErrors.recovery_character}</p> : null}
