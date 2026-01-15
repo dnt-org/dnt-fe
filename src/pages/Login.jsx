@@ -140,6 +140,7 @@ export default function LoginPage() {
       }
 
       if (response.data?.require_recovery_character) {
+        alert(t('auth.tempBlocked', 'Tài khoản đang bị tạm khóa. Vui lòng nhập ký tự khôi phục để xác thực.'));
         setStep('RECOVERY');
         setContext(response.data.context);
         return;
@@ -147,6 +148,14 @@ export default function LoginPage() {
 
       if (response.status == 200) {
         if (response.data?.error?.status === 401) {
+           const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
+           if (failedAttempts >= 5) {
+             alert(t('auth.tooManyAttempts', 'Bạn đã nhập sai quá 5 lần. Vui lòng nhập ký tự khôi phục để mở khóa.'));
+             setStep('RECOVERY');
+             setContext('wrong_password');
+             return;
+           }
+
            // Legacy error handling or unexpected 200 with error
            alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
            return;
@@ -160,6 +169,7 @@ export default function LoginPage() {
            navigate("/");
         } else if (response.data?.require_recovery_character) {
              // Redundant check but safe
+             alert(t('auth.tempBlocked', 'Tài khoản đang bị tạm khóa. Vui lòng nhập ký tự khôi phục để xác thực.'));
              setStep('RECOVERY');
              setContext(response.data.context);
         } else {
@@ -171,6 +181,22 @@ export default function LoginPage() {
       // Reset reCAPTCHA khi có lỗi
       window.grecaptcha?.reset();
       setRecaptchaReady(false);
+
+      // Check failed attempts
+      const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
+      if (failedAttempts >= 5) {
+        alert(t('auth.tooManyAttempts', 'Bạn đã nhập sai quá 5 lần. Vui lòng nhập ký tự khôi phục để mở khóa.'));
+        setStep('RECOVERY');
+        setContext('wrong_password'); // Client-side context inference
+        return;
+      }
+
+      if (error.response?.data?.require_recovery_character) {
+        setStep('RECOVERY');
+        setContext(error.response.data.context);
+        return;
+      }
+      
       setErrorMessage(t('auth.invalidCredentials', 'Thông tin đăng nhập không chính xác!'));
     }
   };
