@@ -22,6 +22,10 @@ export default function RegisterStepOne({
   const [showRepeatRecovery, setShowRepeatRecovery] = useState(false)
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
 
+  const handleSecureFieldEvent = (e) => {
+    e.preventDefault()
+  }
+
   const handleScanResult = (result) => {
     handleInputChange({ target: { name: "reference_id", value: result } })
     setIsQrModalOpen(false)
@@ -79,6 +83,10 @@ export default function RegisterStepOne({
                 name="recovery_character"
                 value={formData.recovery_character}
                 onChange={handleInputChange}
+                onCopy={handleSecureFieldEvent}
+                onPaste={handleSecureFieldEvent}
+                onCut={handleSecureFieldEvent}
+                onContextMenu={handleSecureFieldEvent}
               />
               <button
                 type="button"
@@ -102,6 +110,10 @@ export default function RegisterStepOne({
                 name="repeat_recovery_character"
                 value={formData.repeat_recovery_character}
                 onChange={handleInputChange}
+                onCopy={handleSecureFieldEvent}
+                onPaste={handleSecureFieldEvent}
+                onCut={handleSecureFieldEvent}
+                onContextMenu={handleSecureFieldEvent}
               />
               <button
                 type="button"
