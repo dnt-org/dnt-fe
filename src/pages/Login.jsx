@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
 import { login, recoverLogin } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +20,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
@@ -47,6 +48,20 @@ export default function LoginPage() {
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
+
+  // Check for success message from forgot password flow
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the state to prevent showing message again on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+      // Auto-hide success message after 5 seconds
+      const timer = setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, navigate, location.pathname]);
 
   // Render reCAPTCHA widget khi component mount
   useEffect(() => {
@@ -150,9 +165,13 @@ export default function LoginPage() {
         if (response.data?.error?.status === 401) {
            const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
            if (failedAttempts >= 5) {
-             alert(t('auth.tooManyAttempts', 'Bạn đã nhập sai quá 5 lần. Vui lòng nhập ký tự khôi phục để mở khóa.'));
-             setStep('RECOVERY');
-             setContext('wrong_password');
+             // Redirect to forgot password page with login failure flag (AC-2)
+             navigate('/forgot-password', { 
+               state: { 
+                 bankAccountId: cccd,
+                 triggeredByLoginFailure: true 
+               } 
+             });
              return;
            }
 
@@ -182,12 +201,15 @@ export default function LoginPage() {
       window.grecaptcha?.reset();
       setRecaptchaReady(false);
 
-      // Check failed attempts
+      // Check failed attempts - redirect to forgot password page if >= 5 (AC-2)
       const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
       if (failedAttempts >= 5) {
-        alert(t('auth.tooManyAttempts', 'Bạn đã nhập sai quá 5 lần. Vui lòng nhập ký tự khôi phục để mở khóa.'));
-        setStep('RECOVERY');
-        setContext('wrong_password'); // Client-side context inference
+        navigate('/forgot-password', { 
+          state: { 
+            bankAccountId: cccd,
+            triggeredByLoginFailure: true 
+          } 
+        });
         return;
       }
 
@@ -378,6 +400,15 @@ export default function LoginPage() {
               QR
             </div>
           </div>
+          
+          {/* Success Message from Password Recovery */}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mt-4 flex items-center gap-2 animate-fade-in">
+              <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+          
           <div className="space-y-4 mt-4">
             <div className="grid grid-cols-1 items-center gap-4">
               <input
@@ -411,15 +442,28 @@ export default function LoginPage() {
             </div>
 
             {step === 'LOGIN' && !isShowRecover && (
-              <div className="text-center mt-4">
-                <button
-                  className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
-                  onClick={handleLogin}
-
-                >
-                  {t('auth.login', 'ĐĂNG NHẬP')} <br />
-                </button>
-              </div>
+              <>
+                <div className="text-center mt-4">
+                  <button
+                    className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
+                    onClick={handleLogin}
+                  >
+                    {t('auth.login', 'ĐĂNG NHẬP')} <br />
+                  </button>
+                </div>
+                
+                {/* Forgot Password Link (AC-1) */}
+                <div className="text-center mt-3">
+                  <button
+                    type="button"
+                    className="text-blue-600 hover:text-blue-800 text-sm underline flex items-center justify-center gap-1 mx-auto"
+                    onClick={() => navigate('/forgot-password', { state: { bankAccountId: cccd } })}
+                  >
+                    <KeyRound size={14} />
+                    {t('auth.forgotPassword', 'Quên mật khẩu?')}
+                  </button>
+                </div>
+              </>
             )}
             
             {/* Show Recovery Input if explicitly shown OR if step is RECOVERY */}

@@ -256,7 +256,67 @@ const verifyOtp = async (cccd, otp) => {
     );
     return response;
 }
+
+/**
+ * Verify recovery string for password reset
+ * POST /api/v1/auth/recover/verify
+ * @param {string} bankAccountId - User's bank account ID
+ * @param {string} recoveryString - User's recovery string
+ * @returns {Promise<Object>} - { verificationResult: "PASS", resetToken: "RST-xxx" }
+ */
+const verifyRecoveryString = async (bankAccountId, recoveryString) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/v1/auth/recover/verify`,
+            {
+                bankAccountId,
+                recoveryString
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error setting up recovery verification request");
+        }
+    }
+};
+
+/**
+ * Reset password using reset token
+ * POST /api/v1/auth/recover/reset
+ * @param {string} resetToken - Reset token received from verify endpoint
+ * @param {string} newPassword - User's new password
+ * @returns {Promise<Object>} - { success: true, message: "..." }
+ */
+const resetPasswordWithToken = async (resetToken, newPassword) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/v1/auth/recover/reset`,
+            {
+                resetToken,
+                newPassword
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error setting up password reset request");
+        }
+    }
+};
+
 export {
-    login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo
-    , updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp
+    login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
+    updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
+    verifyRecoveryString, resetPasswordWithToken
 };

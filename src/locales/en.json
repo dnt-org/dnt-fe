@@ -85,6 +85,47 @@
     "qrNoData": "No QR data",
     "login": "LOG IN"
   },
+  "forgotPassword": {
+    "title": "PASSWORD RECOVERY",
+    "resetTitle": "SET NEW PASSWORD",
+    "verifyDescription": "Enter your bank account number and recovery string to verify your account.",
+    "resetDescription": "Enter a new password for your account.",
+    "bankAccountPlaceholder": "Bank Account Number (Bank Account ID)",
+    "recoveryStringPlaceholder": "Recovery String",
+    "newPasswordPlaceholder": "New Password",
+    "confirmPasswordPlaceholder": "Confirm Password",
+    "verifyButton": "VERIFY",
+    "resetButton": "RESET PASSWORD",
+    "verifySuccess": "Verification successful! Please set a new password.",
+    "resetSuccess": "Password changed successfully! Redirecting to login...",
+    "redirectMessage": "Password has been changed successfully. Please login.",
+    "loginFailureWarning": "You have failed login 5 times. Please verify to recover your account.",
+    "backToLogin": "← Back to login",
+    "backToVerify": "← Back to verification step",
+    "passwordMatch": "Passwords match",
+    "passwordMismatch": "Passwords do not match",
+    "passwordRequirements": {
+      "minLength": "At least 8 characters",
+      "hasUppercase": "At least 1 uppercase letter (A-Z)",
+      "hasLowercase": "At least 1 lowercase letter (a-z)",
+      "hasNumber": "At least 1 number (0-9)",
+      "hasSpecialChar": "At least 1 special character (!@#$%^&*(),.?\":{}|<>)"
+    },
+    "errors": {
+      "bankAccountRequired": "Please enter bank account number",
+      "recoveryStringRequired": "Please enter recovery string",
+      "verifyFailed": "Verification failed. Please try again.",
+      "invalidRecoveryString": "Bank account or recovery string is incorrect",
+      "recoveryNotConfigured": "Account has not set up recovery string",
+      "accountLocked": "Account is temporarily locked due to too many failed attempts. Please try again after 30 minutes.",
+      "invalidToken": "Token is invalid or already used",
+      "tokenExpired": "Token has expired. Please verify again.",
+      "passwordPolicyFailed": "Password does not meet security requirements",
+      "passwordSameAsPrevious": "New password must be different from the old password",
+      "passwordMismatch": "Confirm password does not match",
+      "resetFailed": "Password reset failed. Please try again."
+    }
+  },
   "navigation": {
     "home": "Home",
     "aiLive": "Ai LIVE",
