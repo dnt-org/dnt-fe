@@ -22,6 +22,7 @@ import AdminControlPage from './pages/AdminControlPage.jsx'
 import RewardListPage from './pages/RewardListPage.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import HomeWrapper from './pages/HomeWrapper.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 function App() {
 
   return (
@@ -31,6 +32,7 @@ function App() {
         <Route exact path={import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login'} element={<LoginPage />} />
         <Route exact path="/register" element={<RegisterPage />} />
         <Route exact path="/login" element={<LoginPage />} />
+        <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
 
         <Route exact path="/list-of-goods" element={<ListOfGoodsPage />} />
