@@ -9,6 +9,10 @@ const ScanResultModal = ({ isOpen, onClose, result }) => {
 
     const { avatar, stk, userId, type } = result;
 
+    const handleConfirm = () => {
+        onClose();
+    };
+
     return (
         <div className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50 bg-opacity-50 p-4 backdrop-blur-sm">
             <div className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100">

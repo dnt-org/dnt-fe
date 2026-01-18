@@ -640,6 +640,13 @@ export default function RegisterPage() {
     handleNextClick,
     isReadContract,
     banks,
+    isContractModalOpen,
+    contractFiles,
+    contractActiveIndex,
+    setContractActiveIndex,
+    isContractLoading,
+    contractError,
+    handleCloseContractModal,
   } = useRegisterForm(t);
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -662,7 +669,19 @@ export default function RegisterPage() {
           />
         )}
         {page === 2 && (
-          <RegisterStepTwo t={t} handleContractDownload={handleContractDownload} isReadContract={isReadContract} handleRegister={handleRegister} />
+          <RegisterStepTwo
+            t={t}
+            handleContractDownload={handleContractDownload}
+            isReadContract={isReadContract}
+            handleRegister={handleRegister}
+            isContractModalOpen={isContractModalOpen}
+            contractFiles={contractFiles}
+            contractActiveIndex={contractActiveIndex}
+            setContractActiveIndex={setContractActiveIndex}
+            isContractLoading={isContractLoading}
+            contractError={contractError}
+            handleCloseContractModal={handleCloseContractModal}
+          />
         )}
       </div>
     </div>

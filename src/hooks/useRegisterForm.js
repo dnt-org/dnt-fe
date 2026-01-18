@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux"
 import { changePasswordAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
 import { getBanks } from "../services/systemService"
-import { downloadContract } from "../services/contractService"
 import { verifyBankNumber } from "../services/authService"
 
 export default function useRegisterForm(t) {
@@ -23,6 +22,11 @@ export default function useRegisterForm(t) {
   const [error, setError] = useState("")
   const [page, setPage] = useState(1)
   const [isVerifying, setIsVerifying] = useState(false)
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false)
+  const [contractFiles, setContractFiles] = useState([])
+  const [contractActiveIndex, setContractActiveIndex] = useState(0)
+  const [isContractLoading, setIsContractLoading] = useState(false)
+  const [contractError, setContractError] = useState("")
   const [recoveryCharacterValidation, setRecoveryCharacterValidation] = useState({
     hasUppercase: false,
     hasLowercase: false,
@@ -133,19 +137,90 @@ export default function useRegisterForm(t) {
 
   const handleContractDownload = async () => {
     console.log(formData)
+    setContractError("")
+    setIsContractModalOpen(true)
+    setIsContractLoading(true)
     try {
-      await downloadContract({
-        ...formData,
-        benABankNumber: formData.bank_number,
-        country: selectedCountry,
-        benABankName: formData.bank_name,
-        contractAddress: selectedCountry?.value,
-      })
+      const generateResponse = await axios.post(
+        `${API_URL}/contract/generate`,
+        {
+          ...formData,
+          benABankNumber: formData.bank_number,
+          country: selectedCountry,
+          benABankName: formData.bank_name,
+          contractAddress: selectedCountry?.value,
+        },
+        {
+          responseType: "blob",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      )
+
+      const contentDisposition = generateResponse.headers?.["content-disposition"] || generateResponse.headers?.["Content-Disposition"]
+      let generatedFileName = "contract.pdf"
+      if (contentDisposition) {
+        const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i)
+        if (fileNameMatch && fileNameMatch[1]) {
+          generatedFileName = fileNameMatch[1].replace(/['"]/g, "").trim()
+        }
+      }
+
+      const generatedBlob =
+        generateResponse.data instanceof Blob ? generateResponse.data : new Blob([generateResponse.data], { type: "application/pdf" })
+      const generatedUrl = window.URL.createObjectURL(generatedBlob)
+
+      const collateralsResponse = await axios.get(`${API_URL}/collaterals/download/CONTRACT`)
+      const collateralFilesRaw = collateralsResponse.data?.files || []
+      const collateralFiles = collateralFilesRaw
+        .filter(Boolean)
+        .map((url, index) => ({
+          type: "collateral",
+          url: String(url).replace(/`/g, "").trim(),
+          label: `File ${index + 1}`,
+          downloadName: (() => {
+            const clean = String(url).replace(/`/g, "").trim()
+            const path = clean.split("?")[0]
+            const name = path.split("/").pop()
+            return name || `file_${index + 1}.pdf`
+          })(),
+        }))
+
+      const files = [
+        {
+          type: "generated",
+          url: generatedUrl,
+          label: t("register.generatedContract", "Hợp đồng đã được sinh"),
+          downloadName: generatedFileName,
+        },
+        ...collateralFiles,
+      ]
+
+      setContractFiles(files)
+      setContractActiveIndex(0)
       setIsReadContract(true)
     } catch (error) {
-      console.error("Lỗi khi tải hợp đồng:", error)
-      alert(t("auth.contractDownloadError", "Không thể tải file hợp đồng. Vui lòng thử lại."))
+      console.error("Lỗi khi tải hợp đồng hoặc tài liệu:", error)
+      const message = t("auth.contractDownloadError", "Không thể tải file hợp đồng. Vui lòng thử lại.")
+      setContractError(message)
+      alert(message)
+      setIsContractModalOpen(false)
+    } finally {
+      setIsContractLoading(false)
     }
+  }
+
+  const handleCloseContractModal = () => {
+    try {
+      const first = contractFiles[0]
+      if (first && first.type === "generated" && first.url && first.url.startsWith("blob:")) {
+        window.URL.revokeObjectURL(first.url)
+      }
+    } catch {
+      // ignore revoke errors
+    }
+    setIsContractModalOpen(false)
   }
 
   const generateRandomPassword = (length = 8) => {
@@ -266,5 +341,12 @@ export default function useRegisterForm(t) {
     handleContractDownload,
     handleRegister,
     handleNextClick,
+    isContractModalOpen,
+    contractFiles,
+    contractActiveIndex,
+    setContractActiveIndex,
+    isContractLoading,
+    contractError,
+    handleCloseContractModal,
   }
 }
