@@ -83,25 +83,34 @@
     "qrTitle": "MÃ QR ĐĂNG NHẬP",
     "qrError": "Không lấy được mã QR, vui lòng thử lại",
     "qrNoData": "Chưa có dữ liệu QR",
-    "login": "ĐĂNG NHẬP"
+    "login": "ĐĂNG NHẬP",
+    "tempBlockedUntil": "Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc {{time}}.",
+    "userBlocked": "Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ."
   },
   "forgotPassword": {
     "title": "KHÔI PHỤC MẬT KHẨU",
     "resetTitle": "ĐẶT MẬT KHẨU MỚI",
+    "otpTitle": "XÁC THỰC OTP",
+    "loginFailureWarning": "Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.",
+    "recoveryRequiredMessage": "Tài khoản của bạn đã được mở khóa. Vui lòng xác thực chuỗi khôi phục để tiếp tục.",
+    "blockedWarning": "Tài khoản đã bị khóa do nhập sai recovery quá 5 lần. Vui lòng liên hệ hỗ trợ.",
     "verifyDescription": "Nhập số tài khoản ngân hàng và chuỗi khôi phục để xác thực tài khoản của bạn.",
+    "otpDescription": "Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.",
     "resetDescription": "Nhập mật khẩu mới cho tài khoản của bạn.",
     "bankAccountPlaceholder": "Số tài khoản ngân hàng (Bank Account ID)",
     "recoveryStringPlaceholder": "Chuỗi khôi phục (Recovery String)",
     "newPasswordPlaceholder": "Mật khẩu mới (New Password)",
     "confirmPasswordPlaceholder": "Xác nhận mật khẩu (Confirm Password)",
     "verifyButton": "XÁC THỰC",
+    "verifyOtpButton": "XÁC NHẬN OTP",
     "resetButton": "ĐỔI MẬT KHẨU",
-    "verifySuccess": "Xác thực thành công! Vui lòng đặt mật khẩu mới.",
+    "otpSent": "Xác thực thành công! Vui lòng nhập mã OTP được gửi đến bạn.",
+    "verifySuccess": "Xác thực OTP thành công! Vui lòng đặt mật khẩu mới.",
     "resetSuccess": "Đổi mật khẩu thành công! Đang chuyển đến trang đăng nhập...",
     "redirectMessage": "Mật khẩu đã được đổi thành công. Vui lòng đăng nhập.",
-    "loginFailureWarning": "Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.",
     "backToLogin": "← Quay lại đăng nhập",
     "backToVerify": "← Quay lại bước xác thực",
+    "backToOtp": "← Quay lại bước xác thực OTP",
     "passwordMatch": "Mật khẩu khớp",
     "passwordMismatch": "Mật khẩu không khớp",
     "passwordRequirements": {
@@ -114,12 +123,17 @@
     "errors": {
       "bankAccountRequired": "Vui lòng nhập số tài khoản ngân hàng",
       "recoveryStringRequired": "Vui lòng nhập chuỗi khôi phục",
+      "otpRequired": "Vui lòng nhập mã OTP",
       "verifyFailed": "Xác thực thất bại. Vui lòng thử lại.",
       "invalidRecoveryString": "Số tài khoản hoặc chuỗi khôi phục không chính xác",
       "recoveryNotConfigured": "Tài khoản chưa thiết lập chuỗi khôi phục",
-      "accountLocked": "Tài khoản tạm thời bị khóa do nhiều lần thử thất bại. Vui lòng thử lại sau 30 phút.",
+      "accountLocked": "Tài khoản tạm thời bị khóa do nhiều lần thử thất bại. Vui lòng thử lại sau.",
+      "tempBlocked": "Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc {{time}}.",
+      "accountBlocked": "Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.",
       "invalidToken": "Token không hợp lệ hoặc đã được sử dụng",
       "tokenExpired": "Token đã hết hạn. Vui lòng xác thực lại.",
+      "invalidOtp": "Mã OTP không chính xác",
+      "otpVerifyFailed": "Xác thực OTP thất bại. Vui lòng thử lại.",
       "passwordPolicyFailed": "Mật khẩu không đáp ứng yêu cầu bảo mật",
       "passwordSameAsPrevious": "Mật khẩu mới phải khác mật khẩu cũ",
       "passwordMismatch": "Mật khẩu xác nhận không khớp",
@@ -238,9 +252,6 @@
     "seconds": "VNĐ / GIÂY (S) / LƯỢT XEM",
     "showAd": "HIỆN QUẢNG CÁO",
     "insertAd": "CHÈN QUẢNG CÁO"
-  },
-  "aiLive": {
-    "goodsSelling": "HÀNG HÓA ĐANG BÁN TRONG BUỔI LIVE"
   },
   "liveGoods": {
     "from": "Từ",
@@ -693,7 +704,8 @@
     "pressToEnterViews": "ấn = nhập số lượt xem",
     "tick": "* tick",
     "startAdvertisingFromSecondsLive": "BẮT ĐẦU QUẢNG CÁO TỪ GIÂY THỨ...",
-    "startAdvertisingFromViewsLive": "BẮT ĐẦU QUẢNG CÁO TỪ LƯỢT XEM THỨ"
+    "startAdvertisingFromViewsLive": "BẮT ĐẦU QUẢNG CÁO TỪ LƯỢT XEM THỨ",
+    "goodsSelling": "HÀNG HÓA ĐANG BÁN TRONG BUỔI LIVE"
   },
   "payment": {
     "bdk": "3-BĐK",

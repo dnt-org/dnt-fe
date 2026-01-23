@@ -315,8 +315,38 @@ const resetPasswordWithToken = async (resetToken, newPassword) => {
     }
 };
 
+/**
+ * Verify OTP for password recovery
+ * POST /api/v1/auth/recover/verify-otp
+ * @param {string} resetToken - Reset token received from recovery verify endpoint
+ * @param {string} otp - OTP code entered by user
+ * @returns {Promise<Object>} - { verificationResult: "PASS", resetToken: "..." }
+ * Errors: INVALID_OTP, INVALID_RESET_TOKEN, RESET_TOKEN_EXPIRED
+ */
+const verifyRecoveryOtp = async (resetToken, otp) => {
+    try {
+        const response = await axios.post(
+            `${API_URL}/v1/auth/recover/verify-otp`,
+            {
+                resetToken,
+                otp
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error setting up OTP verification request");
+        }
+    }
+};
+
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
-    verifyRecoveryString, resetPasswordWithToken
+    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp
 };

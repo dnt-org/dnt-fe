@@ -136,7 +136,12 @@ export default function LoginPage() {
   const handleLogin = async () => {
     try {
       // Lấy token từ reCAPTCHA widget
-      const recaptchaToken = window.grecaptcha?.getResponse();
+      let recaptchaToken = window.grecaptcha?.getResponse();
+
+      // Bypass for mock verification
+      if (import.meta.env.VITE_REACT_APP_ENABLE_PASSWORD_GATE === 'false') {
+        recaptchaToken = "mock_token";
+      }
       
       if (!recaptchaToken) {
         alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
@@ -149,8 +154,42 @@ export default function LoginPage() {
       // Reset reCAPTCHA sau khi gửi request
       window.grecaptcha?.reset();
       setRecaptchaReady(false);
-      if (response.data?.blocked) {
-        alert(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+
+      // Handle TEMP_BLOCKED
+      if (response.data?.tempBlockedUntil) {
+        const blockedUntil = new Date(response.data.tempBlockedUntil);
+        const formattedTime = blockedUntil.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        setErrorMessage(t('auth.tempBlockedUntil', `Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc ${formattedTime}`, { time: formattedTime }));
+        return;
+      }
+
+      // Handle permanent BLOCKED
+      if (response.data?.blocked || response.data?.isBlocked) {
+        setErrorMessage(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.'));
+        return;
+      }
+
+      // Handle RECOVERY_REQUIRED
+      if (response.data?.requiresRecovery) {
+        const reason = response.data?.reason;
+        
+        if (reason === 'FINAL_CHANCE_SECURITY_CHECK') {
+          navigate('/forgot-password', { 
+            state: { 
+              bankAccountId: cccd,
+              triggeredByFinalChance: true 
+            } 
+          });
+          return;
+        }
+        
+        // Default to login failure behavior for TOO_MANY_LOGIN_FAILURES or other reasons
+        navigate('/forgot-password', { 
+          state: { 
+            bankAccountId: cccd,
+            triggeredByLoginFailure: true 
+          } 
+        });
         return;
       }
 
@@ -176,7 +215,7 @@ export default function LoginPage() {
            }
 
            // Legacy error handling or unexpected 200 with error
-           alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+           setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
            return;
         }
 
@@ -193,13 +232,50 @@ export default function LoginPage() {
              setContext(response.data.context);
         } else {
             // Unexpected success without token or flow instructions
-             alert(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+             setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
         }
       } 
     } catch (error) {
       // Reset reCAPTCHA khi có lỗi
       window.grecaptcha?.reset();
       setRecaptchaReady(false);
+
+      // Handle TEMP_BLOCKED from error response
+      if (error.response?.data?.tempBlockedUntil) {
+        const blockedUntil = new Date(error.response.data.tempBlockedUntil);
+        const formattedTime = blockedUntil.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        setErrorMessage(t('auth.tempBlockedUntil', `Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc ${formattedTime}`, { time: formattedTime }));
+        return;
+      }
+
+      // Handle permanent BLOCKED from error response
+      if (error.response?.data?.blocked || error.response?.data?.isBlocked) {
+        setErrorMessage(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.'));
+        return;
+      }
+
+      // Handle RECOVERY_REQUIRED from error response
+      if (error.response?.data?.requiresRecovery) {
+        const reason = error.response.data?.reason;
+        
+        if (reason === 'FINAL_CHANCE_SECURITY_CHECK') {
+          navigate('/forgot-password', { 
+            state: { 
+              bankAccountId: cccd,
+              triggeredByFinalChance: true 
+            } 
+          });
+          return;
+        }
+        
+        navigate('/forgot-password', { 
+          state: { 
+            bankAccountId: cccd,
+            triggeredByLoginFailure: true 
+          } 
+        });
+        return;
+      }
 
       // Check failed attempts - redirect to forgot password page if >= 5 (AC-2)
       const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
