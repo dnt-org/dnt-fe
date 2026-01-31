@@ -139,7 +139,7 @@ export default function LoginPage() {
       let recaptchaToken = window.grecaptcha?.getResponse();
 
       // Bypass for mock verification
-      if (import.meta.env.VITE_REACT_APP_ENABLE_PASSWORD_GATE === 'false') {
+      if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
         recaptchaToken = "mock_token";
       }
       
