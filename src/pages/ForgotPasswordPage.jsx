@@ -31,6 +31,7 @@ export default function ForgotPasswordPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
+  const [otpSkipped, setOtpSkipped] = useState(false); // Track if OTP step was skipped
   
   // Password validation
   const [passwordValidation, setPasswordValidation] = useState({
@@ -110,8 +111,19 @@ export default function ForgotPasswordPage() {
       
       if (response.data?.verificationResult === 'PASS' && response.data?.resetToken) {
         setResetToken(response.data.resetToken);
-        setSuccessMessage(t('forgotPassword.otpSent', 'Xác thực thành công! Vui lòng nhập mã OTP được gửi đến bạn.'));
-        setStep('OTP');
+        
+        // Check if OTP is required (is_in_final_chance = true means user was previously TEMP_BLOCKED)
+        if (response.data?.requiresOtp) {
+          // User is in final chance mode - requires OTP verification
+          setOtpSkipped(false);
+          setSuccessMessage(t('forgotPassword.otpSent', 'Xác thực thành công! Vui lòng nhập mã OTP được gửi đến bạn.'));
+          setStep('OTP');
+        } else {
+          // User is NOT in final chance mode - skip OTP, go directly to reset password
+          setOtpSkipped(true);
+          setSuccessMessage(t('forgotPassword.verifySuccess', 'Xác thực thành công! Vui lòng đặt mật khẩu mới.'));
+          setStep('RESET');
+        }
         setErrorMessage("");
       } else {
         setErrorMessage(t('forgotPassword.errors.verifyFailed', 'Xác thực thất bại. Vui lòng thử lại.'));
@@ -355,7 +367,7 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          {/* Step indicator - 3 steps now */}
+          {/* Step indicator - 3 steps (OTP step may be skipped) */}
           <div className="flex items-center justify-center mb-6">
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
               getStepState('VERIFY') === 'completed' ? 'bg-green-500 text-white' :
@@ -363,14 +375,26 @@ export default function ForgotPasswordPage() {
             }`}>
               <KeyRound size={20} />
             </div>
-            <div className={`w-12 h-1 ${getStepState('OTP') !== 'pending' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-              getStepState('OTP') === 'completed' ? 'bg-green-500 text-white' :
-              getStepState('OTP') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
+            <div className={`w-12 h-1 ${
+              otpSkipped ? 'bg-green-500' : 
+              (getStepState('OTP') !== 'pending' ? 'bg-green-500' : 'bg-gray-300')
+            }`}></div>
+            <div className={`flex items-center justify-center w-10 h-10 rounded-full relative ${
+              otpSkipped ? 'bg-gray-300 text-gray-400' :
+              (getStepState('OTP') === 'completed' ? 'bg-green-500 text-white' :
+              getStepState('OTP') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500')
             }`}>
               <Smartphone size={20} />
+              {/* Show strikethrough if OTP was skipped */}
+              {otpSkipped && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-8 h-0.5 bg-gray-500 rotate-45"></div>
+                </div>
+              )}
             </div>
-            <div className={`w-12 h-1 ${getStepState('RESET') !== 'pending' ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+            <div className={`w-12 h-1 ${
+              (step === 'RESET' || getStepState('RESET') !== 'pending') ? 'bg-green-500' : 'bg-gray-300'
+            }`}></div>
             <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
               getStepState('RESET') === 'completed' ? 'bg-green-500 text-white' :
               getStepState('RESET') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
@@ -593,12 +617,20 @@ export default function ForgotPasswordPage() {
                   </button>
                 </div>
 
-                {/* Back to OTP button */}
+                {/* Back button - to OTP if not skipped, to VERIFY if skipped */}
                 <div className="text-center mt-2">
                   <button
                     className="text-blue-600 hover:text-blue-800 text-sm underline"
                     onClick={() => {
-                      setStep('OTP');
+                      if (otpSkipped) {
+                        // OTP was skipped, go back to VERIFY step
+                        setStep('VERIFY');
+                        setResetToken("");
+                        setOtpSkipped(false);
+                      } else {
+                        // OTP was not skipped, go back to OTP step
+                        setStep('OTP');
+                      }
                       setNewPassword("");
                       setConfirmPassword("");
                       setErrorMessage("");
@@ -606,7 +638,10 @@ export default function ForgotPasswordPage() {
                     }}
                     disabled={isLoading}
                   >
-                    {t('forgotPassword.backToOtp', '← Quay lại bước xác thực OTP')}
+                    {otpSkipped 
+                      ? t('forgotPassword.backToVerify', '← Quay lại bước xác thực')
+                      : t('forgotPassword.backToOtp', '← Quay lại bước xác thực OTP')
+                    }
                   </button>
                 </div>
               </>
