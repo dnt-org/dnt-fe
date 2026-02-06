@@ -263,9 +263,6 @@ export default function ForgotPasswordPage() {
       if (response.data?.success) {
         setSuccessMessage(t('forgotPassword.resetSuccess', 'Đổi mật khẩu thành công! Đang chuyển đến trang đăng nhập...'));
         
-        // Clear login failure attempts counter
-        localStorage.removeItem('loginFailedAttempts');
-        
         // Redirect to login after 2 seconds
         setTimeout(() => {
           navigate('/login', { 

@@ -202,18 +202,6 @@ export default function LoginPage() {
 
       if (response.status == 200) {
         if (response.data?.error?.status === 401) {
-           const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
-           if (failedAttempts >= 5) {
-             // Redirect to forgot password page with login failure flag (AC-2)
-             navigate('/forgot-password', { 
-               state: { 
-                 bankAccountId: cccd,
-                 triggeredByLoginFailure: true 
-               } 
-             });
-             return;
-           }
-
            // Legacy error handling or unexpected 200 with error
            setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
            return;
@@ -268,18 +256,6 @@ export default function LoginPage() {
           return;
         }
         
-        navigate('/forgot-password', { 
-          state: { 
-            bankAccountId: cccd,
-            triggeredByLoginFailure: true 
-          } 
-        });
-        return;
-      }
-
-      // Check failed attempts - redirect to forgot password page if >= 5 (AC-2)
-      const failedAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
-      if (failedAttempts >= 5) {
         navigate('/forgot-password', { 
           state: { 
             bankAccountId: cccd,

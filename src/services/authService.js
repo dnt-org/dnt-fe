@@ -18,18 +18,12 @@ const login = async (cccd, password, recaptchaToken) => {
 
         // Check for soft error (200 OK but contains error data)
         if (response.data?.error) {
-            const currentAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
-            localStorage.setItem('loginFailedAttempts', (currentAttempts + 1).toString());
             return response; // Return response so caller can handle specific error codes
         }
 
         // Reset attempts on successful login
-        localStorage.removeItem('loginFailedAttempts');
         return response;
     } catch (error) {
-        // Increment failed attempts
-        const currentAttempts = parseInt(localStorage.getItem('loginFailedAttempts') || '0');
-        localStorage.setItem('loginFailedAttempts', (currentAttempts + 1).toString());
         throw error;
     }
 };
