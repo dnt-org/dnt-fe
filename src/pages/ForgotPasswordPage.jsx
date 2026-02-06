@@ -278,7 +278,15 @@ export default function ForgotPasswordPage() {
     } catch (error) {
       console.error('Reset password error:', error);
       
-      const errorCode = error.response?.data?.error?.code || error.response?.data?.code;
+      const httpStatus = error.response?.status;
+      // Handle different error response formats from backend
+      const errorCode = error.response?.data?.error?.code || error.response?.data?.code || error.response?.data?.error;
+      
+      // Handle HTTP 409 - Password same as previous
+      if (httpStatus === 409 || errorCode === 'PASSWORD_SAME_AS_PREVIOUS') {
+        setErrorMessage(t('forgotPassword.errors.passwordSameAsPrevious', 'Mật khẩu mới phải khác mật khẩu cũ'));
+        return;
+      }
       
       switch (errorCode) {
         case 'INVALID_RESET_TOKEN':
@@ -295,9 +303,6 @@ export default function ForgotPasswordPage() {
           break;
         case 'PASSWORD_POLICY_FAILED':
           setErrorMessage(t('forgotPassword.errors.passwordPolicyFailed', 'Mật khẩu không đáp ứng yêu cầu bảo mật'));
-          break;
-        case 'PASSWORD_SAME_AS_PREVIOUS':
-          setErrorMessage(t('forgotPassword.errors.passwordSameAsPrevious', 'Mật khẩu mới phải khác mật khẩu cũ'));
           break;
         default:
           setErrorMessage(error.response?.data?.error?.message || error.response?.data?.message || t('forgotPassword.errors.resetFailed', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
