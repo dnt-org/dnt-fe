@@ -430,7 +430,7 @@ export default function ForgotPasswordPage() {
                   <input
                     type="text"
                     className="border p-3 rounded w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder={t('forgotPassword.recoveryStringPlaceholder', 'Chuỗi khôi phục (Recovery String)')}
+                    placeholder={t('forgotPassword.recoveryStringPlaceholder', 'Chuỗi khôi phục')}
                     value={recoveryString}
                     onChange={(e) => setRecoveryString(e.target.value)}
                     disabled={isLoading || isBlocked}
