@@ -7,7 +7,7 @@ export const getCountries = async () => {
       throw new Error("Network response was not ok");
     }
     const countries = await response.json();
-    const all = { vi: "Chọn quốc gia", en: "Select country" }
+    const all = { vi: "Chọn quốc gia", en: "Select country", cca2: "" }
 
     const priorityCodes = ["VN", "US"];
 
@@ -26,7 +26,8 @@ export const getCountries = async () => {
     const countriesWithAll = [all, ...reordered.map(country => ({
       vi: country.name.common,
       en: country.name.common,
-      flag: country.flags.svg
+      flag: country.flags.svg,
+      cca2: country.cca2
     }))];
 
     return countriesWithAll;

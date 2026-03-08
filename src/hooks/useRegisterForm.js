@@ -4,7 +4,7 @@ import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { changePasswordAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
-import { getBanks } from "../services/systemService"
+import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
 
 export default function useRegisterForm(t) {
@@ -61,8 +61,16 @@ export default function useRegisterForm(t) {
     const root = document.getElementById("root")
     if (root) root.style.backgroundColor = color
     fetchCountries()
-    fetchBanks()
   }, [color])
+
+  useEffect(() => {
+    if (selectedCountry && selectedCountry.cca2) {
+      const list = banksByCountry[selectedCountry.cca2] || []
+      setBanks(list)
+    } else {
+      setBanks([])
+    }
+  }, [selectedCountry])
 
   const validateRecoveryCharacter = (recoveryChar) => {
     const hasUppercase = /[A-Z]/.test(recoveryChar)
@@ -271,19 +279,10 @@ export default function useRegisterForm(t) {
     try {
       const rs = await getCountries()
       setCountries(
-        rs.map((country) => ({ value: country.vi, label: country.vi }))
+        rs.map((country) => ({ value: country.vi, label: country.vi, cca2: country.cca2 }))
       )
     } catch (error) {
       console.error("Lỗi khi lấy danh sách quốc gia:", error)
-    }
-  }
-
-  const fetchBanks = async () => {
-    try {
-      const rs = await getBanks()
-      setBanks(rs)
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách ngân hàng:", error)
     }
   }
 

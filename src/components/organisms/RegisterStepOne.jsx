@@ -61,8 +61,8 @@ export default function RegisterStepOne({
               <option value="">{t("register.selectBankPlaceholder", "Chọn ngân hàng (With bank)")}</option>
               {banks && banks.length > 0 ? (
                 banks.map((bank) => (
-                  <option key={bank.code} value={bank.shortName}>
-                    {bank.name} ({bank.shortName})
+                  <option key={bank.code} value={bank.code}>
+                    {bank.name} ({bank.code})
                   </option>
                 ))
               ) : (
