@@ -7,7 +7,8 @@ const DataTableComponent = () => {
   const infos = useSystemInfos()
   const metric = Array.isArray(infos) ? (infos[0] || {}) : (infos || {})
 
-  if (!metric || Object.keys(metric).length === 0) return null
+  const hasData = metric && Object.keys(metric).length > 0
+  const val = (key) => hasData ? (metric[key] ?? '0') : '0'
 
   return (
       <div
@@ -20,19 +21,19 @@ const DataTableComponent = () => {
           {t("metrics.listedValue", "GIÁ TRỊ LÊN SÀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.listedValue}</strong>
+          <strong>{val('listedValue')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.transactions", "LƯỢT GIAO DỊCH")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.transactions}</strong>
+          <strong>{val('transactions')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.accesses", "LƯỢT TRUY CẬP")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{metric.accesses}</strong>
+          <strong>{val('accesses')}</strong>
         </div>
       </div>
 
@@ -42,19 +43,19 @@ const DataTableComponent = () => {
           {t("metrics.successfully", "THÀNH CÔNG")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.successfully}</strong>
+          <strong>{val('successfully')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.amount", "SỐ TIỀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.amount}</strong>
+          <strong>{val('amount')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.duration", "THỜI LƯỢNG")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{metric.duration}</strong>
+          <strong>{val('duration')}</strong>
         </div>
       </div>
 
@@ -71,13 +72,13 @@ const DataTableComponent = () => {
           {t("metrics.deposited", "ĐÃ GỬI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.deposited}</strong>
+          <strong>{val('deposited')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.videoViews", "LƯỢT XEM VIDEO")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{metric.videoViews}</strong>
+          <strong>{val('videoViews')}</strong>
         </div>
       </div>
 
@@ -93,13 +94,13 @@ const DataTableComponent = () => {
           {t("metrics.withdrawn", "ĐÃ RÚT")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.withdrawn}</strong>
+          <strong>{val('withdrawn')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.members", "THÀNH VIÊN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{metric.members}</strong>
+          <strong>{val('members')}</strong>
         </div>
       </div>
 
@@ -115,13 +116,13 @@ const DataTableComponent = () => {
           {t("metrics.remaining", "CÒN LẠI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{metric.remaining}</strong>
+          <strong>{val('remaining')}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.online", "TRUY CẬP")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{metric.online}</strong>
+          <strong>{val('online')}</strong>
         </div>
       </div>
     </div>
