@@ -278,7 +278,7 @@ function RegisterLegacyPage() {
 
       console.log("Đăng ký thành công:", response.data);
       dispatch(changePasswordAction(response.data?.user));
-      alert(t('auth.registerSuccess', 'Đăng ký thành công!'));  
+      alert(t('auth.registerSuccess', 'Đăng ký thành công!'));
       if (response.status == 200) {
         await localStorage.setItem("authToken", response.data.token);
         // Store complete user data in localStorage for easy access
@@ -357,7 +357,7 @@ function RegisterLegacyPage() {
   return (
     <div className="flex justify-center items-center min-h-screen">
       <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
-       <PageHeaderWithOutColorPicker
+        <PageHeaderWithOutColorPicker
           color={color}
           onColorChange={handleChangeColor}
           titlePrefix="1"
@@ -587,7 +587,7 @@ function RegisterLegacyPage() {
                 <b>{t('register.term1', '1. Tự động đăng xuất sau 168 h đăng nhập.')}</b> <br />
                 <br />
                 <b>{t('register.term2', '2. Tự động khóa tài khoản sau 365 h (giờ) đăng xuất.')}</b>
-                  <br/>
+                <br />
                 <br />
                 <b>{t('register.term3', '3. Tự động xóa tài khoản sau 365 ngày bị khóa.')}</b>
                 <br />
@@ -598,9 +598,9 @@ function RegisterLegacyPage() {
                 <b>{t('register.term5', '5.Tự động xóa bài sau 365 ngày được đăng.')}</b>
                 <br />
                 <br />
-                  <b>{t('register.term6', '5.Tự động xóa bài sau 365 ngày được đăng.')}</b>
-                  <br />
-                  <br />
+                <b>{t('register.term6', '5.Tự động xóa bài sau 365 ngày được đăng.')}</b>
+                <br />
+                <br />
               </div>
             </div>
             <div className="text-center mt-4">
@@ -647,6 +647,7 @@ export default function RegisterPage() {
     isContractLoading,
     contractError,
     handleCloseContractModal,
+    handleBankNumberBlur,
   } = useRegisterForm(t);
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -666,6 +667,7 @@ export default function RegisterPage() {
             isFormValid={isFormValid}
             isVerifying={isVerifying}
             handleNextClick={handleNextClick}
+            handleBankNumberBlur={handleBankNumberBlur}
           />
         )}
         {page === 2 && (

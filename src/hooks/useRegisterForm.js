@@ -98,8 +98,8 @@ export default function useRegisterForm(t) {
           ...prev,
           recovery_character:
             t(
-              "auth.recoveryCharacterValidation.invalidRecoveryCharacter",
-              "Ký tự khôi phục phải chứa ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)"
+              "auth.invalidRecoveryCharacter",
+              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (@$!%*?&~^_)."
             ),
         }))
       } else {
@@ -129,6 +129,9 @@ export default function useRegisterForm(t) {
     if (!formData.recovery_character) errors.recovery_character = t("auth.recoveryCharacterRequired", "Ký tự khôi phục là bắt buộc")
     if (!formData.repeat_recovery_character) errors.repeat_recovery_character = t("auth.repeatRecoveryCharacterRequired", "Vui lòng nhập lại ký tự khôi phục")
     if (!selectedCountry) errors.country = t("auth.countryRequired", "Vui lòng chọn quốc gia")
+    if (formData.reference_id && formData.reference_id === formData.bank_number) {
+      errors.reference_id = t("auth.referenceIdMatchesId", "ID thành viên nhận giảm giá không hợp lệ")
+    }
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -140,6 +143,7 @@ export default function useRegisterForm(t) {
     if (!formData.recovery_character) return false
     if (!formData.repeat_recovery_character) return false
     if (!selectedCountry) return false
+    if (formData.reference_id && formData.reference_id === formData.bank_number) return false
     return true
   }
 
@@ -286,6 +290,27 @@ export default function useRegisterForm(t) {
     }
   }
 
+  const handleBankNumberBlur = async () => {
+    if (!formData.bank_number) return
+    setIsVerifying(true)
+    try {
+      const response = await verifyBankNumber(formData.bank_number, formData.bank_name || "ABC", "ABC")
+      if (response && response.data && response.data.exists) {
+        setValidationErrors(prev => ({ ...prev, bank_number: t("auth.userExists", " ID thành viên đã tồn tại.") }))
+      } else {
+        setValidationErrors(prev => ({ ...prev, bank_number: "" }))
+      }
+    } catch (err) {
+      console.error("Lỗi xác thực ngân hàng (blur):", err?.response?.data || err?.message)
+      const errorMsg = err?.response?.data?.message || err?.message || ""
+      if (err?.response?.status === 409 || errorMsg.toLowerCase().includes("exist")) {
+        setValidationErrors(prev => ({ ...prev, bank_number: t("auth.userExists", " ID thành viên đã tồn tại.") }))
+      }
+    } finally {
+      setIsVerifying(false)
+    }
+  }
+
   const handleNextClick = async () => {
     if (!validateForm()) return
     setError("")
@@ -295,12 +320,12 @@ export default function useRegisterForm(t) {
       setPage(2)
     } catch (err) {
       console.error("Lỗi xác thực tài khoản ngân hàng:", err?.response?.data || err?.message)
-      
+
       const errorMsg = err?.response?.data?.message || err?.message || "";
       if (err?.response?.status === 409 || errorMsg.toLowerCase().includes("exist")) {
-         alert(t("auth.userExists", "Tài khoản đã tồn tại. Vui lòng đăng nhập."));
-         navigate("/login");
-         return;
+        alert(t("auth.userExists", "Tài khoản đã tồn tại. Vui lòng đăng nhập."));
+        navigate("/login");
+        return;
       }
 
       const errorMessage = t(
@@ -347,5 +372,6 @@ export default function useRegisterForm(t) {
     isContractLoading,
     contractError,
     handleCloseContractModal,
+    handleBankNumberBlur,
   }
 }

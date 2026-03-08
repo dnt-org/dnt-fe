@@ -17,6 +17,7 @@ export default function RegisterStepOne({
   isFormValid,
   isVerifying,
   handleNextClick,
+  handleBankNumberBlur,
 }) {
   const [showRecovery, setShowRecovery] = useState(false)
   const [showRepeatRecovery, setShowRepeatRecovery] = useState(false)
@@ -33,7 +34,7 @@ export default function RegisterStepOne({
 
   return (
     <div className="mt-6">
-      {error ? <p className="text-red-500">{error}</p> : null}
+      {/* {error ? <p className="text-red-500">{error}</p> : null} */}
       <div className="space-y-4 mt-4">
         <RegisterCountrySelect
           countries={countries}
@@ -51,9 +52,10 @@ export default function RegisterStepOne({
       <div className="space-y-4 mt-4">
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
-            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.accountNumberPlaceholder", "ID = SỐ TÀI KHOẢN NGÂN HÀNG")} name="bank_number" value={formData.bank_number} onChange={handleInputChange} />
+            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.accountNumberPlaceholder", "ID = SỐ TÀI KHOẢN NGÂN HÀNG")} name="bank_number" value={formData.bank_number} onChange={handleInputChange} onBlur={handleBankNumberBlur} />
             <span className="text-red-500 ml-2">*</span>
           </div>
+          {validationErrors.bank_number ? <p className="text-red-500 text-sm mt-1">{validationErrors.bank_number}</p> : null}
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
@@ -167,4 +169,5 @@ RegisterStepOne.propTypes = {
   isFormValid: PropTypes.func.isRequired,
   isVerifying: PropTypes.bool.isRequired,
   handleNextClick: PropTypes.func.isRequired,
+  handleBankNumberBlur: PropTypes.func.isRequired,
 }
