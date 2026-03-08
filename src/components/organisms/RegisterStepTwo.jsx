@@ -30,25 +30,17 @@ export default function RegisterStepTwo({
           <span className="text-red-500 text-lg">*</span>
         </div>
         <div className="text-left">
-          {t("register.contractConfirmation", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:")} <br />
-          <br />
-          {/* <b>{t("register.term1", "1. Tự động đăng xuất sau 168 h đăng nhập.")}</b> <br />
-          <br />
-          <b>{t("register.term2", "2. Tự động khóa tài khoản sau 365 h (giờ) đăng xuất.")}</b>
-          <br />
-          <br />
-          <b>{t("register.term3", "3. Tự động xóa tài khoản sau 365 ngày bị khóa.")}</b>
-          <br />
-          <br />
-          <b>{t("register.term4", "4. Đăng nhập sai liên tiếp 05 lần sẽ bị khóa tài khoản.")}</b>
-          <br />
-          <br />
-          <b>{t("register.term5", "5.Tự động xóa bài sau 365 ngày được đăng.")}</b>
-          <br />
-          <br />
-          <b>{t("register.term6", "5.Tự động xóa bài sau 365 ngày được đăng.")}</b>
-          <br />
-          <br /> */}
+          {t("register.contractConfirmation1", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:")} <br />
+          
+        </div>
+      </div>
+      <div className="flex items-start gap-2">
+        
+        <div className="flex flex-col items-center">
+          <input type="checkbox" className="w-5 h-5" />
+        </div>
+        <div className="text-left" dangerouslySetInnerHTML={{ __html: t("register.contractConfirmation", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:") }}>
+          
         </div>
       </div>
       <div className="text-center mt-4">

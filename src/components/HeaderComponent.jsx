@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useTranslation } from 'react-i18next';
 import useNotifications from "../custom-hooks/useNotifications";
 import markAsRead from "../services/notificationService";
+import { QrCode } from "lucide-react";
 
 const HeaderComponent = ({
     color,
@@ -51,7 +52,7 @@ const HeaderComponent = ({
                     className="cursor-pointer flex border-b border-r border-t border-black justify-center items-center min-h-7"
                 >
                     <div className="table-cell flex items-center font-bold py-1 px-1">
-                        QR
+                        <QrCode size={20} />
                     </div>
                 </div>
 
@@ -117,7 +118,7 @@ const HeaderComponent = ({
                     className="cursor-pointer flex border-b border-black border-r justify-center items-center min-h-6"
                 >
                     <div className="table-cell flex items-center font-bold py-1 px-1 text-center">
-                         <i
+                        <i
                             style={{ fontSize: "clamp(10px, 1vw, 20px)" }}
                             className="fa-solid fa-bell"
                         ></i>

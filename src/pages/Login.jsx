@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Eye, EyeOff, KeyRound, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, KeyRound, CheckCircle, QrCode } from "lucide-react";
 import { login, recoverLogin } from "../services/authService";
 import { loginAction, changePasswordAction } from '../context/action/authActions';
 import { useTranslation } from 'react-i18next';
@@ -66,7 +66,7 @@ export default function LoginPage() {
   // Render reCAPTCHA widget khi component mount
   useEffect(() => {
     const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
-    
+
     if (!siteKey) {
       console.error('reCAPTCHA site key is missing. Please set VITE_RECAPTCHA_SITE_KEY in .env file.');
       return;
@@ -142,7 +142,7 @@ export default function LoginPage() {
       if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
         recaptchaToken = "mock_token";
       }
-      
+
       if (!recaptchaToken) {
         alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
         return;
@@ -172,23 +172,23 @@ export default function LoginPage() {
       // Handle RECOVERY_REQUIRED
       if (response.data?.requiresRecovery) {
         const reason = response.data?.reason;
-        
+
         if (reason === 'FINAL_CHANCE_SECURITY_CHECK') {
-          navigate('/forgot-password', { 
-            state: { 
+          navigate('/forgot-password', {
+            state: {
               bankAccountId: cccd,
-              triggeredByFinalChance: true 
-            } 
+              triggeredByFinalChance: true
+            }
           });
           return;
         }
-        
+
         // Default to login failure behavior for TOO_MANY_LOGIN_FAILURES or other reasons
-        navigate('/forgot-password', { 
-          state: { 
+        navigate('/forgot-password', {
+          state: {
             bankAccountId: cccd,
-            triggeredByLoginFailure: true 
-          } 
+            triggeredByLoginFailure: true
+          }
         });
         return;
       }
@@ -202,27 +202,27 @@ export default function LoginPage() {
 
       if (response.status == 200) {
         if (response.data?.error?.status === 401) {
-           // Legacy error handling or unexpected 200 with error
-           setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
-           return;
+          // Legacy error handling or unexpected 200 with error
+          setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+          return;
         }
 
         if (response.data?.token) {
-           // Standard login success (if applicable)
-           localStorage.setItem("authToken", response.data.token);
-           localStorage.setItem("user", JSON.stringify(response.data.user));
-           dispatch(loginAction(response.data.user));
-           navigate("/");
+          // Standard login success (if applicable)
+          localStorage.setItem("authToken", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          dispatch(loginAction(response.data.user));
+          navigate("/");
         } else if (response.data?.require_recovery_character) {
-             // Redundant check but safe
-             alert(t('auth.tempBlocked', 'Tài khoản đang bị tạm khóa. Vui lòng nhập ký tự khôi phục để xác thực.'));
-             setStep('RECOVERY');
-             setContext(response.data.context);
+          // Redundant check but safe
+          alert(t('auth.tempBlocked', 'Tài khoản đang bị tạm khóa. Vui lòng nhập ký tự khôi phục để xác thực.'));
+          setStep('RECOVERY');
+          setContext(response.data.context);
         } else {
-            // Unexpected success without token or flow instructions
-             setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+          // Unexpected success without token or flow instructions
+          setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
         }
-      } 
+      }
     } catch (error) {
       // Reset reCAPTCHA khi có lỗi
       window.grecaptcha?.reset();
@@ -245,22 +245,22 @@ export default function LoginPage() {
       // Handle RECOVERY_REQUIRED from error response
       if (error.response?.data?.requiresRecovery) {
         const reason = error.response.data?.reason;
-        
+
         if (reason === 'FINAL_CHANCE_SECURITY_CHECK') {
-          navigate('/forgot-password', { 
-            state: { 
+          navigate('/forgot-password', {
+            state: {
               bankAccountId: cccd,
-              triggeredByFinalChance: true 
-            } 
+              triggeredByFinalChance: true
+            }
           });
           return;
         }
-        
-        navigate('/forgot-password', { 
-          state: { 
+
+        navigate('/forgot-password', {
+          state: {
             bankAccountId: cccd,
-            triggeredByLoginFailure: true 
-          } 
+            triggeredByLoginFailure: true
+          }
         });
         return;
       }
@@ -270,7 +270,7 @@ export default function LoginPage() {
         setContext(error.response.data.context);
         return;
       }
-      
+
       setErrorMessage(t('auth.invalidCredentials', 'Thông tin đăng nhập không chính xác!'));
     }
   };
@@ -381,7 +381,7 @@ export default function LoginPage() {
       }
 
       if (data?.success === false) {
-         alert(data.message || t('auth.recoverError', 'Ký tự khôi phục không chính xác'));
+        alert(data.message || t('auth.recoverError', 'Ký tự khôi phục không chính xác'));
       }
 
     } catch (error) {
@@ -392,37 +392,37 @@ export default function LoginPage() {
   };
 
   const handleVerifyOtp = async () => {
-      if (!otp) {
-          alert("Vui lòng nhập mã OTP");
-          return;
+    if (!otp) {
+      alert("Vui lòng nhập mã OTP");
+      return;
+    }
+    try {
+      // Import verifyOtp from services if not already imported, or use axios directly here if needed quickly
+      // Assuming I added verifyOtp to authService in the previous step
+      const { verifyOtp } = await import("../services/authService");
+      const response = await verifyOtp(cccd, otp);
+      const { data } = response || {};
+
+      if (data?.blocked) {
+        alert(data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+        return;
       }
-      try {
-          // Import verifyOtp from services if not already imported, or use axios directly here if needed quickly
-          // Assuming I added verifyOtp to authService in the previous step
-          const { verifyOtp } = await import("../services/authService");
-          const response = await verifyOtp(cccd, otp);
-          const { data } = response || {};
 
-          if (data?.blocked) {
-              alert(data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
-              return;
-          }
-
-          if (data?.require_change_password) {
-              dispatch(changePasswordAction({ cccd }));
-              navigate('/change-password', { state: { cccd, context: 'otp_flow' } });
-              return;
-          }
-          
-           if (data?.success === false) {
-             alert(data.message || "OTP không chính xác");
-           }
-
-      } catch (error) {
-          console.error("OTP verification error:", error);
-          const serverMessage = error?.response?.data?.message || "OTP verification failed";
-          alert(serverMessage);
+      if (data?.require_change_password) {
+        dispatch(changePasswordAction({ cccd }));
+        navigate('/change-password', { state: { cccd, context: 'otp_flow' } });
+        return;
       }
+
+      if (data?.success === false) {
+        alert(data.message || "OTP không chính xác");
+      }
+
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      const serverMessage = error?.response?.data?.message || "OTP verification failed";
+      alert(serverMessage);
+    }
   }
 
 
@@ -448,11 +448,11 @@ export default function LoginPage() {
           {/* MÃ QR Row */}
           <div className="grid grid-cols-8">
             <div className="col-span-7"></div>
-            <div className="col-span-1 p-2 font-bold text-sm border text-center rounded-sm cursor-pointer hover:bg-gray-100" onClick={handleOpenQrModal}>
-              QR
+            <div className="col-span-1 p-2 font-bold text-sm border flex justify-center items-center rounded-sm cursor-pointer hover:bg-gray-100" onClick={handleOpenQrModal}>
+              <QrCode size={20} />
             </div>
           </div>
-          
+
           {/* Success Message from Password Recovery */}
           {successMessage && (
             <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mt-4 flex items-center gap-2 animate-fade-in">
@@ -460,7 +460,7 @@ export default function LoginPage() {
               <span>{successMessage}</span>
             </div>
           )}
-          
+
           <div className="space-y-4 mt-4">
             <div className="grid grid-cols-1 items-center gap-4">
               <input
@@ -503,7 +503,7 @@ export default function LoginPage() {
                     {t('auth.login', 'ĐĂNG NHẬP')} <br />
                   </button>
                 </div>
-                
+
                 {/* Forgot Password Link (AC-1) */}
                 <div className="text-center mt-3">
                   <button
@@ -517,7 +517,7 @@ export default function LoginPage() {
                 </div>
               </>
             )}
-            
+
             {/* Show Recovery Input if explicitly shown OR if step is RECOVERY */}
             {(isShowRecover || step === 'RECOVERY') && (
               <div className="text-center mt-4 flex justify-center items-center gap-4">

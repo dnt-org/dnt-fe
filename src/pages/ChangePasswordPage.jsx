@@ -1,19 +1,19 @@
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Register.css";
-import {useNavigate, useLocation} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import {useDispatch, useSelector} from 'react-redux';
-import {changePasswordAction} from "../context/action/authActions";
-import {changePassword} from "../services/authService";
-import {useTranslation} from 'react-i18next';
-import {Home as HomeIcon, KeyboardIcon as KeyboardIcon} from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { changePasswordAction } from "../context/action/authActions";
+import { changePassword } from "../services/authService";
+import { useTranslation } from 'react-i18next';
+import { Home as HomeIcon, KeyboardIcon as KeyboardIcon } from 'lucide-react';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
 
 
 export default function ChangePasswordPage() {
-    const {t} = useTranslation();
+    const { t } = useTranslation();
     const dispatch = useDispatch();
-    const {user} = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.auth);
     const [color, setColor] = useState(localStorage.getItem("selectedColor"));
     const navigate = useNavigate();
     const location = useLocation();
@@ -34,11 +34,11 @@ export default function ChangePasswordPage() {
         address_on_map: user?.address_on_map,
     });
     const [error, setError] = useState("");
-    
+
     // Update formData if cccd is passed via location state (from recovery flow)
     useEffect(() => {
         if (location.state?.cccd) {
-             setFormData(prev => ({ ...prev, cccd: location.state.cccd }));
+            setFormData(prev => ({ ...prev, cccd: location.state.cccd }));
         }
     }, [location.state]);
 
@@ -78,8 +78,8 @@ export default function ChangePasswordPage() {
     }, [color]);
 
     const handleInputChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({...formData, [name]: value});
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
 
         // Kiểm tra validation cho mật khẩu mới
         if (name === 'newPassword') {
@@ -89,7 +89,7 @@ export default function ChangePasswordPage() {
     };
 
     const handleRegister = async () => {
-        const {username, cccd, newPassword, confirmPassword} = formData;
+        const { username, cccd, newPassword, confirmPassword } = formData;
 
         // Kiểm tra các trường bắt buộc
         if (!cccd) {
@@ -124,11 +124,19 @@ export default function ChangePasswordPage() {
         } catch (error) {
             console.error("Lỗi khi đăng ký:", error.response?.data || error.message);
             setError(error.response?.data?.message || t('auth.changePasswordError', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
-            
+
             // Handle blocked status from error response if it comes as 200 with blocked=true or 400 with blocked=true
-             if (error.response?.data?.blocked) {
-                 alert(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
-             }
+            if (error.response?.data?.blocked) {
+                alert(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
+            }
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (passwordValidation.isValid && formData.newPassword === formData.confirmPassword) {
+                handleRegister();
+            }
         }
     };
 
@@ -144,7 +152,7 @@ export default function ChangePasswordPage() {
                             className="text-red-600 hover:text-red-800 relative"
                             onClick={() => navigate("/")}
                         >
-                            <HomeIcon size={28}/>
+                            <HomeIcon size={28} />
                         </button>
                     }
                     rightButton={
@@ -152,7 +160,7 @@ export default function ChangePasswordPage() {
                             className="text-red-600 hover:text-red-800"
                             onClick={() => navigate("/admin-control")}
                         >
-                            <KeyboardIcon size={28}/>
+                            <KeyboardIcon size={28} />
                         </button>
                     }
                     title={t('register.changePasswordTitle')}
@@ -170,7 +178,7 @@ export default function ChangePasswordPage() {
             </span>
           </h4> */}
                     <div className="grid gap-4 mt-5">
-                        <input
+                        {/* <input
                             type="text"
                             className="border p-2 rounded w-full"
                             placeholder={t('auth.idPlaceholder')}
@@ -178,7 +186,7 @@ export default function ChangePasswordPage() {
                             value={formData.cccd}
                             onChange={handleInputChange}
 
-                        />
+                        /> */}
                         {/* <input
                             type="text"
                             className="border p-2 rounded w-full"
@@ -189,14 +197,14 @@ export default function ChangePasswordPage() {
 
                         <input
                             type="password"
-                            className={`border p-2 rounded w-full text-sm min-h-[50px] ${
-                                formData.newPassword && !passwordValidation.isValid ? 'border-red-500' :
-                                    formData.newPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
-                            }`}
+                            className={`border p-2 rounded w-full text-sm min-h-[50px] ${formData.newPassword && !passwordValidation.isValid ? 'border-red-500' :
+                                formData.newPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
+                                }`}
                             placeholder={t('register.newPasswordPlaceholder')}
                             name="newPassword"
                             value={formData.newPassword}
                             onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
                             required
                         />
 
@@ -237,22 +245,21 @@ export default function ChangePasswordPage() {
 
                         <input
                             type="password"
-                            className={`border p-2 rounded w-full text-sm placeholder:text-xs min-h-[50px] ${
-                                formData.confirmPassword && formData.newPassword !== formData.confirmPassword ? 'border-red-500' :
-                                    formData.confirmPassword && formData.newPassword === formData.confirmPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
-                            }`}
+                            className={`border p-2 rounded w-full text-sm placeholder:text-xs min-h-[50px] ${formData.confirmPassword && formData.newPassword !== formData.confirmPassword ? 'border-red-500' :
+                                formData.confirmPassword && formData.newPassword === formData.confirmPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
+                                }`}
                             placeholder={t('register.confirmPasswordPlaceholder')}
                             name="confirmPassword"
                             value={formData.confirmPassword}
                             onChange={handleInputChange}
+                            onKeyDown={handleKeyDown}
                             required
                         />
 
                         {/* Hiển thị trạng thái xác nhận mật khẩu */}
                         {formData.confirmPassword && (
-                            <div className={`text-xs ${
-                                formData.newPassword === formData.confirmPassword ? 'text-green-600' : 'text-red-600'
-                            }`}>
+                            <div className={`text-xs ${formData.newPassword === formData.confirmPassword ? 'text-green-600' : 'text-red-600'
+                                }`}>
                                 <span
                                     className="mr-2">{formData.newPassword === formData.confirmPassword ? '✓' : '✗'}</span>
                                 {formData.newPassword === formData.confirmPassword
@@ -261,7 +268,7 @@ export default function ChangePasswordPage() {
                                 }
                             </div>
                         )}
-{/* 
+                        {/* 
                         <label className="text-xs text-gray-500">
                             ({t('auth.passwordHint')})
                         </label> */}
@@ -278,11 +285,10 @@ export default function ChangePasswordPage() {
                         <button
                             onClick={() => handleRegister()}
                             disabled={!passwordValidation.isValid || formData.newPassword !== formData.confirmPassword}
-                            className={`border-2 border-black text-black font-bold px-6 py-2 rounded flex-1 ${
-                                !passwordValidation.isValid || formData.newPassword !== formData.confirmPassword
-                                    ? 'opacity-50 cursor-not-allowed bg-gray-100'
-                                    : 'hover:bg-gray-200'
-                            }`}>
+                            className={`border-2 border-black text-black font-bold px-6 py-2 rounded flex-1 ${!passwordValidation.isValid || formData.newPassword !== formData.confirmPassword
+                                ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                                : 'hover:bg-gray-200'
+                                }`}>
                             {t('common.confirm')}
                         </button>
                     </div>

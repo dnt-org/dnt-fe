@@ -28,7 +28,8 @@ export default function RegisterStepOne({
   }
 
   const handleScanResult = (result) => {
-    handleInputChange({ target: { name: "reference_id", value: result } })
+    const jsontext = JSON.parse(result)
+    handleInputChange({ target: { name: "reference_id", value: jsontext.stk } })
     setIsQrModalOpen(false)
   }
 
