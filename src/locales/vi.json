@@ -98,7 +98,7 @@
     "otpDescription": "Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.",
     "resetDescription": "Nhập mật khẩu mới cho tài khoản của bạn.",
     "bankAccountPlaceholder": "Số tài khoản ngân hàng",
-    "recoveryStringPlaceholder": "Chuỗi khôi phục",
+    "recoveryStringPlaceholder": "Ký tự khôi phục",
     "newPasswordPlaceholder": "Mật khẩu mới",
     "confirmPasswordPlaceholder": "Xác nhận mật khẩu",
     "verifyButton": "XÁC THỰC",
@@ -594,6 +594,18 @@
     "remainingEn": "REMAINING",
     "online": "ĐANG TRUY CẬP",
     "onlineEn": "ONLINE"
+  },
+  "blocked": {
+    "title": "TÀI KHOẢN BỊ KHÓA VĨNH VIỄN",
+    "sorry": "Rất tiếc!",
+    "message": "Tài khoản của bạn đã bị khóa vĩnh viễn do nhập sai chuỗi khôi phục quá nhiều lần trong lần thử cuối cùng.",
+    "contactTitle": "Thông tin liên hệ mẫu:",
+    "admin": "Admin",
+    "support": "Hỗ trợ khách hàng",
+    "email": "Email",
+    "phone": "Điện thoại",
+    "backToLogin": "Quay lại trang đăng nhập",
+    "supportDetails": "Vui lòng liên hệ với quản trị viên để được hỗ trợ mở khóa tài khoản."
   },
   "posts": {
     "newPost": "ĐĂNG BÀI MỚI",

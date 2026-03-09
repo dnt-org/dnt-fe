@@ -126,9 +126,9 @@ const QRModalComponent = ({
                 </button>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold mb-4 text-center">
+                {/* <h3 className="text-xl font-bold mb-4 text-center">
                     {isScanning ? t('qr.scanTitle', 'QUÉT MÃ QR') : t('auth.qrTitle', 'MÃ QR ĐĂNG NHẬP')}
-                </h3>
+                </h3> */}
 
                 {/* Loading State */}
                 {isLoading && (
@@ -223,13 +223,13 @@ const QRModalComponent = ({
 
                 {/* Camera Button - Show only when authenticated and not scanning */}
                 {!isScanning && !isLoading && isAuthenticated && (
-                    <div className="text-center mb-4">
+                    <div className="text-center mb-2">
                         <button
                             onClick={startScanning}
                             className="flex items-center justify-center mx-auto px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                         >
                             <svg 
-                                className="w-5 h-5 mr-2" 
+                                className="w-5 h-5" 
                                 fill="none" 
                                 stroke="currentColor" 
                                 viewBox="0 0 24 24"
@@ -247,7 +247,7 @@ const QRModalComponent = ({
                                     d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" 
                                 />
                             </svg>
-                            {t('qr.startScan', 'Quét QR Code')}
+                            
                         </button>
                     </div>
                 )}

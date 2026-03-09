@@ -16,23 +16,25 @@ import DetailOfGoodsPage from './pages/DetailOfGoodsPage.jsx'
 import NewFreelancerPostPage from './pages/NewFreelancerPostPage.jsx'
 import AiLivePage from './pages/AiLivePage.jsx'
 import AiLiveVideoDetailPageSpec from './pages/AiLiveVideoDetailPageSpec.jsx'
-import AiLiveVideoDetailPage from './pages/AiLiveVideoDetailPage.jsx' 
+import AiLiveVideoDetailPage from './pages/AiLiveVideoDetailPage.jsx'
 import NewAiLivePostPage from './pages/NewAiLivePostPage.jsx'
 import AdminControlPage from './pages/AdminControlPage.jsx'
 import RewardListPage from './pages/RewardListPage.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import HomeWrapper from './pages/HomeWrapper.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import AccountBlockedPage from './pages/AccountBlockedPage.jsx'
 function App() {
 
   return (
     <>
-     <Routes>
+      <Routes>
         <Route exact path="/" element={<HomeWrapper />} />
         <Route exact path={import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login'} element={<LoginPage />} />
         <Route exact path="/register" element={<RegisterPage />} />
         <Route exact path="/login" element={<LoginPage />} />
         <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route exact path="/account-blocked" element={<AccountBlockedPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
 
         <Route exact path="/list-of-goods" element={<ListOfGoodsPage />} />
@@ -40,12 +42,12 @@ function App() {
 
         <Route exact path="/freelancer" element={<FreelancerPage />} />
         <Route exact path="/detail-of-goods" element={<DetailOfGoodsPage />} />
-         <Route exact path="/ai-live" element={<AiLivePage />} />
-         <Route exact path="/ai-live/video/:id" element={<AiLiveVideoDetailPageSpec />} />
-         <Route exact path="/ai-live/video-goods/:id" element={<AiLiveVideoDetailPage />} />
+        <Route exact path="/ai-live" element={<AiLivePage />} />
+        <Route exact path="/ai-live/video/:id" element={<AiLiveVideoDetailPageSpec />} />
+        <Route exact path="/ai-live/video-goods/:id" element={<AiLiveVideoDetailPage />} />
 
         {/* Protected routes require authToken in localStorage */}
-        <Route element={<ProtectedRoute />}> 
+        <Route element={<ProtectedRoute />}>
           <Route exact path="/payment" element={<PaymentPage />} />
           <Route exact path="/additional-payment" element={<AdditionalPaymentPage />} />
           <Route exact path="/with-drawth-payment" element={<WithDrawthPaymentPage />} />
@@ -54,13 +56,13 @@ function App() {
           <Route exact path="/new-good-post" element={<NewGoodPostPage />} />
           <Route exact path="/new-freelancer-post" element={<NewFreelancerPostPage />} />
 
-         
+
           <Route exact path="/new-ai-live-post" element={<NewAiLivePostPage />} />
           <Route exact path="/admin-control" element={<AdminControlPage />} />
           <Route exact path="/reward-list" element={<RewardListPage />} />
         </Route>
       </Routes>
-      
+
     </>
   )
 }
