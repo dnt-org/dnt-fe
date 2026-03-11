@@ -3,7 +3,6 @@ import "../styles/Register.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getCountries } from "../services/countries";
-import { getBanks } from "../services/systemService";
 import Select from "react-select";
 import { useDispatch, useSelector } from 'react-redux';
 import { changePasswordAction } from "../context/action/authActions";

@@ -6,6 +6,7 @@ import { changePasswordAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
 import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
+import { getBanks } from "../services/systemService"
 
 export default function useRegisterForm(t) {
   const dispatch = useDispatch()
@@ -16,6 +17,7 @@ export default function useRegisterForm(t) {
   const [isReadContract, setIsReadContract] = useState(false)
   const [countries, setCountries] = useState([])
   const [banks, setBanks] = useState([])
+  const [allBanksByCountry, setAllBanksByCountry] = useState({})
   const [selectedCountry, setSelectedCountry] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
@@ -64,13 +66,25 @@ export default function useRegisterForm(t) {
   }, [color])
 
   useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const data = await getBanks()
+        setAllBanksByCountry(data || {})
+      } catch (err) {
+        console.error("Error fetching banks in useRegisterForm:", err)
+      }
+    }
+    fetchBanks()
+  }, [])
+
+  useEffect(() => {
     if (selectedCountry && selectedCountry.cca2) {
-      const list = banksByCountry[selectedCountry.cca2] || []
+      const list = allBanksByCountry[selectedCountry.cca2] || []
       setBanks(list)
     } else {
       setBanks([])
     }
-  }, [selectedCountry])
+  }, [selectedCountry, allBanksByCountry])
 
   const validateRecoveryCharacter = (recoveryChar) => {
     const hasUppercase = /[A-Z]/.test(recoveryChar)
