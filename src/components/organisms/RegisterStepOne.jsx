@@ -65,7 +65,7 @@ export default function RegisterStepOne({
               {banks && banks.length > 0 ? (
                 banks.map((bank) => (
                   <option key={bank.code} value={bank.code}>
-                    {bank.name} ({bank.code})
+                   ({bank.code}) {bank.name}
                   </option>
                 ))
               ) : (
