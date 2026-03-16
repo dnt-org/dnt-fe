@@ -113,7 +113,7 @@ export default function useRegisterForm(t) {
           recovery_character:
             t(
               "auth.invalidRecoveryCharacter",
-              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (@$!%*?&~^_)."
+              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (#@$!%*?&~^_)."
             ),
         }))
       } else {
@@ -126,7 +126,7 @@ export default function useRegisterForm(t) {
       if (repeatRecoveryChar && recoveryChar !== repeatRecoveryChar) {
         setValidationErrors((prev) => ({
           ...prev,
-          repeat_recovery_character: t("auth.recoveryCharacterMismatch", "Ký tự khôi phục không khớp"),
+          repeat_recovery_character: t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp"),
         }))
       } else if (repeatRecoveryChar && recoveryChar === repeatRecoveryChar) {
         setValidationErrors((prev) => ({ ...prev, repeat_recovery_character: "" }))
@@ -138,10 +138,10 @@ export default function useRegisterForm(t) {
     const errors = {}
     if (!formData.bank_name) errors.bank_name = t("auth.bankRequired", "Vui lòng chọn ngân hàng")
     if (formData.recovery_character && formData.repeat_recovery_character && formData.recovery_character !== formData.repeat_recovery_character) {
-      errors.repeat_recovery_character = t("auth.recoveryCharacterMismatch", "Ký tự khôi phục không khớp")
+      errors.repeat_recovery_character = t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp")
     }
-    if (!formData.recovery_character) errors.recovery_character = t("auth.recoveryCharacterRequired", "Ký tự khôi phục là bắt buộc")
-    if (!formData.repeat_recovery_character) errors.repeat_recovery_character = t("auth.repeatRecoveryCharacterRequired", "Vui lòng nhập lại ký tự khôi phục")
+    if (!formData.recovery_character) errors.recovery_character = t("auth.recoveryCharacterRequired", "Ký tự khôi phục tài khoản là bắt buộc")
+    if (!formData.repeat_recovery_character) errors.repeat_recovery_character = t("auth.repeatRecoveryCharacterRequired", "Vui lòng nhập lại ký tự khôi phục tài khoản")
     if (!selectedCountry) errors.country = t("auth.countryRequired", "Vui lòng chọn quốc gia")
     if (formData.reference_id && formData.reference_id === formData.bank_number) {
       errors.reference_id = t("auth.referenceIdMatchesId", "ID thành viên nhận giảm giá không hợp lệ")
