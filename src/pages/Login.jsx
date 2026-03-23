@@ -34,6 +34,7 @@ export default function LoginPage() {
   const [otp, setOtp] = useState("");
   const [otpFlow, setOtpFlow] = useState(null); // 'RECOVERY' | 'UNFAMILIAR_DEVICE'
   const [savedRecaptcha, setSavedRecaptcha] = useState("");
+  const [otpWidgetId, setOtpWidgetId] = useState(null);
   const [locationData, setLocationData] = useState(null);
 
   const [recoveryCharacter, setRecoveryCharacter] = useState("");
@@ -133,6 +134,37 @@ export default function LoginPage() {
     // Cleanup
     return () => clearInterval(checkInterval);
   }, []);
+
+  // Render reCAPTCHA widget for OTP Modal
+  useEffect(() => {
+    if (step === 'OTP' && otpFlow === 'UNFAMILIAR_DEVICE') {
+      const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+      if (!siteKey) return;
+
+      const renderOtpRecaptcha = () => {
+        const container = document.getElementById('recaptcha-container-otp');
+        if (container && window.grecaptcha && window.grecaptcha.render && !container.hasChildNodes()) {
+          try {
+            const id = window.grecaptcha.render('recaptcha-container-otp', {
+              sitekey: siteKey
+            });
+            setOtpWidgetId(id);
+          } catch (error) {
+            console.log('OTP reCAPTCHA render error:', error.message);
+          }
+        }
+      };
+
+      const checkInterval = setInterval(() => {
+        if (window.grecaptcha && window.grecaptcha.render) {
+          clearInterval(checkInterval);
+          renderOtpRecaptcha();
+        }
+      }, 100);
+
+      return () => clearInterval(checkInterval);
+    }
+  }, [step, otpFlow]);
 
   // Check for sessionId in query params and verify QR login
   useEffect(() => {
@@ -455,11 +487,19 @@ export default function LoginPage() {
           : null;
         
         let recaptchaToken = savedRecaptcha;
-        const freshToken = window.grecaptcha?.getResponse();
-        if (freshToken) recaptchaToken = freshToken;
+        
+        if (otpWidgetId !== null && window.grecaptcha) {
+          const freshToken = window.grecaptcha.getResponse(otpWidgetId);
+          if (freshToken) recaptchaToken = freshToken;
+        }
 
         if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
           recaptchaToken = "mock_token";
+        }
+
+        if (recaptchaToken === savedRecaptcha && import.meta.env.VITE_MOCK_RECAPTCHA !== 'true') {
+          alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA mới'));
+          return;
         }
         
         const response = await login(cccd, password, recaptchaToken, device_name, login_type, loc, otp);
@@ -474,6 +514,9 @@ export default function LoginPage() {
         }
       } catch (error) {
         setErrorMessage(error.response?.data?.message || t('auth.invalidOtp', 'Mã OTP không chính xác'));
+        if (otpWidgetId !== null && window.grecaptcha) {
+          window.grecaptcha.reset(otpWidgetId);
+        }
       }
       return;
     }
@@ -652,9 +695,12 @@ export default function LoginPage() {
             <h3 className="text-xl font-bold mb-4 text-center">
               {t('forgotPassword.otpTitle', 'XÁC THỰC OTP')}
             </h3>
+            <p className="text-gray-600 mb-4 text-center text-sm">
+              {t('forgotPassword.otpDescription', 'Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.')}
+            </p>
             {errorMessage && (
               <div className="text-red-500 text-sm text-center mb-4">
-                {t('forgotPassword.otpDescription', 'Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.')}
+                {errorMessage}
               </div>
             )}
             <input
@@ -669,6 +715,11 @@ export default function LoginPage() {
                 }
               }}
             />
+            {otpFlow === 'UNFAMILIAR_DEVICE' && (
+              <div className="flex justify-center mb-4">
+                <div id="recaptcha-container-otp"></div>
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 className="flex-1 border p-2 rounded hover:bg-gray-100 transition"
