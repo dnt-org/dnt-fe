@@ -11,6 +11,7 @@ import axios from 'axios';
 import { generateQrSession, checkQrStatus, verifyQrSession } from "../services/authService";
 import QRModalComponent from '../components/QRModalComponent';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
+import { browserName, osName, deviceType, osVersion } from 'react-device-detect';
 
 
 export default function LoginPage() {
@@ -31,6 +32,9 @@ export default function LoginPage() {
   const [step, setStep] = useState('LOGIN'); // LOGIN, RECOVERY, OTP
   const [context, setContext] = useState(null); // wrong_password, post_login
   const [otp, setOtp] = useState("");
+  const [otpFlow, setOtpFlow] = useState(null); // 'RECOVERY' | 'UNFAMILIAR_DEVICE'
+  const [savedRecaptcha, setSavedRecaptcha] = useState("");
+  const [locationData, setLocationData] = useState(null);
 
   const [recoveryCharacter, setRecoveryCharacter] = useState("");
   const navigate = useNavigate();
@@ -38,6 +42,34 @@ export default function LoginPage() {
 
   const dispatch = useDispatch();
   const auth = useSelector(state => state.auth);
+
+  // Get location data on component mount
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        const TOKEN = import.meta.env.VITE_IPINFO_API_TOKEN;
+        if (!TOKEN) {
+          console.warn("VITE_IPINFO_API_TOKEN not configured");
+          setLocationData(null);
+          return;
+        }
+
+        const response = await fetch(`https://ipinfo.io/json?token=${TOKEN}`);
+        const data = await response.json();
+        
+        console.log("Location data received:", data);
+        setLocationData({
+          city: data.city,
+          region: data.region
+        });
+      } catch (err) {
+        console.error("Lỗi lấy vị trí:", err);
+        setLocationData(null);
+      }
+    };
+    
+    getLocation();
+  }, []);
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
@@ -147,8 +179,16 @@ export default function LoginPage() {
         alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
         return;
       }
+      setSavedRecaptcha(recaptchaToken);
 
-      const response = await login(cccd, password, recaptchaToken);
+      // Prepare additional login data
+      const device_name = `${browserName} ${osName} ${osVersion} ${deviceType}`;
+      const login_type = "password";
+      const location = (locationData?.city && locationData?.region) 
+        ? `${locationData.city}, ${locationData.region}` 
+        : null;
+
+      const response = await login(cccd, password, recaptchaToken, device_name, login_type, location);
       console.log(response);
 
       // Reset reCAPTCHA sau khi gửi request
@@ -239,6 +279,14 @@ export default function LoginPage() {
       // Handle permanent BLOCKED from error response
       if (error.response?.data?.blocked || error.response?.data?.isBlocked) {
         setErrorMessage(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.'));
+        return;
+      }
+
+      // Handle OTP required for unfamiliar device
+      if (error.response?.data?.error === 'OTP_REQUIRED' || error.response?.data?.requiresOTP) {
+        setStep('OTP');
+        setOtpFlow('UNFAMILIAR_DEVICE');
+        setErrorMessage(error.response.data.message || t('auth.requireOtp', 'Thiết bị lạ. Vui lòng xác thực OTP.'));
         return;
       }
 
@@ -377,6 +425,7 @@ export default function LoginPage() {
 
       if (data?.require_otp) {
         setStep('OTP');
+        setOtpFlow('RECOVERY');
         return;
       }
 
@@ -396,6 +445,39 @@ export default function LoginPage() {
       alert("Vui lòng nhập mã OTP");
       return;
     }
+
+    if (otpFlow === 'UNFAMILIAR_DEVICE') {
+      try {
+        const device_name = `${browserName} ${osName} ${osVersion} ${deviceType}`;
+        const login_type = "password";
+        const loc = (locationData?.city && locationData?.region) 
+          ? `${locationData.city}, ${locationData.region}` 
+          : null;
+        
+        let recaptchaToken = savedRecaptcha;
+        const freshToken = window.grecaptcha?.getResponse();
+        if (freshToken) recaptchaToken = freshToken;
+
+        if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
+          recaptchaToken = "mock_token";
+        }
+        
+        const response = await login(cccd, password, recaptchaToken, device_name, login_type, loc, otp);
+        
+        if (response.status === 200 && response.data?.token) {
+          localStorage.setItem("authToken", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          dispatch(loginAction(response.data.user));
+          navigate("/");
+        } else {
+          setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
+        }
+      } catch (error) {
+        setErrorMessage(error.response?.data?.message || t('auth.invalidOtp', 'Mã OTP không chính xác'));
+      }
+      return;
+    }
+
     try {
       // Import verifyOtp from services if not already imported, or use axios directly here if needed quickly
       // Assuming I added verifyOtp to authService in the previous step
@@ -540,26 +622,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {step === 'OTP' && (
-              <div className="text-center mt-4 flex justify-center items-center gap-4">
-                <div className="flex-1/2">
-                  <input
-                    type="text"
-                    className='border p-2 rounded w-full'
-                    placeholder="Nhập mã OTP (Check your registered channel)"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                  />
-                </div>
-                <button
-                  className={`border-2 border-black font-bold px-1 py-2 rounded flex-1`}
-                  onClick={handleVerifyOtp}
 
-                >
-                  {t('common.confirm', 'XÁC NHẬN OTP')} <br />
-                </button>
-              </div>
-            )}
 
             {errorMessage && (
               <h2 className="text-xl text-center text-red-500">
@@ -581,6 +644,52 @@ export default function LoginPage() {
         onScanResult={handleScanResult}
         isAuthenticated={true}
       />
+
+      {/* OTP Popup Modal */}
+      {step === 'OTP' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm mx-4">
+            <h3 className="text-xl font-bold mb-4 text-center">
+              {t('forgotPassword.otpTitle', 'XÁC THỰC OTP')}
+            </h3>
+            {errorMessage && (
+              <div className="text-red-500 text-sm text-center mb-4">
+                {t('forgotPassword.otpDescription', 'Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.')}
+              </div>
+            )}
+            <input
+              type="text"
+              className="border p-2 rounded w-full mb-4 outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t('forgotPassword.errors.otpRequired', 'Nhập mã OTP')}
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleVerifyOtp();
+                }
+              }}
+            />
+            <div className="flex gap-2">
+              <button
+                className="flex-1 border p-2 rounded hover:bg-gray-100 transition"
+                onClick={() => {
+                  setStep('LOGIN');
+                  setOtp("");
+                  setErrorMessage("");
+                }}
+              >
+                {t('common.cancel', 'Hủy')}
+              </button>
+              <button
+                className="flex-1 bg-black text-white p-2 rounded hover:bg-gray-800 transition font-bold"
+                onClick={handleVerifyOtp}
+              >
+                {t('common.confirm', 'Xác nhận')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
