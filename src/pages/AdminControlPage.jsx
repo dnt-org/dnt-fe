@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Home as HomeIcon, Keyboard as KeyboardIcon, ChevronDown, ChevronUp } from "lucide-react";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
 import { useTranslation } from 'react-i18next';
 import { getSessions, toggleSessionStatus } from "../services/authService";
+import { createOrUpdateBusiness, getMyBusiness } from "../services/businessService";
 import TwoLineUnitInput from "../components/atoms/TwoLineUnitInput";
 import useBlinkIdScanner from "../components/MicrolinkIDScanner";
 import Tesseract from "tesseract.js";
@@ -34,7 +35,7 @@ function DeviceRow({ item, actionLabel, onActionClick }) {
   );
 }
 
-function InfoInputRow({ label, placeholder, inputs = [] }) {
+function InfoInputRow({ label, placeholder, value, onChange, inputs = [] }) {
   const { t } = useTranslation();
   const defaultPlaceholder = placeholder || t('adminControl.enter');
   
@@ -46,7 +47,7 @@ function InfoInputRow({ label, placeholder, inputs = [] }) {
         {inputs.map((input, idx) => (
           <div key={idx} className={idx > 0 ? "border-l-2 border-black" : ""}>
             {input.type === 'button' ? (
-              <button type="button" className="w-full h-full px-2 py-1 text-yellow-700 hover:bg-black hover:text-white">
+              <button type="button" onClick={input.onClick} className="w-full h-full px-2 py-1 text-yellow-700 hover:bg-black hover:text-white">
                 {input.label}
               </button>
             ) : input.type === 'select' ? (
@@ -66,6 +67,8 @@ function InfoInputRow({ label, placeholder, inputs = [] }) {
             ) : (
               <input
                 type="text"
+                value={input.value !== undefined ? input.value : undefined}
+                onChange={input.onChange}
                 placeholder={input.placeholder || defaultPlaceholder}
                 className="w-full px-2 py-1 text-right bg-transparent focus:outline-none"
               />
@@ -81,6 +84,8 @@ function InfoInputRow({ label, placeholder, inputs = [] }) {
       <div className="border-r-2 border-black px-2 py-1 uppercase">{label}</div>
       <input
         type="text"
+        value={value !== undefined ? value : undefined}
+        onChange={onChange}
         placeholder={defaultPlaceholder}
         className="px-2 py-1 text-right bg-transparent focus:outline-none"
       />
@@ -125,6 +130,20 @@ export default function AdminControlPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const recordTimerRef = useRef(null);
+
+  // Business form state
+  const [businessForm, setBusinessForm] = useState({
+    business_fullname: '',
+    tax_code: '',
+    headquarters_address: '',
+    headquarters_address_province_code: '',
+    headquarters_address_nation_code: '',
+    current_address: '',
+    current_address_province_code: '',
+    current_address_nation_code: '',
+  });
+  const [businessLoading, setBusinessLoading] = useState(false);
+  const [businessSaving, setBusinessSaving] = useState(false);
   const [previewBlocked, setPreviewBlocked] = useState(false);
 
   const mockIdCapture = () => {
@@ -342,6 +361,83 @@ export default function AdminControlPage() {
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
+
+  // Fetch business data when both verifications are complete
+  const fetchBusiness = useCallback(async () => {
+    try {
+      setBusinessLoading(true);
+      const response = await getMyBusiness();
+      const biz = response.data?.data;
+      if (biz) {
+        setBusinessForm(prev => ({
+          ...prev,
+          business_fullname: biz.business_fullname || '',
+          tax_code: biz.tax_code || '',
+          headquarters_address: biz.headquarters_address || '',
+          headquarters_address_province_code: biz.headquarters_address_province_code || '',
+          headquarters_address_nation_code: biz.headquarters_address_nation_code || '',
+          current_address: biz.current_address || '',
+          current_address_province_code: biz.current_address_province_code || '',
+          current_address_nation_code: biz.current_address_nation_code || '',
+        }));
+        // Sync location selectors sequentially to ensure provinces list is loaded before setting province
+        if (biz.headquarters_address_nation_code) {
+          await hqLocation.handleCountryChange({ target: { value: biz.headquarters_address_nation_code } });
+          if (biz.headquarters_address_province_code) {
+            await hqLocation.handleProvinceChange({ target: { value: biz.headquarters_address_province_code } });
+          }
+        }
+        if (biz.current_address_nation_code) {
+          await currLocation.handleCountryChange({ target: { value: biz.current_address_nation_code } });
+          if (biz.current_address_province_code) {
+            await currLocation.handleProvinceChange({ target: { value: biz.current_address_province_code } });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching business:", error);
+    } finally {
+      setBusinessLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (hasIdCaptured && hasBusinessVideo) {
+      fetchBusiness();
+    }
+  }, [hasIdCaptured, hasBusinessVideo, fetchBusiness]);
+
+  const handleBusinessFieldChange = (field) => (e) => {
+    setBusinessForm(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const handleSaveBusiness = async () => {
+    try {
+      setBusinessSaving(true);
+      const payload = {
+        business_fullname: businessForm.business_fullname,
+        tax_code: businessForm.tax_code,
+        headquarters_address: businessForm.headquarters_address,
+        headquarters_address_province_code: hqLocation.selectedProvince || businessForm.headquarters_address_province_code,
+        headquarters_address_nation_code: hqLocation.selectedCountry || businessForm.headquarters_address_nation_code,
+        current_address: businessForm.current_address,
+        current_address_province_code: currLocation.selectedProvince || businessForm.current_address_province_code,
+        current_address_nation_code: currLocation.selectedCountry || businessForm.current_address_nation_code,
+      };
+      await createOrUpdateBusiness(payload);
+      alert(t('adminControl.businessSaveSuccess', 'Đã lưu thông tin doanh nghiệp'));
+    } catch (error) {
+      console.error("Error saving business:", error);
+      alert(t('adminControl.businessSaveError', 'Không thể lưu thông tin doanh nghiệp'));
+    } finally {
+      setBusinessSaving(false);
+    }
+  };
+
+  const handleUpdateBusiness = async () => {
+    await handleSaveBusiness();
+    await fetchBusiness();
+  };
 
   // Fetch sessions on component mount
   useEffect(() => {
@@ -562,44 +658,63 @@ export default function AdminControlPage() {
 
         {hasIdCaptured && hasBusinessVideo && (
             <section className="mt-2">
-              <div className="border-t-2 border-black">
-                <InfoInputRow label={t('adminControl.fullCompanyName')}/>
-                <InfoInputRow label={t('adminControl.taxCode')} />
-                <InfoInputRow 
-                  label={t('adminControl.headquartersAddress')} 
-                  inputs={[
-                    { type: 'input', placeholder: t('adminControl.enter'), width: '1fr' },
-                    { type: 'select', placeholder: t('adminControl.selectProvince'), width: '600px', value: hqLocation.selectedProvince, onChange: hqLocation.handleProvinceChange, options: hqProvinceOptions },
-                    { type: 'select', placeholder: t('adminControl.country'), width: '600px', value: hqLocation.selectedCountry, onChange: hqLocation.handleCountryChange, options: hqCountryOptions }
-                  ]}
-                />
-              </div>
+              {businessLoading ? (
+                <div className="border-2 border-black p-4 text-center">{t('adminControl.loading')}</div>
+              ) : (
+                <>
+                  <div className="border-t-2 border-black">
+                    <InfoInputRow
+                      label={t('adminControl.fullCompanyName')}
+                      value={businessForm.business_fullname}
+                      onChange={handleBusinessFieldChange('business_fullname')}
+                    />
+                    <InfoInputRow
+                      label={t('adminControl.taxCode')}
+                      value={businessForm.tax_code}
+                      onChange={handleBusinessFieldChange('tax_code')}
+                    />
+                    <InfoInputRow 
+                      label={t('adminControl.headquartersAddress')} 
+                      inputs={[
+                        { type: 'input', placeholder: t('adminControl.enter'), width: '1fr', value: businessForm.headquarters_address, onChange: handleBusinessFieldChange('headquarters_address') },
+                        { type: 'select', placeholder: t('adminControl.selectProvince'), width: '600px', value: hqLocation.selectedProvince, onChange: hqLocation.handleProvinceChange, options: hqProvinceOptions },
+                        { type: 'select', placeholder: t('adminControl.country'), width: '600px', value: hqLocation.selectedCountry, onChange: hqLocation.handleCountryChange, options: hqCountryOptions }
+                      ]}
+                    />
+                  </div>
 
-              <InfoInputRow 
-                label={t('adminControl.currentAddress')} 
-                inputs={[
-                  { type: 'input', placeholder: t('adminControl.enter'), width: '1fr' },
-                  { type: 'select', placeholder: t('adminControl.selectProvince'), width: '300px', value: currLocation.selectedProvince, onChange: currLocation.handleProvinceChange, options: currProvinceOptions },
-                  { type: 'select', placeholder: t('adminControl.country'), width: '300px', value: currLocation.selectedCountry, onChange: currLocation.handleCountryChange, options: currCountryOptions },
-                  { type: 'button', label: t('adminControl.map'), width: '300px' },
-                  { type: 'button', label: t('adminControl.update'), width: '300px' }
-                ]}
-              />
+                  <InfoInputRow 
+                    label={t('adminControl.currentAddress')} 
+                    inputs={[
+                      { type: 'input', placeholder: t('adminControl.enter'), width: '1fr', value: businessForm.current_address, onChange: handleBusinessFieldChange('current_address') },
+                      { type: 'select', placeholder: t('adminControl.selectProvince'), width: '300px', value: currLocation.selectedProvince, onChange: currLocation.handleProvinceChange, options: currProvinceOptions },
+                      { type: 'select', placeholder: t('adminControl.country'), width: '300px', value: currLocation.selectedCountry, onChange: currLocation.handleCountryChange, options: currCountryOptions },
+                      { type: 'button', label: t('adminControl.map'), width: '300px' },
+                      { type: 'button', label: t('adminControl.update'), width: '300px', onClick: handleUpdateBusiness }
+                    ]}
+                  />
 
-              <div className="grid grid-cols-[180px_265px_265px_300px] border-2 border-black border-t-0 text-[13px] leading-tight">
-                <div className="border-r-2 border-black px-2 py-1 uppercase">
-                  {t('adminControl.ecommerceContract')}
-                </div>
-                <button type="button" className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white">
-                  {t('adminControl.normalSignature')}
-                </button>
-                <button type="button" className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white">
-                  {t('adminControl.digitalSignature')}
-                </button>
-                <button type="button" className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white">
-                  {t('adminControl.confirmButton')}
-                </button>
-              </div>
+                  <div className="grid grid-cols-[180px_265px_265px_300px] border-2 border-black border-t-0 text-[13px] leading-tight">
+                    <div className="border-r-2 border-black px-2 py-1 uppercase">
+                      {t('adminControl.ecommerceContract')}
+                    </div>
+                    <button type="button" className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white">
+                      {t('adminControl.normalSignature')}
+                    </button>
+                    <button type="button" className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white">
+                      {t('adminControl.digitalSignature')}
+                    </button>
+                    <button
+                      type="button"
+                      className="border-r-2 border-black px-2 py-1 uppercase hover:bg-black hover:text-white disabled:opacity-50"
+                      onClick={handleSaveBusiness}
+                      disabled={businessSaving}
+                    >
+                      {businessSaving ? t('adminControl.saving', 'Đang lưu...') : t('adminControl.confirmButton')}
+                    </button>
+                  </div>
+                </>
+              )}
             </section>
         )}
 

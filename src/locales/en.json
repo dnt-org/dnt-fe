@@ -1118,7 +1118,10 @@
     "otpRequired": "Please enter OTP code",
     "toggleSuccess": "Session status changed successfully",
     "toggleError": "Could not change status",
-    "otpError": "Incorrect OTP code"
+    "otpError": "Incorrect OTP code",
+    "businessSaveSuccess": "Business information saved successfully",
+    "businessSaveError": "Unable to save business information",
+    "saving": "Saving..."
   },
   "admin": {
     "title": "CONTROL",

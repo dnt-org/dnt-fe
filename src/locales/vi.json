@@ -1080,7 +1080,10 @@
     "otpRequired": "Vui lòng nhập mã OTP",
     "toggleSuccess": "Đã thay đổi trạng thái phiên đăng nhập",
     "toggleError": "Không thể thay đổi trạng thái",
-    "otpError": "Mã OTP không chính xác"
+    "otpError": "Mã OTP không chính xác",
+    "businessSaveSuccess": "Đã lưu thông tin doanh nghiệp",
+    "businessSaveError": "Không thể lưu thông tin doanh nghiệp",
+    "saving": "Đang lưu..."
   },
   "admin": {
     "title": "ĐIỀU KHIỂN",
