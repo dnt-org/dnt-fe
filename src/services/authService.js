@@ -4,16 +4,24 @@ import axios from "axios";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
 
 // Authentication service functions
-const login = async (cccd, password, recaptchaToken) => {
+const login = async (cccd, password, recaptchaToken, device_name = null, login_type = "password", location = null, otp = null) => {
 
     try {
+        const payload = {
+            "cccd": cccd,
+            "password": password,
+            "recaptchaToken": recaptchaToken
+        };
+
+        // Add optional fields if provided
+        if (device_name) payload.device_name = device_name;
+        if (login_type) payload.login_type = login_type;
+        if (location) payload.location = location;
+        if (otp) payload.otp = otp;
+
         const response = await axios.post(
             `${API_URL}/auth/login`,
-            {
-                "cccd": cccd,
-                "password": password,
-                "recaptchaToken": recaptchaToken
-            }
+            payload
         );
 
         // Check for soft error (200 OK but contains error data)
@@ -339,8 +347,80 @@ const verifyRecoveryOtp = async (resetToken, otp) => {
     }
 };
 
+/**
+ * Get all login sessions for the authenticated user
+ * GET /auth/sessions
+ * @returns {Promise<Object>} - { data: [{ id, user_id, device_name, location, is_familiar, login_type, status, last_login_at }] }
+ */
+const getSessions = async () => {
+    try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await axios.get(
+            `${API_URL}/auth/sessions`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error fetching sessions");
+        }
+    }
+};
+
+/**
+ * Toggle session status (login <-> logout)
+ * POST /auth/sessions/toggle-status
+ * @param {number} sessionId - Session ID to toggle
+ * @param {string} otp - OTP code for verification
+ * @returns {Promise<Object>} - { success, message, session_id, new_status }
+ */
+const toggleSessionStatus = async (sessionId, otp) => {
+    try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await axios.post(
+            `${API_URL}/auth/sessions/toggle-status`,
+            {
+                session_id: sessionId,
+                otp: otp
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error toggling session status");
+        }
+    }
+};
+
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
-    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp
+    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus
 };
