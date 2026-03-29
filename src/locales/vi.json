@@ -1211,5 +1211,13 @@
     "scanSuccess": "Quét thành công",
     "scanning": "Đang quét...",
     "startScan": "Quét QR Code"
+  },
+  "contact": {
+    "search": "Tìm kiếm",
+    "enterAccountNumber": "NHẬP SỐ TÀI KHOẢN",
+    "enterRecoveryChar": "NHẬP KÝ TỰ KHÔI PHỤC TÀI KHOẢN",
+    "enterOtp": "NHẬP MẬT MÃ OTP",
+    "enterWalletId": "NHẬP SỐ D CÓ TRONG VÍ",
+    "typeMessage": "Nhập tin nhắn tới A"
   }
 }

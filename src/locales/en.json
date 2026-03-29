@@ -1240,5 +1240,13 @@
     "adContentEn": "Ad content",
     "allowAdvertisingOnLive": "ALLOW ADVERTISING ON THIS LIVE STREAM",
     "disclaimer": "COPYRIGHT COMMITMENT NOT TO VIOLATE PROHIBITED LAWS"
+  },
+  "contact": {
+    "search": "Search",
+    "enterAccountNumber": "ENTER ACCOUNT NUMBER",
+    "enterRecoveryChar": "ENTER ACCOUNT RECOVERY CHARACTER",
+    "enterOtp": "ENTER OTP",
+    "enterWalletId": "ENTER WALLET BALANCE ID",
+    "typeMessage": "Type message to A"
   }
 }
