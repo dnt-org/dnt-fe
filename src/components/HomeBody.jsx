@@ -1,4 +1,6 @@
 import {useState, useEffect} from "react";
+import { useNavigate } from "react-router-dom"
+
 import {useTranslation} from 'react-i18next';
 import {useSelector} from 'react-redux';
 import {BookUserIcon} from "lucide-react";
@@ -34,6 +36,8 @@ const HomeBody = () => {
         transition: 'background-color 150ms ease, transform 150ms ease'
     };
 
+    const navigate = useNavigate();
+
     return (
         <>
             <EventComponent/>
@@ -48,6 +52,7 @@ const HomeBody = () => {
                 title="Sổ liên lạc"
                 aria-label="Sổ liên lạc"
                 style={baseStyle}
+                onClick={() => navigate('/contact')}
 
             >
                 <BookUserIcon size={26} strokeWidth={2.5}/>
