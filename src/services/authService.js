@@ -419,8 +419,39 @@ const toggleSessionStatus = async (sessionId, otp) => {
     }
 };
 
+const changeOtp = async (otp) => {
+    try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            throw new Error("No authentication token found");
+        }
+
+        const response = await axios.post(
+            `${API_URL}/auth/change-otp`,
+            {
+                otp: otp
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response;
+    } catch (error) {
+        if (error.response) {
+            throw error;
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error changing OTP");
+        }
+    }
+};
+
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
-    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus
+    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp
 };

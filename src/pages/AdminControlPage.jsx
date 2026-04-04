@@ -514,22 +514,7 @@ export default function AdminControlPage() {
           color={color}
           onColorChange={handleChangeColor}
           titlePrefix="3"
-          leftButton={
-            <button
-              className="text-red-600 hover:text-red-800 relative"
-              onClick={() => navigate("/")}
-            >
-              <HomeIcon size={28} />
-            </button>
-          }
-          rightButton={
-            <button
-              className="text-red-600 hover:text-red-800"
-              onClick={() => navigate("/admin-control")}
-            >
-              <KeyboardIcon size={28} />
-            </button>
-          }
+          
           title={t('adminControl.title')}
         />
 
@@ -612,6 +597,7 @@ export default function AdminControlPage() {
             </button>
             <button
               type="button"
+              onClick={() => navigate("/change-otp-code")}
               className="border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase hover:bg-black hover:text-white"
             >
               {t('adminControl.changeOtpCode')}

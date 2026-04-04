@@ -25,6 +25,7 @@ import HomeWrapper from './pages/HomeWrapper.jsx'
 import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import AccountBlockedPage from './pages/AccountBlockedPage.jsx'
 import ContactAdminPage from './pages/ContactAdminPage.jsx'
+import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
 
 function App() {
 
@@ -39,6 +40,7 @@ function App() {
         <Route exact path="/account-blocked" element={<AccountBlockedPage />} />
         <Route exact path="/contact" element={<ContactAdminPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
+        <Route path="/change-otp-code" element={<ChangeOTPPage />} />
 
         <Route exact path="/list-of-goods" element={<ListOfGoodsPage />} />
         <Route exact path="/list-of-goods/:id" element={<DetailOfGoodsPage />} />

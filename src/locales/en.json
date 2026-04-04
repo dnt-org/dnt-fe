@@ -1230,7 +1230,8 @@
       "invalidPassword": "Mật khẩu mới phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)",
       "confirmPasswordMismatch": "Xác nhận mật khẩu không trùng khớp"
     },
-    "next": "NEXT"
+    "next": "NEXT",
+    "changeOTPTitle": "CHANGE OTP"
   },
   "ailivelive": {
     "advertisingOnMainpage": "ADVERTISING ON HOME PAGE",
