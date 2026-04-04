@@ -55,7 +55,7 @@ export default function ChangePasswordPage() {
         const hasUppercase = /[A-Z]/.test(password);
         const hasLowercase = /[a-z]/.test(password);
         const hasNumber = /\d/.test(password);
-        const hasSpecialChar = /[@$!%*?&]/.test(password);
+        const hasSpecialChar = /[~!@#$%^&*]/.test(password);
         const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && password.length >= 6;
 
         return {
@@ -110,17 +110,14 @@ export default function ChangePasswordPage() {
         }
 
         try {
-            console.log(formData);
             const response = await changePassword(formData.cccd, formData.newPassword, formData.confirmPassword)
-            console.log(response.data);
 
             if (response.data?.blocked) {
                 alert(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.'));
                 return;
             }
 
-            alert(t('auth.changePasswordSuccess', 'Đổi mật khẩu thành công!'));
-            navigate("/login"); // Redirect to login as per spec
+            navigate("/"); // Redirect to login as per spec
         } catch (error) {
             console.error("Lỗi khi đăng ký:", error.response?.data || error.message);
             setError(error.response?.data?.message || t('auth.changePasswordError', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
@@ -147,22 +144,6 @@ export default function ChangePasswordPage() {
                     color={color}
                     onColorChange={handleChangeColor}
                     titlePrefix=""
-                    leftButton={
-                        <button
-                            className="text-red-600 hover:text-red-800 relative"
-                            onClick={() => navigate("/")}
-                        >
-                            <HomeIcon size={28} />
-                        </button>
-                    }
-                    rightButton={
-                        <button
-                            className="text-red-600 hover:text-red-800"
-                            onClick={() => navigate("/admin-control")}
-                        >
-                            <KeyboardIcon size={28} />
-                        </button>
-                    }
                     title={t('register.changePasswordTitle')}
                 />
 

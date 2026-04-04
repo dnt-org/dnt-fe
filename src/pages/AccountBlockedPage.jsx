@@ -51,7 +51,7 @@ export default function AccountBlockedPage() {
 
                     <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded shadow-sm max-w-2xl mx-auto mb-8">
                         <p className="text-lg text-red-800 leading-relaxed">
-                            {t('blocked.message', 'Tài khoản của bạn đã bị khóa vĩnh viễn do nhập sai chuỗi khôi phục quá nhiều lần trong lần thử cuối cùng.')}
+                            {t('blocked.message', 'Tài khoản của bạn đã bị khóa vĩnh viễn do nhập sai ký tự khôi phục tài khoản quá nhiều lần trong lần thử cuối cùng.')}
                         </p>
                     </div>
 

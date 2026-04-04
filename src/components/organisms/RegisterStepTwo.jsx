@@ -14,6 +14,19 @@ export default function RegisterStepTwo({
   contractError,
   handleCloseContractModal,
 }) {
+  const [isTick, setIsTick] = React.useState(false)
+  const handleCheckboxChange = (e) => {
+    console.log(e.target.checked)
+    setIsTick(e.target.checked)
+  }
+  const handleSubmited = () => {
+    if (isTick) {
+        handleRegister()
+    }
+    else {
+        alert("Vui lòng đồng ý điều khoản")
+    }
+  }
   return (
     <div className="mt-6">
       <button className="border-2 border-black text-black font-bold px-6 py-2 rounded text-center hover:bg-gray-200 mt-4 mb-4 flex w-full justify-center items-center" onClick={handleContractDownload}>
@@ -26,7 +39,7 @@ export default function RegisterStepTwo({
       </button>
       <div className="flex items-start gap-2">
         <div className="flex flex-col items-center">
-          <input type="checkbox" className="w-5 h-5" />
+          <input name="isReadContract" type="checkbox" className="w-5 h-5" onChange={handleCheckboxChange} />
           <span className="text-red-500 text-lg">*</span>
         </div>
         <div className="text-left">
@@ -44,7 +57,7 @@ export default function RegisterStepTwo({
         </div>
       </div>
       <div className="text-center mt-4">
-        <button className="border-2 border-black text-black font-bold px-1 py-2 rounded hover:bg-gray-200 flex-1" onClick={() => handleRegister()} tooltip={!isReadContract ? "Vui lòng đọc và chấp nhận hợp đồng" : ""}>
+        <button className="border-2 border-black text-black font-bold px-1 py-2 rounded hover:bg-gray-200 flex-1" onClick={() => handleSubmited()} title={!isTick ? "Vui lòng xem và chấp nhận hợp đồng" : ""}>
           {t("register.registerTitle", "Đăng ký")}
         </button>
       </div>

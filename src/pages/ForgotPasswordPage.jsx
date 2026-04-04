@@ -25,6 +25,7 @@ export default function ForgotPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showRecoveryString, setShowRecoveryString] = useState(false);
 
   // UI states
   const [isLoading, setIsLoading] = useState(false);
@@ -64,7 +65,7 @@ export default function ForgotPasswordPage() {
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    const hasSpecialChar = /[~!@#$%^&*]/.test(password);
     const isValid = minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
 
     return {
@@ -101,7 +102,7 @@ export default function ForgotPasswordPage() {
     }
 
     if (!recoveryString.trim()) {
-      setErrorMessage(t('forgotPassword.errors.recoveryStringRequired', 'Vui lòng nhập chuỗi khôi phục'));
+      setErrorMessage(t('forgotPassword.errors.recoveryStringRequired', 'Vui lòng nhập ký tự khôi phục tài khoản'));
       return;
     }
 
@@ -167,10 +168,10 @@ export default function ForgotPasswordPage() {
 
       switch (errorCode) {
         case 'INVALID_RECOVERY_STRING':
-          setErrorMessage(t('forgotPassword.errors.invalidRecoveryString', 'Số tài khoản hoặc chuỗi khôi phục không chính xác'));
+          setErrorMessage(t('forgotPassword.errors.invalidRecoveryString', 'Số tài khoản hoặc ký tự khôi phục tài khoản không chính xác'));
           break;
         case 'RECOVERY_NOT_CONFIGURED':
-          setErrorMessage(t('forgotPassword.errors.recoveryNotConfigured', 'Tài khoản chưa thiết lập chuỗi khôi phục'));
+          setErrorMessage(t('forgotPassword.errors.recoveryNotConfigured', 'Tài khoản chưa thiết lập ký tự khôi phục tài khoản'));
           break;
         case 'ACCOUNT_TEMPORARILY_LOCKED':
         case 'TEMP_BLOCKED':
@@ -373,42 +374,13 @@ export default function ForgotPasswordPage() {
 
           {/* Blocked account warning */}
           {isBlocked && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 flex items-center gap-2">
-              <Lock size={20} />
-              <span>{t('forgotPassword.blockedWarning', 'Tài khoản đã bị khóa do nhập sai recovery quá 5 lần. Vui lòng liên hệ hỗ trợ.')}</span>
+            <div className="bg-red-50 text-red-700 px-4 py-3 rounded mb-4 flex items-center gap-2">
+              <span>{t('forgotPassword.blockedWarning', 'Tài khoản đã bị khóa do nhập sai ký tự khôi phục tài khoản quá 5 lần. Vui lòng liên hệ hỗ trợ.')}</span>
             </div>
           )}
 
           {/* Step indicator - 3 steps (OTP step may be skipped) */}
-          <div className="flex items-center justify-center mb-6">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${getStepState('VERIFY') === 'completed' ? 'bg-green-500 text-white' :
-                getStepState('VERIFY') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
-              }`}>
-              <KeyRound size={20} />
-            </div>
-            <div className={`w-12 h-1 ${otpSkipped ? 'bg-green-500' :
-                (getStepState('OTP') !== 'pending' ? 'bg-green-500' : 'bg-gray-300')
-              }`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full relative ${otpSkipped ? 'bg-gray-300 text-gray-400' :
-                (getStepState('OTP') === 'completed' ? 'bg-green-500 text-white' :
-                  getStepState('OTP') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500')
-              }`}>
-              <Smartphone size={20} />
-              {/* Show strikethrough if OTP was skipped */}
-              {otpSkipped && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-0.5 bg-gray-500 rotate-45"></div>
-                </div>
-              )}
-            </div>
-            <div className={`w-12 h-1 ${(step === 'RESET' || getStepState('RESET') !== 'pending') ? 'bg-green-500' : 'bg-gray-300'
-              }`}></div>
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full ${getStepState('RESET') === 'completed' ? 'bg-green-500 text-white' :
-                getStepState('RESET') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
-              }`}>
-              <Lock size={20} />
-            </div>
-          </div>
+          
 
           <div className="space-y-4">
             {/* STEP 1: Verify Recovery String */}
@@ -416,7 +388,7 @@ export default function ForgotPasswordPage() {
               <>
                 <div className="text-center mb-4">
                   <p className="text-gray-600 text-sm">
-                    {t('forgotPassword.verifyDescription', 'Nhập số tài khoản ngân hàng và chuỗi khôi phục để xác thực tài khoản của bạn.')}
+                    {t('forgotPassword.verifyDescription', 'Nhập số tài khoản ngân hàng và ký tự khôi phục tài khoản để xác thực tài khoản của bạn.')}
                   </p>
                 </div>
 
@@ -431,22 +403,30 @@ export default function ForgotPasswordPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 items-center gap-4">
+                <div className="relative">
                   <input
-                    type="text"
-                    className="border p-3 rounded w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder={t('forgotPassword.recoveryStringPlaceholder', 'Chuỗi khôi phục')}
+                    type={showRecoveryString ? "text" : "password"}
+                    className="border p-3 rounded w-full pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder={t('forgotPassword.recoveryStringPlaceholder', 'ký tự khôi phục tài khoản')}
                     value={recoveryString}
                     onChange={(e) => setRecoveryString(e.target.value)}
                     disabled={isLoading || isBlocked}
                   />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowRecoveryString(!showRecoveryString)}
+                    disabled={isLoading || isBlocked}
+                  >
+                    {showRecoveryString ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
                 </div>
 
                 <div className="text-center mt-6">
                   <button
                     className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || isBlocked
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100'
-                        : 'hover:bg-gray-100'
+                      ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                      : 'hover:bg-gray-100'
                       }`}
                     onClick={handleVerifyRecoveryString}
                     disabled={isLoading || isBlocked}
@@ -483,8 +463,8 @@ export default function ForgotPasswordPage() {
                 <div className="text-center mt-6">
                   <button
                     className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || otp.length < 6
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100'
-                        : 'hover:bg-gray-100'
+                      ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                      : 'hover:bg-gray-100'
                       }`}
                     onClick={handleVerifyOtp}
                     disabled={isLoading || otp.length < 6}
@@ -528,7 +508,7 @@ export default function ForgotPasswordPage() {
                   <input
                     type={showPassword ? "text" : "password"}
                     className={`border p-3 rounded w-full pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${newPassword && !passwordValidation.isValid ? 'border-red-500' :
-                        newPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
+                      newPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
                       }`}
                     placeholder={t('forgotPassword.newPasswordPlaceholder', 'Mật khẩu mới (New Password)')}
                     value={newPassword}
@@ -575,7 +555,7 @@ export default function ForgotPasswordPage() {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     className={`border p-3 rounded w-full pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${confirmPassword && newPassword !== confirmPassword ? 'border-red-500' :
-                        confirmPassword && newPassword === confirmPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
+                      confirmPassword && newPassword === confirmPassword && passwordValidation.isValid ? 'border-green-500' : 'border-gray-300'
                       }`}
                     placeholder={t('forgotPassword.confirmPasswordPlaceholder', 'Xác nhận mật khẩu (Confirm Password)')}
                     value={confirmPassword}
@@ -606,8 +586,8 @@ export default function ForgotPasswordPage() {
                 <div className="text-center mt-6">
                   <button
                     className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword
-                        ? 'opacity-50 cursor-not-allowed bg-gray-100'
-                        : 'hover:bg-gray-100'
+                      ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                      : 'hover:bg-gray-100'
                       }`}
                     onClick={handleResetPassword}
                     disabled={isLoading || !passwordValidation.isValid || newPassword !== confirmPassword}
@@ -618,33 +598,7 @@ export default function ForgotPasswordPage() {
                   </button>
                 </div>
 
-                {/* Back button - to OTP if not skipped, to VERIFY if skipped */}
-                <div className="text-center mt-2">
-                  <button
-                    className="text-blue-600 hover:text-blue-800 text-sm underline"
-                    onClick={() => {
-                      if (otpSkipped) {
-                        // OTP was skipped, go back to VERIFY step
-                        setStep('VERIFY');
-                        setResetToken("");
-                        setOtpSkipped(false);
-                      } else {
-                        // OTP was not skipped, go back to OTP step
-                        setStep('OTP');
-                      }
-                      setNewPassword("");
-                      setConfirmPassword("");
-                      setErrorMessage("");
-                      setSuccessMessage("");
-                    }}
-                    disabled={isLoading}
-                  >
-                    {otpSkipped
-                      ? t('forgotPassword.backToVerify', '← Quay lại bước xác thực')
-                      : t('forgotPassword.backToOtp', '← Quay lại bước xác thực OTP')
-                    }
-                  </button>
-                </div>
+                
               </>
             )}
 

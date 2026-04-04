@@ -120,7 +120,7 @@
       "hasUppercase": "At least 1 uppercase letter (A-Z)",
       "hasLowercase": "At least 1 lowercase letter (a-z)",
       "hasNumber": "At least 1 number (0-9)",
-      "hasSpecialChar": "At least 1 special character (!@#$%^&*(),.?\":{}|<>)"
+      "hasSpecialChar": "At least 1 special character (~!@#$%^&*()_)"
     },
     "errors": {
       "bankAccountRequired": "Please enter bank account number",
@@ -1223,7 +1223,7 @@
       "hasUppercase": "Chứa ít nhất 1 chữ hoa (A-Z)",
       "hasLowercase": "Chứa ít nhất 1 chữ thường (a-z)",
       "hasNumber": "Chứa ít nhất 1 số (0-9)",
-      "hasSpecialChar": "Chứa ít nhất 1 ký tự đặc biệt (@$!%*?&)",
+      "hasSpecialChar": "Chứa ít nhất 1 ký tự đặc biệt (~!@#$%^&*()_)",
       "minLength": "Ít nhất 6 ký tự",
       "passwordMatch": "Mật khẩu trùng khớp",
       "passwordMismatch": "Mật khẩu không trùng khớp",

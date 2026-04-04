@@ -90,7 +90,7 @@ export default function useRegisterForm(t) {
     const hasUppercase = /[A-Z]/.test(recoveryChar)
     const hasLowercase = /[a-z]/.test(recoveryChar)
     const hasNumber = /\d/.test(recoveryChar)
-    const hasSpecialChar = /[@$!%*?&]/.test(recoveryChar)
+    const hasSpecialChar = /[~!@#$%^&*_]/.test(recoveryChar)
     const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && recoveryChar.length >= 6
     return { hasUppercase, hasLowercase, hasNumber, hasSpecialChar, isValid }
   }
@@ -113,7 +113,7 @@ export default function useRegisterForm(t) {
           recovery_character:
             t(
               "auth.invalidRecoveryCharacter",
-              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (#@$!%*?&~^_)."
+              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_)."
             ),
         }))
       } else {
