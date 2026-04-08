@@ -57,8 +57,8 @@ export const getCountryByCode = async (name) => {
     const response = await fetch("https://countriesnow.space/api/v0.1/countries/states", requestOptions);
     const country = await response.json();
 
-    const all = { vi: "Chọn tỉnh/thành", en: "Select province/city" }
-    const provices = [...country.data.states.map(state => ({
+    const all = { vi: "Tất cả", en: "All" };
+    const provices = [all, ...country.data.states.map(state => ({
       vi: state.name,
       en: state.name,
     }))];
@@ -85,7 +85,7 @@ export const getDistrictByCode = async (province) => {
 
     const response = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", requestOptions);
     const result = await response.json();
-    const all = { vi: "Chọn tỉnh/thành", en: "Select province/city" }
+    const all = { vi: "Tất cả", en: "All" };
     const districts = result.data.map(district => ({
       vi: district,
       en: district,

@@ -567,8 +567,8 @@
     "listedValueEn": "LISTED VALUE",
     "transactions": "TRANSACTIONS",
     "transactionsEn": "TRANSACTIONS",
-    "accesses": "ACCESSES",
-    "accessesEn": "ACCESSES",
+    "accesses": "ONLINE",
+    "accessesEn": "ONLINE",
     "successfully": "SUCCESSFULLY",
     "successfullyEn": "SUCCESSFULLY",
     "amount": "AMOUNT",
@@ -590,7 +590,7 @@
     "membersEn": "MEMBERS",
     "remaining": "REMAINING",
     "remainingEn": "REMAINING",
-    "online": "ACCESS",
+    "online": "ONLINE",
     "onlineEn": "ONLINE"
   },
   "posts": {

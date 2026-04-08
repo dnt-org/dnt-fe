@@ -450,8 +450,54 @@ const changeOtp = async (otp) => {
     }
 };
 
+const verifyRecoveryAccount = async (accountId) => {
+    const response = await axios.post(
+        `${API_URL}/auth/recovery/verify-account`,
+        { accountId },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
+const verifyRecoveryKey = async (accountId, recoveryKey) => {
+    const response = await axios.post(
+        `${API_URL}/auth/recovery/verify-recovery`,
+        { accountId, recoveryKey },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
+const verifyRecoveryOtpStep = async (accountId, otp) => {
+    const response = await axios.post(
+        `${API_URL}/auth/recovery/verify-otp`,
+        { accountId, otp },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
+const verifyRecoveryBalance = async (accountId, balance) => {
+    const response = await axios.post(
+        `${API_URL}/auth/recovery/verify-balance`,
+        { accountId, balance },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
+const verifyRecoveryCccd = async (accountId, fullName, idNumber) => {
+    const response = await axios.post(
+        `${API_URL}/auth/recovery/verify-cccd`,
+        { accountId, fullName, idNumber },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
-    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp
+    verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp,
+    verifyRecoveryAccount, verifyRecoveryKey, verifyRecoveryOtpStep, verifyRecoveryBalance, verifyRecoveryCccd
 };

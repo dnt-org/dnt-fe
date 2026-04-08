@@ -14,6 +14,7 @@ import {
   Camera,
   MessageSquare,
   Building2,
+  Landmark,
   Bell,
   CheckSquare,
   Bookmark,
@@ -31,6 +32,13 @@ import {
 
 import { useNavigate } from 'react-router-dom';
 import useBlinkIdScanner from '../components/MicrolinkIDScanner';
+import {
+  verifyRecoveryAccount,
+  verifyRecoveryKey,
+  verifyRecoveryOtpStep,
+  verifyRecoveryBalance,
+  verifyRecoveryCccd
+} from '../services/authService';
 
 // ─── Chat mode ────────────────────────────────────────────────────────────────
 // mode = null    → no chat selected
@@ -114,42 +122,44 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
   // ── Microblink scanning logic ──────────────────────────────────────────────
   const onScanResult = useCallback(async (result) => {
     if (result.state === 1 /* RecognizerResultState.Empty */) return;
-    
+
     setIsScanModalOpen(false);
     setInputDisabled(true);
-    
+
     // Result extraction based on BlinkIDCombinedRecognizer structure
     const fullName = result.fullName || "";
     const idNumber = result.personalNumber || result.documentNumber || "";
-    
+
     if (idNumber) {
       push('system', `📄 Đã quét ID: ${idNumber}`);
       push('system', 'Đang xác minh CCCD với hệ thống...');
-      
+
       try {
-        const res = await verifyCccdLocked(fullName, idNumber);
+        const res = await verifyRecoveryCccd(dataRef.current.account, fullName, idNumber);
         const success = res?.data?.success || res?.status === 200;
 
         if (success) {
-          const pw = genTempPw();
+          const pw = res?.data?.tempPassword || res?.data?.temp_password || genTempPw();
           setStep(STEPS.CCCD_VERIFIED);
           await botSay(
-            `✅ XÁC MINH CCCD THÀNH CÔNG!\n\nTên: ${fullName}\nID: ${idNumber}\n\nTài khoản đã được mở khóa.\nMật khẩu tạm thời:\n\n"${pw}"\n\n⏰ Có hiệu lực trong 30 phút.`,
+            `✅ XÁC MINH CCCD THÀNH CÔNG!\n\nTên: ${fullName}\nID: ${idNumber}\n\nTài khoản đã được mở khóa.\nMật khẩu tạm thời:\n\n"${pw}"\n\n⏰ Có hiệu lực trong 30 phút.\nVui lòng đăng nhập và đổi mật khẩu ngay.`,
             'success', 1000
           );
         } else {
+          // Manually throw to hit catch block if success is false but status was ok
+          throw new Error("CCCD Verification Failed");
         }
       } catch (err) {
         setStep(STEPS.HARD_LOCKED);
         await botSay(
-          '🔒 CCCD/Mã số thuế không khớp với thông tin đã đăng ký.\n\nTài khoản của bạn đã bị khóa hoàn toàn.\nVui lòng liên hệ trực tiếp qua Video Call để được xử lý.',
+          '🔒 CCCD/Mã số thuế không hợp lệ hoặc không khớp với thông tin đã đăng ký.\n\nTài khoản của bạn đã bị khóa hoàn toàn.\nVui lòng liên hệ trực tiếp qua Video Call để được xử lý.',
           'error', 1000
         );
         await botSay('📞 Nhấn nút Video ở góc trên bên phải để kết nối nhân viên hỗ trợ.', 'warning', 600);
         if (onVideoCalls) onVideoCalls();
       }
     }
-  }, []);
+  }, [onVideoCalls]);
 
   const onScanError = useCallback((error) => {
     console.error("Scanning Error:", error);
@@ -210,101 +220,24 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
       setInputDisabled(false);
       setTimeout(() => inputRef.current?.focus(), 100);
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── send ──────────────────────────────────────────────────────────────────
-  const handleSend = async () => {
-    const val = input.trim();
-    if (!val || inputDisabled) return;
-    setInput('');
-    setInputDisabled(true);
-    push('user', val);
+  // ── Standard Failure Handler ──────────────────────────────────────────────
+  const handleStandardFail = async () => {
+    const attempts = verificationAttempts + 1;
+    setVerificationAttempts(attempts);
 
-    if (cooldownUntil && Date.now() < cooldownUntil) {
-      const rem = Math.ceil((cooldownUntil - Date.now()) / 1000);
-      await botSay(`⏳ Vui lòng chờ ${Math.floor(rem/60)}:${String(rem%60).padStart(2,'0')} trước khi thử lại.`, 'warning', 500);
-      setInputDisabled(false);
-      return;
-    }
-
-    if (step === STEPS.AWAIT_ACCOUNT) {
-      if (!/^\d{6,20}$/.test(val)) {
-        await botSay('⚠️ Số tài khoản không hợp lệ (6-20 chữ số). Vui lòng nhập lại.', 'error', 600);
-        setInputDisabled(false); return;
-      }
-      dataRef.current.account = val;
-      push('system', 'Đã nhận số tài khoản — chỉ dành cho tài khoản bị khóa vĩnh viễn');
-      await botSay('✅ Đã ghi nhận.\n\nVui lòng nhập Ký tự khôi phục tài khoản của bạn.', 'normal', 700);
-      setStep(STEPS.AWAIT_RECOVERY);
-      setInputDisabled(false);
-      return;
-    }
-
-    if (step === STEPS.AWAIT_RECOVERY) {
-      if (val.length < 4) {
-        await botSay('⚠️ Ký tự khôi phục phải có ít nhất 4 ký tự. Vui lòng nhập lại.', 'error', 600);
-        setInputDisabled(false); return;
-      }
-      dataRef.current.recovery = val;
-      await botSay('✅ Đã ghi nhận.\n\nVui lòng nhập Mật mã OTP của bạn (4-8 chữ số).', 'normal', 700);
-      setStep(STEPS.AWAIT_OTP);
-      setInputDisabled(false);
-      return;
-    }
-
-    if (step === STEPS.AWAIT_OTP) {
-      if (!/^\d{4,8}$/.test(val)) {
-        await botSay('⚠️ Mật mã OTP không hợp lệ (4-8 chữ số). Vui lòng nhập lại.', 'error', 600);
-        setInputDisabled(false); return;
-      }
-      dataRef.current.otp = val;
-      await botSay('✅ Đã ghi nhận.\n\nVui lòng nhập Số dư hiện có trong ví (VND, chỉ nhập số).', 'normal', 700);
-      setStep(STEPS.AWAIT_BALANCE);
-      setInputDisabled(false);
-      return;
-    }
-
-    if (step === STEPS.AWAIT_BALANCE) {
-      if (!/^\d+$/.test(val)) {
-        await botSay('⚠️ Vui lòng nhập số dư dưới dạng số nguyên (VD: 1500000).', 'error', 600);
-        setInputDisabled(false); return;
-      }
-      dataRef.current.balance = val;
-      setStep(STEPS.VERIFYING);
-      push('system', 'Đang xác minh thông tin...');
-      await runVerify();
-      return;
-    }
-
-    setInputDisabled(false);
-  };
-
-  // ── Verify via API ────────────────────────────────────────────────────────
-  const runVerify = async () => {
-    const { account, recovery, otp, balance } = dataRef.current;
-    let success = false;
-    let tempPw = null;
-
-    try {
-      const res = await verifyLockedAccount(account, recovery, otp, balance);
-      success = res?.data?.success === true;
-      tempPw = res?.data?.tempPassword || res?.data?.temp_password || null;
-    } catch {
-      success = false;
-    }
-
-    if (success) {
-      const pw = tempPw || genTempPw();
-      setStep(STEPS.SUCCESS);
+    if (attempts >= 2) {
+      setStep(STEPS.HARD_LOCKED);
       await botSay(
-        `🎉 XÁC MINH THÀNH CÔNG!\n\nMật khẩu tạm thời của bạn là:\n\n"${pw}"\n\n⏰ Có hiệu lực trong 30 phút.\nVui lòng đăng nhập và đổi mật khẩu ngay.`,
-        'success', 900
+        '🔒 Bạn đã nhập sai quá số lần quy định.\n\nTài khoản của bạn đã bị khóa hoàn toàn.\nVui lòng liên hệ trực tiếp qua Video Call để được xử lý.',
+        'error', 1000
       );
+      await botSay('📞 Nhấn nút Video ở góc trên bên phải để kết nối nhân viên hỗ trợ.', 'warning', 600);
+      if (onVideoCalls) onVideoCalls();
     } else {
-      const attempts = verificationAttempts + 1;
-      setVerificationAttempts(attempts);
-      const until = Date.now() + 1 * 10 * 1000;
+      const until = Date.now() + 30 * 60 * 1000; // 30 mins
       setCooldownUntil(until);
       setStep(STEPS.FAIL_WRONG_INFO);
 
@@ -316,16 +249,117 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
       // After 30 min, allow retry automatically
       setTimeout(async () => {
         await botSay(
-          'Thời gian chờ đã hết. Nhập lại số tài khoản để thử lại.',
+          'Thời gian chờ đã hết. Vui lòng nhập lại số tài khoản để bắt đầu lại quá trình.',
           'warning', 700
         );
         dataRef.current = { account: '', recovery: '', otp: '', balance: '' };
-        setStep(STEPS.AWAIT_CCCD);
+        setStep(STEPS.AWAIT_ACCOUNT);
         setInputDisabled(false);
         setTimeout(() => inputRef.current?.focus(), 100);
-      }, 1 * 10 * 1000);
+      }, 30 * 60 * 1000);
     }
   };
+
+  // ── send ──────────────────────────────────────────────────────────────────
+  const handleSend = async () => {
+    const val = input.trim();
+    if (!val || inputDisabled) return;
+    setInput('');
+    setInputDisabled(true);
+    push('user', val);
+
+    if (cooldownUntil && Date.now() < cooldownUntil) {
+      const rem = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      await botSay(`⏳ Vui lòng chờ ${Math.floor(rem / 60)}:${String(rem % 60).padStart(2, '0')} trước khi thử lại.`, 'warning', 500);
+      setInputDisabled(false);
+      return;
+    }
+
+    if (step === STEPS.AWAIT_ACCOUNT) {
+      if (!/^\d{1,20}$/.test(val)) {
+        await botSay('⚠️ Số tài khoản không hợp lệ (1-20 chữ số). Vui lòng nhập lại.', 'error', 600);
+        setInputDisabled(false); return;
+      }
+      dataRef.current.account = val;
+      push('system', 'Đang xác minh số tài khoản...');
+      try {
+        await verifyRecoveryAccount(val);
+        await botSay('✅ Xác minh số tài khoản thành công.\n\nVui lòng nhập Ký tự khôi phục tài khoản của bạn.', 'success', 700);
+        setStep(STEPS.AWAIT_RECOVERY);
+        setInputDisabled(false);
+      } catch (err) {
+        await handleStandardFail();
+      }
+      return;
+    }
+
+    if (step === STEPS.AWAIT_RECOVERY) {
+      if (val.length < 4) {
+        await botSay('⚠️ Ký tự khôi phục phải có ít nhất 4 ký tự. Vui lòng nhập lại.', 'error', 600);
+        setInputDisabled(false); return;
+      }
+      dataRef.current.recovery = val;
+      push('system', 'Đang xác minh ký tự khôi phục...');
+      try {
+        await verifyRecoveryKey(dataRef.current.account, val);
+        await botSay('✅ Xác minh ký tự khôi phục thành công.\n\nVui lòng nhập Mật mã OTP của bạn (4-8 chữ số).', 'success', 700);
+        setStep(STEPS.AWAIT_OTP);
+        setInputDisabled(false);
+      } catch (err) {
+        await handleStandardFail();
+      }
+      return;
+    }
+
+    if (step === STEPS.AWAIT_OTP) {
+      if (!/^\d{4,8}$/.test(val)) {
+        await botSay('⚠️ Mật mã OTP không hợp lệ (4-8 chữ số). Vui lòng nhập lại.', 'error', 600);
+        setInputDisabled(false); return;
+      }
+      dataRef.current.otp = val;
+      push('system', 'Đang xác minh mã OTP...');
+      try {
+        await verifyRecoveryOtpStep(dataRef.current.account, val);
+        await botSay('✅ Xác minh OTP thành công.\n\nVui lòng nhập Số dư hiện có trong ví (VND, chỉ nhập số).', 'success', 700);
+        setStep(STEPS.AWAIT_BALANCE);
+        setInputDisabled(false);
+      } catch (err) {
+        await handleStandardFail();
+      }
+      return;
+    }
+
+    if (step === STEPS.AWAIT_BALANCE) {
+      if (!/^\d+$/.test(val)) {
+        await botSay('⚠️ Vui lòng nhập số dư dưới dạng số nguyên (VD: 1500000).', 'error', 600);
+        setInputDisabled(false); return;
+      }
+      dataRef.current.balance = val;
+      push('system', 'Đang xác minh số dư ví...');
+      try {
+        const res = await verifyRecoveryBalance(dataRef.current.account, val);
+        const pw = res?.data?.tempPassword || res?.data?.temp_password || genTempPw();
+        setStep(STEPS.SUCCESS);
+        await botSay(
+          `🎉 XÁC MINH THÀNH CÔNG!\n\nMật khẩu tạm thời của bạn là:\n\n"${pw}"\n\n⏰ Có hiệu lực trong 30 phút.\nVui lòng đăng nhập và đổi mật khẩu ngay.`,
+          'success', 900
+        );
+      } catch (err) {
+        // Balance mismatch triggers CCCD verification
+        push('system', '⚠️ Số dư không khớp với hồ sơ.');
+        setStep(STEPS.AWAIT_CCCD);
+        await botSay(
+          'Số dư bạn cung cấp không khớp với hệ thống. Để bảo mật, yêu cầu bổ sung Xác minh danh tính qua thẻ CCCD.',
+          'warning', 800
+        );
+      }
+      return;
+    }
+
+    setInputDisabled(false);
+  };
+
+  // runVerify logic is now integrated into each individual step, but keeping the comment placeholder
 
   // ── CCCD capture handler ──────────────────────────────────────────────────
   const handleCccdCapture = async () => {
@@ -452,7 +486,7 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
               onChange={e => setInput(e.target.value)}
               onKeyDown={onKeyDown}
               disabled={inputDisabled || countdown > 0}
-              placeholder={countdown > 0 ? `Chờ ${Math.floor(countdown/60)}:${String(countdown%60).padStart(2,'0')}...` : placeholder}
+              placeholder={countdown > 0 ? `Chờ ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')}...` : placeholder}
               className="flex-1 max-h-32 min-h-[40px] resize-none border-none outline-none text-[15px] bg-transparent pb-1 disabled:opacity-40"
               rows={1}
             />
@@ -475,7 +509,7 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
       {isScanModalOpen && (
         <div className="fixed inset-0 z-[9999] bg-black/90 flex flex-col items-center justify-center">
           <div className="absolute top-4 right-4 z-[10000]">
-            <button 
+            <button
               onClick={() => {
                 destroy();
                 setIsScanModalOpen(false);
@@ -489,13 +523,13 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
             <h2 className="text-xl font-bold mb-2">Đang quét CCCD</h2>
             <p className="text-sm text-gray-400">Vui lòng đưa thẻ CCCD vào khung hình để hệ thống tự động xử lý</p>
           </div>
-          
+
           {/* THE TARGET CONTAINER FOR MICROBLINK UI */}
-          <div 
+          <div
             ref={containerRef}
             className="w-full max-w-2xl px-4 flex flex-col items-center"
           />
-          
+
           {!isReady && (
             <div className="flex flex-col items-center gap-4 mt-8">
               <RefreshCw className="text-blue-500 animate-spin" size={40} />
@@ -538,7 +572,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
   return (
     <div className="flex-1 flex flex-col h-full bg-[#F4F5F7]">
       {/* Chat Area */}
-      <div 
+      <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-4"
       >
@@ -546,26 +580,25 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
           messages.map((msg, idx) => {
             const isMe = msg.sender === 'me';
             return (
-              <div 
-                key={msg.id || idx} 
+              <div
+                key={msg.id || idx}
                 className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}
               >
                 {!isMe && (
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mb-1">
-                    <img 
-                      src={contact?.avatar || "https://via.placeholder.com/32"} 
-                      alt="avatar" 
-                      className="w-full h-full object-cover" 
+                    <img
+                      src={contact?.avatar || "https://via.placeholder.com/32"}
+                      alt="avatar"
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}
                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div 
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm shadow-sm relative ${
-                      isMe 
-                        ? 'bg-[#E3F2FD] text-gray-800 rounded-br-none border border-[#BBDEFB]' 
-                        : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
-                    }`}
+                  <div
+                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm shadow-sm relative ${isMe
+                      ? 'bg-[#E3F2FD] text-gray-800 rounded-br-none border border-[#BBDEFB]'
+                      : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+                      }`}
                   >
                     {msg.text}
                   </div>
@@ -595,7 +628,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
           <div className="flex-1" />
           <Settings className="text-gray-400 cursor-pointer hover:text-gray-600" size={18} />
         </div>
-        
+
         <div className="flex items-end px-3 py-3 gap-2">
           <textarea
             value={inputText}
@@ -605,14 +638,13 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
             className="flex-1 max-h-32 min-h-[40px] resize-none border-none outline-none text-sm bg-transparent py-1.5"
             rows={1}
           />
-          <button 
+          <button
             disabled={!inputText.trim()}
             onClick={handleSend}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
-              inputText.trim() 
-                ? 'bg-blue-600 text-white cursor-pointer shadow-md active:scale-90' 
-                : 'text-gray-300 cursor-default'
-            }`}
+            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${inputText.trim()
+              ? 'bg-blue-600 text-white cursor-pointer shadow-md active:scale-90'
+              : 'text-gray-300 cursor-default'
+              }`}
           >
             <Send size={18} />
           </button>
@@ -681,21 +713,7 @@ export default function ContactAdminPage() {
     <div className="flex h-screen w-full bg-white overflow-hidden text-sm">
 
       {/* ── Left-most narrow icon bar (unchanged) ───────────────────────── */}
-      <div className="w-[64px] min-w-[64px] bg-[#E8EAED] flex flex-col items-center py-4 border-r border-gray-300">
-        <div className="w-12 h-12 rounded-full border-2 border-blue-500 overflow-hidden mb-6 flex items-center justify-center bg-gray-300 cursor-pointer">
-          <span className="text-xs">Avatar</span>
-        </div>
-        <div className="flex flex-col gap-6 items-center flex-1">
-          <MessageSquare className="text-blue-500 cursor-pointer" size={24} />
-          <Users className="text-gray-600 cursor-pointer hover:text-blue-500" size={24} />
-          <CheckSquare className="text-gray-600 cursor-pointer hover:text-blue-500" size={24} />
-          <Bookmark className="text-gray-600 cursor-pointer hover:text-blue-500" size={24} />
-          <Bell className="text-gray-600 cursor-pointer hover:text-blue-500" size={24} />
-        </div>
-        <div className="mt-auto flex flex-col gap-6 items-center">
-          <Settings className="text-gray-600 cursor-pointer hover:text-blue-500" size={24} />
-        </div>
-      </div>
+
 
       {/* ── Middle Contacts Column (unchanged) ──────────────────────────── */}
       <div className="w-[320px] min-w-[320px] bg-white flex flex-col border-r border-gray-300">
@@ -703,29 +721,30 @@ export default function ContactAdminPage() {
         {/* Stats */}
         <div className="p-2 border-b border-gray-200">
           <div className="flex justify-between px-2 text-xs font-semibold mb-2">
-            <div className="flex flex-col items-center">
-              <span>Số bạn: 54321</span>
+            <div className="w-12 h-12 rounded-full border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
+              <span className="text-xs">Avatar</span>
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex bg-blue-100 hover:bg-blue-200 cursor-pointer flex-col items-center border border-blue-700 p-1 text-blue-700">
-                <Users size={16} />
-                <span>Cá nhân</span>
-              </div>
-              <div className="flex bg-blue-100 hover:bg-blue-200 cursor-pointer flex-col items-center border border-blue-700 p-1 text-blue-700">
-                <Building2 size={16} />
-                <span>Công ty</span>
-              </div>
-              <div className="flex bg-blue-100 hover:bg-blue-200 cursor-pointer flex-col items-center border border-blue-700 p-1 text-blue-700">
-                <Users size={16} />
-                <span>Tổ chức</span>
-              </div>
+              <div className="w-12 h-12 border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
+                <Building2 size={30} />
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1000</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">10000</div>
+
+            </div>
+              <div className="w-12 h-12 border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
+              <Landmark size={30} />
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+
             </div>
           </div>
-          <div className="flex gap-4 text-xs font-semibold px-2">
+          {/* <div className="flex gap-4 text-xs font-semibold px-2">
             <span>2 (Tin nhắn chưa đọc)</span>
             <span>2 (Công việc)</span>
             <span>3 (Công việc cần hoàn thành)</span>
-          </div>
+          </div> */}
         </div>
 
         {/* Search Bar */}
@@ -844,9 +863,9 @@ export default function ContactAdminPage() {
         {isBotMode ? (
           <BotChatPanel onVideoCalls={() => setVideoUnlocked(true)} onGoLogin={() => navigate('/login')} />
         ) : (
-          <NormalChatPanel 
-            contact={activeContact} 
-            t={t} 
+          <NormalChatPanel
+            contact={activeContact}
+            t={t}
             messages={contactMessages[activeContactId] || []}
             onSendMessage={handleSendMessage}
           />

@@ -124,7 +124,6 @@ const DataTableComponent = () => {
           {t("metrics.online", "ĐANG TRUY CẬP")}:
         </div>
         <div className="flex-2 flex items-center justify-between py-1 px-1">
-          <div className="flex-1">(ONLINE)</div>
           <div className="flex-1 text-right"><strong>{formatNumber(metric.online)}</strong></div>
         </div>
       </div>
