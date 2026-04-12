@@ -132,7 +132,7 @@ export default function GoodsFormRows({
         <div className="col-span-6 border-r border-gray-300 p-2 text-center flex items-center justify-center">(MAP)</div>
       </div>
 
-      <div className="grid grid-cols-17 border-b border-gray-300">
+      <div className="grid grid-cols-17 border-gray-300">
         <RowNumberCell number={6} required className="col-span-1 p-2" />
         <div className="col-span-16 border-gray-300 p-2 flex items-center">
           <Checkbox name="confirmOwnership" checked={goodsInfo.confirmOwnership} onChange={onGoodsInfoChange} className="w-4 h-4" />
@@ -143,91 +143,123 @@ export default function GoodsFormRows({
       </div>
 
       <div id="row7" className="grid grid-cols-17 border-b border-gray-300">
-        <div className="col-span-1 border-r border-gray-300 p-2 text-center flex items-center justify-center">
+        <div className="col-span-1 border-r border-t border-gray-300 p-2 text-center flex items-center justify-center">
           <span className="font-bold">7</span>
         </div>
         <div className="col-span-16">
-        <div className="grid grid-cols-17 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+        <div className="grid grid-cols-16 border-gray-300">
+            <div className="col-span-4 border-b border-r border-t border-gray-300 p-2 flex items-center">
               <div>{t("goods.successFee")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-b border-r border-t border-gray-300 p-2 flex items-center">
               <NumberInput name="videoAd" value={goodsInfo.videoAd} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-2 p-2 text-center"><div className="text-red-500">*</div></div>
+            <div className="col-span-2 p-2 text-left"><div className="text-red-500">*</div></div>
           </div>
 
-          <div className="grid grid-cols-17 border-b border-gray-300">
+          <div className="grid grid-cols-16 border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.vatOtherFees")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2">
+            <div className="col-span-2 border-r border-gray-300 p-2">
               <div className="text-right">0 <span className="text-gray-700">%</span></div>
             </div>
             <div className="col-span-6 p-2 text-center" />
           </div>
-          <div className="grid grid-cols-17 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+          <div className="grid grid-cols-16 border-b border-gray-300">
+            <div className="col-span-4 border-r border-t border-gray-300 p-2 flex items-center">
               <div>{t("goods.eventFee")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-r border-t border-gray-300 p-2 flex items-center">
               <NumberInput name="eventPercentFee" value={goodsInfo.eventPercentFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1  text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">+</div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+            <div className="col-span-1 border-r border-t border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-3 border-r border-t border-gray-300 p-2 flex items-center">
               <NumberInput name="eventFee" value={goodsInfo.eventFee} onChange={onGoodsInfoChange} className="w-full  border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="eventFee" value={goodsInfo.eventFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-t border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="eventFee" value={goodsInfo.eventFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
-            <div className="col-span-1 border-r border-gray-300 p-2"></div>
-            <div className="col-span-1 border-r border-gray-300 p-2"></div>
-            <div className="col-span-1 border-r border-gray-300 p-2"></div>
+            <div className="col-span-2 border-r border-t border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-1 border-gray-300 p-2"></div>
+            <div className="col-span-1 border-gray-300 p-2"></div>
+            <div className="col-span-1 border-gray-300 p-2"></div>
           </div>
 
-          <div className="grid grid-cols-17 border-b border-gray-300">
+          <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.livestreamFee")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="livestreamPercentFee" value={goodsInfo.livestreamPercentFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="livestreamFee" value={goodsInfo.livestreamFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="livestreamFee" value={goodsInfo.livestreamFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="livestreamFee" value={goodsInfo.livestreamFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             <div className="col-span-3 border-r border-gray-300 p-2 text-center flex items-center justify-center">
               <FileInput name="uploadLivestreamGoodsVideo" label={t("goods.uploadLivestreamGoodsVideo")} />
             </div>
           </div>
 
+          <div className="grid grid-cols-16 border-b border-gray-300">
+            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+              <div className="uppercase">{t("goods.advertisingFee") || "PHÍ QUẢNG CÁO"}</div>
+            </div>
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
+              <NumberInput name="advertisingPercent" value={goodsInfo.advertisingPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+              <span className="text-gray-700">%</span>
+            </div>
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center font-bold">+</div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+              <NumberInput name="advertisingFee" value={goodsInfo.advertisingFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            </div>
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="advertisingFee" value={goodsInfo.advertisingFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
+            </div>
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 grid grid-cols-2">
+              <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1">
+                <NumberInput name="advertisingAmount" value={goodsInfo.advertisingAmount} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-center font-bold" placeholder={t("goods.enterNum") || "(nhập số)"} />
+                <div className="flex items-center justify-center">
+                  <TwoLineUnitInput unitBottom="D" centerOnly={true} className="!text-[10px] !w-auto mr-1" />
+                  <span className="text-[10px] font-bold whitespace-nowrap">
+                    {t("goods.vndPerSecondView").replace(/^(VNĐ|VND|\s)*\/?\s*/i, "/ ")}
+                  </span>
+                </div>
+              </div>
+              <div className="col-span-1 p-2 flex items-center justify-center font-bold text-center border-r border-gray-300">
+                <FileInput name="advertisingFile" label={t("goods.uploadAdvertisingVideo") || "TẢI LÊN VIDEO QUẢNG CÁO"} />
+              </div>
+            </div>
+          </div>
+
           {/* Nhóm 3 dòng: Đăng ký làm video ... (dùng 1 grid và dùng row-span-3 cho 3 nút chung) */}
-          <div className="grid grid-cols-17 border-b border-gray-300">
+          <div className="grid grid-cols-16 border-b border-gray-300">
             {/* Row 1 - Đăng ký làm video livestream hàng hóa */}
             <div className="col-span-4 border-r border-b border-gray-300 p-2 flex items-center gap-2">
               <Checkbox name="regLivestreamGoods" checked={goodsInfo.regLivestreamGoods} onChange={onGoodsInfoChange} className="w-4 h-4" />
               <div className="font-medium">{t("goods.registerLivestreamGoodsVideo")}</div>
             </div>
-            <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regLivestreamGoodsPercent" value={goodsInfo.regLivestreamGoodsPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-b border-gray-300 p-2 text-center">+</div>
+            <div className="col-span-1 border-r border-b border-gray-300 p-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regLivestreamGoodsFee" value={goodsInfo.regLivestreamGoodsFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-b border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="regLivestreamGoodsFee" value={goodsInfo.regLivestreamGoodsFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-b border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="regLivestreamGoodsFee" value={goodsInfo.regLivestreamGoodsFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-b border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-2 border-r border-b border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* 3 nút chung cho cả 3 dòng - dùng row-span-3 */}
             <div className="col-span-1 row-span-3 border-r border-gray-300 p-2 text-center flex flex-col items-center justify-center">
               <button type="button" className="w-full text-xs underline text-blue-600">{t("goods.contractTemplate")}</button>
@@ -236,7 +268,7 @@ export default function GoodsFormRows({
             <div className="col-span-1 row-span-3 border-r border-gray-300 p-2 text-center flex items-center justify-center">
               <FileInput name="uploadCompanyProfile" label={t("goods.uploadCompanyProfile")} />
             </div>
-            <div className="col-span-1 row-span-3 p-2 text-center flex items-center justify-center">
+            <div className="col-span-1 row-span-3 p-2 text-center flex items-center justify-center border-r border-gray-300">
               <FileInput name="uploadProductProfile" label={t("goods.uploadProductProfile")} />
             </div>
 
@@ -245,55 +277,65 @@ export default function GoodsFormRows({
               <Checkbox name="regPersonalBrandVideo" checked={goodsInfo.regPersonalBrandVideo} onChange={onGoodsInfoChange} className="w-4 h-4" />
               <div className="font-medium">{t("goods.registerPersonalBrandVideo")}</div>
             </div>
-            <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandPercent" value={goodsInfo.regPersonalBrandPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-b border-gray-300 p-2 text-center">+</div>
+            <div className="col-span-1 border-r border-b border-gray-300 p-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-b border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandFee" value={goodsInfo.regPersonalBrandFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-b border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="regPersonalBrandFee" value={goodsInfo.regPersonalBrandFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-b border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="regPersonalBrandFee" value={goodsInfo.regPersonalBrandFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-b border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-2 border-r border-b border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
 
             {/* Row 3 - Đăng ký làm video quảng cáo sản phẩm */}
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center gap-2">
               <Checkbox name="regProductAdVideo" checked={goodsInfo.regProductAdVideo} onChange={onGoodsInfoChange} className="w-4 h-4" />
               <div className="font-medium">{t("goods.registerProductAdVideo")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regProductAdPercent" value={goodsInfo.regProductAdPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regProductAdFee" value={goodsInfo.regProductAdFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="regProductAdFee" value={goodsInfo.regProductAdFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="regProductAdFee" value={goodsInfo.regProductAdFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
           </div>
 
-          <div className="grid grid-cols-17">
+          <div className="grid grid-cols-16">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.totalFeeVat")}</div>
             </div>
-            <div className="col-span-3 border-r border-gray-300 p-2">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-end">
               <div className="text-right">0 <span className="text-gray-700">%</span></div>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <div className="w-full p-1 mr-1 text-right">0</div>
               <span className="text-gray-700"></span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 text-center">
-              <TwoLineUnitInput name="totalFeeVat" value={goodsInfo.totalFeeVat} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+              <TwoLineUnitInput name="totalFeeVat" value={goodsInfo.totalFeeVat} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1" placeholder={t("goods.enter")} centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 text-center"><span>{t("goods.prepay")}</span></div>
-            <div className="col-span-3 border-r border-gray-300 p-2 text-center"></div>
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 grid grid-cols-2">
+              <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center">
+                <div className="flex items-center justify-center">
+                  <TwoLineUnitInput unitBottom="D" centerOnly={true} className="!text-[10px] !w-auto mr-1" />
+                  <span className="text-[10px] font-bold whitespace-nowrap">
+                    {t("goods.vndPerSecondView").replace(/^(VNĐ|VND|\s)*\/?\s*/i, "/ ")}
+                  </span>
+                </div>
+              </div>
+              <div className="col-span-1 p-2"></div>
+            </div>
           </div>
         </div>
       </div>

@@ -13,11 +13,21 @@ export default function TwoLineUnitInput({
   unitBottom = "D",
   disabled = false,
   inputProps = {},
-  isInput = false
+  isInput = false,
+  centerOnly = false
 }) {
   const resolvedCountry = useMemo(() => {
     return getUserCountry();
   }, [])
+
+  if (centerOnly) {
+    return (
+      <div className={`flex flex-col items-center justify-center leading-tight font-bold w-full h-full ${className}`}>
+        <span className="text-sm">{resolvedCountry}</span>
+        <span className="text-sm">{unitBottom}</span>
+      </div>
+    )
+  }
 
   return (
     <div className={`w-full flex items-center justify-center relative ${className}`}>
@@ -57,5 +67,6 @@ TwoLineUnitInput.propTypes = {
   disabled: PropTypes.bool,
   inputProps: PropTypes.object,
   isInput: PropTypes.bool,
+  centerOnly: PropTypes.bool,
 }
 
