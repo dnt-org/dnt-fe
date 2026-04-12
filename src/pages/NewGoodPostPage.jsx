@@ -106,7 +106,7 @@ export default function NewGoodPostPage() {
             onGoodsInfoChange={onGoodsInfoChange}
             goodsItems={goodsItems}
           />
-          <AdvertisingSection goodsInfo={goodsInfo} onGoodsInfoChange={onGoodsInfoChange} />
+          {/* <AdvertisingSection goodsInfo={goodsInfo} onGoodsInfoChange={onGoodsInfoChange} /> */}
           <div className="border-t border-gray-300 p-4">
             <div className="flex items-start gap-3">
               <input type="checkbox" name="agreeTerms" checked={goodsInfo.agreeTerms || false} onChange={onGoodsInfoChange} className="w-4 h-4 mt-1 flex-shrink-0" required />

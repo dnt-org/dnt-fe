@@ -179,17 +179,23 @@ export default function EventComponent() {
         boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
+        justifyContent: "space-between",
         alignItems: "center",
         textAlign: "center",
         border: "1px solid black",
         cursor: "pointer",
       }}
     >
-      <h3 style={{ margin: "5px 0", fontSize: "16px" }}>{t(event.titleKey)}</h3>
-      <p style={{ margin: "5px 0", fontSize: "12px", color: "#666" }}>
-        {t(event.descriptionKey)}
-      </p>
+      <h3 style={{ margin: "10px 0 0 0", fontSize: "14px", fontWeight: "bold" }}>
+        {t("events.displayOnHome")} <br /> {event.id}
+      </h3>
+      <div style={{ alignSelf: "flex-start", textAlign: "left", fontSize: "12px", fontWeight: "bold", paddingLeft: "5px", paddingBottom: "10px" }}>
+        <p style={{ margin: "2px 0" }}>- {t("events.category")}</p>
+        <p style={{ margin: "2px 0" }}>- {t("events.classification")}</p>
+        <p style={{ margin: "2px 0" }}>- {t("events.status")}</p>
+        <p style={{ margin: "2px 0" }}>- {t("events.goodsAddress")}</p>
+        <p style={{ margin: "2px 0" }}>- {t("events.quantity")}</p>
+      </div>
     </div>
   );
 
