@@ -126,10 +126,10 @@ export default function GoodsFormRows({
         <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.goodsAddress")}</div>
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2">
+        <div className="col-span-10 border-r border-gray-300 p-2">
           <TextArea value={goodsInfo.goodsAddress} onChange={(e) => onGoodsInfoChange({ target: { name: "goodsAddress", value: e.target.value, type: "text" } })} className="w-full border-gray-300 p-1 text-left" />
         </div>
-        <div className="col-span-6 border-r border-gray-300 p-2 text-center flex items-center justify-center">(MAP)</div>
+        <div className="col-span-2 border-r border-gray-300 p-2 text-center flex items-center justify-center">(MAP)</div>
       </div>
 
       <div className="grid grid-cols-17 border-gray-300">

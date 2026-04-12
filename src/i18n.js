@@ -14,11 +14,13 @@ const resources = {
   }
 };
 
+const defaultLang = typeof window !== 'undefined' ? localStorage.getItem('selectedLang') || 'vi' : 'vi';
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'vi', // default language
+    lng: defaultLang, // default language
     fallbackLng: 'en',
     
     interpolation: {
