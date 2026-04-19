@@ -1,0 +1,89 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ─── Step 1: Write .env file ──────────────────────────────────
+      - name: Create .env file for build
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > .env
+          echo "✓ .env file created for Vite build"
+
+      # ─── Step 2: Build & Push Docker Image to Docker Hub ──────────
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set image tag
+        id: tag
+        run: echo "TAG=${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ steps.tag.outputs.TAG }} -t ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:latest .
+          echo "✓ Docker image built: ${{ steps.tag.outputs.TAG }}"
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ steps.tag.outputs.TAG }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:latest
+          echo "✓ Image pushed to Docker Hub"
+
+      # ─── Step 3: Pull Image & Start Container on VPS ──────────────
+      - name: Pull image and start container on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            set -e
+            IMAGE="${{ steps.tag.outputs.TAG }}"
+
+            echo "========================================="
+            echo "Starting Frontend Docker deployment..."
+            echo "Image: $IMAGE"
+            echo "========================================="
+
+            # Pull the new image from Docker Hub
+            echo "Pulling image..."
+            docker pull "$IMAGE"
+            echo "✓ Image pulled"
+
+            # Stop and remove existing container if it exists
+            if docker inspect dnt-fe > /dev/null 2>&1; then
+              echo "Stopping existing frontend container..."
+              docker stop dnt-fe || true
+              docker rm dnt-fe || true
+              echo "✓ Old container removed"
+            fi
+
+            # Start new container
+            echo "Starting new container on port 3000..."
+            docker run -d \
+              --name dnt-fe \
+              --restart unless-stopped \
+              -p 3000:80 \
+              "$IMAGE"
+            echo "✓ Container started"
+
+            # Remove unused images to keep disk clean
+            docker image prune -f || true
+            echo "✓ Pruned unused images"
+
+            echo ""
+            echo "========================================="
+            echo "✅ Frontend Deployment successful!"
+            echo "========================================="
