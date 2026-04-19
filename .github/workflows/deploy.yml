@@ -32,12 +32,12 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build --build-arg VITE_API_URL=https://dnt-admin.trwq-ta.io.vn/api -t ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe: .
+          docker build --build-arg VITE_API_URL=https://dnt-admin.trwq-ta.io.vn/api -t ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:${{ steps.tag.outputs.TAG }} .
           echo "✓ Docker image built: ${{ steps.tag.outputs.TAG }}"
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe:${{ steps.tag.outputs.TAG }}
           echo "✓ Image pushed to Docker Hub"
 
       # ─── Step 3: Pull Image & Start Container on VPS ──────────────
