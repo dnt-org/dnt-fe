@@ -21,7 +21,7 @@ function PasswordGate({ children }) {
   const [input, setInput] = useState('');
   const [verified, setVerified] = useState(!pwd); // if no password configured, skip gate
   const [error, setError] = useState('');
-  const qrLoginPath = JSON.parse(import.meta.env.VITE_QRLOGIN_PATH) || ['/qr-login'];
+  const qrLoginPath = ['/qr-login', '/admin/qr-login'];
   const isQrLoginPath = qrLoginPath.includes(location.pathname);
   console.log("isQrLoginPath",location.pathname,   isQrLoginPath);
   if (isQrLoginPath) {
