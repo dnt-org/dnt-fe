@@ -27,6 +27,5 @@ EXPOSE 80
 
 # Start Nginx server
 CMD ["nginx", "-g", "daemon off;"]
-
 # docker build --build-arg  VITE_API_URL=http://27.71.27.147:1337/api -t jeyluu/customer-journey-web:release-1.0.8 . .
 # docker run -p 3000:80 jeyluu/customer-journey-web:release-1.0.6
