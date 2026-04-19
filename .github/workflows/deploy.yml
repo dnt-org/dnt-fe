@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build --build-arg VITE_API_URL=http://34.21.175.175:1337/api -t ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe: .
+          docker build --build-arg VITE_API_URL=https://dnt-admin.trwq-ta.io.vn/api -t ${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe: .
           echo "✓ Docker image built: ${{ steps.tag.outputs.TAG }}"
 
       - name: Push Docker image to Docker Hub
