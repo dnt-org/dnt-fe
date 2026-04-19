@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # Define build-time variable (must start with VITE_ for Vite)
-ARG VITE_API_URL
+ARG VITE_API_URL=http://34.21.175.175:1337/api
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build the Vite app
