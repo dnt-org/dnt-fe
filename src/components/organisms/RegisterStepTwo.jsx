@@ -1,5 +1,6 @@
 import React from "react"
 import PropTypes from "prop-types"
+import { useNavigate } from "react-router-dom"
 
 export default function RegisterStepTwo({
   t,
@@ -14,6 +15,7 @@ export default function RegisterStepTwo({
   contractError,
   handleCloseContractModal,
 }) {
+  const navigate = useNavigate()
   const [isTick, setIsTick] = React.useState(false)
   const handleCheckboxChange = (e) => {
     console.log(e.target.checked)
@@ -52,8 +54,18 @@ export default function RegisterStepTwo({
         <div className="flex flex-col items-center">
           <input type="checkbox" className="w-5 h-5" />
         </div>
-        <div className="text-left" dangerouslySetInnerHTML={{ __html: t("register.contractConfirmation", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:") }}>
-          
+        <div className="text-left">
+          {t("register.contractConfirmation", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:")} {" "}
+          "<a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              navigate('/cookie-policy')
+            }}
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            Chính sách Cookie
+          </a>"
         </div>
       </div>
       <div className="text-center mt-4">
@@ -63,7 +75,7 @@ export default function RegisterStepTwo({
       </div>
       {isContractModalOpen ? (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-lg shadow-xl w-[90vw] h-[90vh] flex flex-col">
+          <div className="bg-white shadow-xl w-screen h-screen flex flex-col">
             <div className="flex items-center justify-between px-4 py-2 border-b">
               <h2 className="font-semibold text-lg">{t("register.contractPreviewTitle", "Xem hợp đồng và tài liệu liên quan")}</h2>
               <button className="text-gray-600 hover:text-black" onClick={handleCloseContractModal}>

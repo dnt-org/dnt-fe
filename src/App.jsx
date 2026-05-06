@@ -26,6 +26,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import AccountBlockedPage from './pages/AccountBlockedPage.jsx'
 import ContactAdminPage from './pages/ContactAdminPage.jsx'
 import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
+import CookiePolicyPage from './pages/CookiePolicyPage.jsx'
 
 function App() {
 
@@ -39,6 +40,7 @@ function App() {
         <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route exact path="/account-blocked" element={<AccountBlockedPage />} />
         <Route exact path="/contact" element={<ContactAdminPage />} />
+        <Route exact path="/cookie-policy" element={<CookiePolicyPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/change-otp-code" element={<ChangeOTPPage />} />
 

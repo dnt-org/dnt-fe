@@ -90,7 +90,7 @@ export default function useRegisterForm(t) {
     const hasUppercase = /[A-Z]/.test(recoveryChar)
     const hasLowercase = /[a-z]/.test(recoveryChar)
     const hasNumber = /\d/.test(recoveryChar)
-    const hasSpecialChar = /[~!@#$%^&*_]/.test(recoveryChar)
+    const hasSpecialChar = /[~!@#$%^&*()_]/.test(recoveryChar)
     const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && recoveryChar.length >= 6
     return { hasUppercase, hasLowercase, hasNumber, hasSpecialChar, isValid }
   }
@@ -98,8 +98,8 @@ export default function useRegisterForm(t) {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     if (name === "bank_number") {
-      const numericValue = value.replace(/[^0-9]/g, "")
-      setFormData({ ...formData, [name]: numericValue })
+      const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, "")
+      setFormData({ ...formData, [name]: alphanumericValue })
     } else {
       setFormData({ ...formData, [name]: value })
     }

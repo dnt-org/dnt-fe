@@ -65,7 +65,7 @@ export default function ForgotPasswordPage() {
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[~!@#$%^&*]/.test(password);
+    const hasSpecialChar = /[~!@#$%^&*()_]/.test(password);
     const isValid = minLength && hasUppercase && hasLowercase && hasNumber && hasSpecialChar;
 
     return {

@@ -55,7 +55,7 @@ export default function ChangePasswordPage() {
         const hasUppercase = /[A-Z]/.test(password);
         const hasLowercase = /[a-z]/.test(password);
         const hasNumber = /\d/.test(password);
-        const hasSpecialChar = /[~!@#$%^&*]/.test(password);
+        const hasSpecialChar = /[~!@#$%^&*()_]/.test(password);
         const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && password.length >= 6;
 
         return {
@@ -99,7 +99,7 @@ export default function ChangePasswordPage() {
 
         // Kiểm tra mật khẩu mới có đáp ứng yêu cầu không
         if (!passwordValidation.isValid) {
-            setError(t('auth.passwordValidation.invalidPassword', 'Mật khẩu mới phải chứa ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (@$!%*?&)'));
+            setError(t('auth.passwordValidation.invalidPassword', 'Mật khẩu mới phải chứa ít nhất 1 chữ in hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt (~!@#$%^&*()_)'));
             return;
         }
 
