@@ -13,7 +13,7 @@ export default function ContactListModal({ contacts, open, onClose, onSend }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative bg-white w-[520px] border border-black rounded shadow-lg">
+      <div className="relative bg-white w-[520px] border border-black rounded">
         <div className="px-4 py-3 font-bold border-b flex items-center gap-2">
           <span>{t("aiLiveVideo.share", "Chia sẻ")}</span>
         </div>

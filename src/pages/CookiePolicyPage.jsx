@@ -23,7 +23,7 @@ export default function CookiePolicyPage() {
         </div>
 
         {/* Content */}
-        <div className="bg-white rounded-lg shadow-md p-8 space-y-6">
+        <div className="bg-white rounded-lg p-8 space-y-6">
           {/* Introduction */}
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Giới Thiệu</h2>

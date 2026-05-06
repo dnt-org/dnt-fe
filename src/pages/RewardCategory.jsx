@@ -29,7 +29,7 @@ export default function RewardCategoryPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen w-full">
-      <div className="bg-transparent backdrop-blur-md p-6 shadow-lg w-full">
+      <div className="bg-transparent backdrop-blur-md p-6 w-full">
         {/* Header */}
         <div className="flex items-center justify-between relative">
           <button 

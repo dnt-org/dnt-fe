@@ -508,7 +508,7 @@ export default function AdminControlPage() {
   return (
     <>
     <div className="flex justify-center items-center min-h-screen p-1">
-      <div className="bg-transparent backdrop-blur-md p-0 rounded-lg shadow-lg w-full mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-0 rounded-lg w-full mx-auto">
         {/* Header */}
         <PageHeaderWithOutColorPicker
           color={color}
@@ -712,7 +712,7 @@ export default function AdminControlPage() {
     {/* OTP Modal */}
     {showOtpModal && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+        <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
           <h3 className="text-xl font-bold mb-4">
             {selectedSession?.status === 'login' ? t('adminControl.logoutDevice') : t('adminControl.loginDevice')}
           </h3>
@@ -775,7 +775,7 @@ export default function AdminControlPage() {
                         <div
                             className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                             <button
-                                className="bg-white text-black px-3 py-2 rounded shadow"
+                                className="bg-white text-black px-3 py-2 rounded"
                                 onClick={tryStartPreview}
                             >
                                 {t("camera.clickToPreview", "Nhấp để xem trước")}

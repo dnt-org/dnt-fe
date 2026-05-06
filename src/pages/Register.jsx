@@ -47,7 +47,7 @@ export default function RegisterPage() {
   } = useRegisterForm(t);
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg w-full max-w-4xl mx-auto">
         <PageHeaderWithOutColorPicker color={color} onColorChange={handleChangeColor} titlePrefix="1" title={t('register.registerTitle', 'ĐĂNG KÝ')} />
         {page === 1 && (
           <RegisterStepOne

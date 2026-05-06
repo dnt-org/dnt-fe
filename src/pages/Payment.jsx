@@ -453,7 +453,7 @@ const PaymentPage = () => {
 
   return (
     <div className="flex justify-center py-8 px-4">
-      <div className="w-full max-w-4xl shadow-lg rounded relative">
+      <div className="w-full max-w-4xl rounded relative">
         {/* Header with Navigation */}
         <div className="flex items-center justify-between relative mb-6">
           <button

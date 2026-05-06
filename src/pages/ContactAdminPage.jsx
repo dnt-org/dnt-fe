@@ -73,7 +73,7 @@ function TypingIndicator() {
       <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mb-1">
         <ShieldAlert size={13} className="text-white" />
       </div>
-      <div className="bg-white border border-gray-200 px-3 py-2.5 rounded-2xl rounded-bl-sm shadow-sm flex items-center gap-1">
+      <div className="bg-white border border-gray-200 px-3 py-2.5 rounded-2xl rounded-bl-sm flex items-center gap-1">
         <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
         <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
         <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
@@ -100,7 +100,7 @@ function BotBubble({ msg }) {
           <ShieldAlert size={13} className="text-white" />
         </div>
       )}
-      <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed shadow-sm border ${isBot ? (colorMap[msg.type] || colorMap.normal) + ' rounded-bl-sm' : 'bg-blue-600 text-white border-blue-600 rounded-br-sm'}`}>
+      <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-[13px] leading-relaxed border ${isBot ? (colorMap[msg.type] || colorMap.normal) + ' rounded-bl-sm' : 'bg-blue-600 text-white border-blue-600 rounded-br-sm'}`}>
         <span style={{ whiteSpace: 'pre-line' }}>{msg.text}</span>
       </div>
     </div>
@@ -433,7 +433,7 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
           <p className="text-xs text-gray-500">Chụp ảnh CCCD / Mã số thuế để xác minh danh tính:</p>
           <button
             onClick={handleCccdCapture}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl shadow transition-all text-sm"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl transition-all text-sm"
           >
             <ScanFace size={18} />
             Xác minh CCCD
@@ -446,7 +446,7 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
         <div className="bg-white border-t border-gray-200 px-4 py-3 flex justify-center">
           <button
             onClick={onGoLogin}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl shadow transition-all text-sm"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white font-bold px-6 py-2.5 rounded-xl transition-all text-sm"
           >
             <CheckCircle size={18} />
             Đến trang Đăng nhập
@@ -595,7 +595,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
                 )}
                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   <div
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm shadow-sm relative ${isMe
+                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm relative ${isMe
                       ? 'bg-[#E3F2FD] text-gray-800 rounded-br-none border border-[#BBDEFB]'
                       : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
                       }`}
@@ -642,7 +642,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
             disabled={!inputText.trim()}
             onClick={handleSend}
             className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${inputText.trim()
-              ? 'bg-blue-600 text-white cursor-pointer shadow-md active:scale-90'
+              ? 'bg-blue-600 text-white cursor-pointer active:scale-90'
               : 'text-gray-300 cursor-default'
               }`}
           >

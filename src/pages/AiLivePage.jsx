@@ -44,7 +44,7 @@ export default function AiLivePage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-0 rounded-lg shadow-lg w-full  mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-0 rounded-lg w-full  mx-auto">
         {/* Header */}
         <PageHeaderWithOutColorPicker
           color={color}
@@ -84,8 +84,8 @@ export default function AiLivePage() {
                   key={idx}
                   className={
                     selectedComponent === item.value
-                      ? "bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center shadow-md transition-all"
-                      : " hover:bg-blue-600 text-black font-bold py-4 px-6 rounded-lg text-center shadow-md transition-all"
+                      ? "bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center transition-all"
+                      : " hover:bg-blue-600 text-black font-bold py-4 px-6 rounded-lg text-center transition-all"
                   }
                   onClick={() => {setSelectedComponent(item.value);}}
                 >

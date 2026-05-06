@@ -75,7 +75,7 @@ export default function RegisterStepTwo({
       </div>
       {isContractModalOpen ? (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60">
-          <div className="bg-white shadow-xl w-screen h-screen flex flex-col">
+          <div className="bg-white w-screen h-screen flex flex-col">
             <div className="flex items-center justify-between px-4 py-2 border-b">
               <h2 className="font-semibold text-lg">{t("register.contractPreviewTitle", "Xem hợp đồng và tài liệu liên quan")}</h2>
               <button className="text-gray-600 hover:text-black" onClick={handleCloseContractModal}>

@@ -560,7 +560,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg w-full max-w-4xl mx-auto">
         <PageHeaderWithOutColorPicker
           color={color}
           onColorChange={handleChangeColor}
@@ -691,7 +691,7 @@ export default function LoginPage() {
       {/* OTP Popup Modal */}
       {step === 'OTP' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm mx-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 className="text-xl font-bold mb-4 text-center">
               {t('forgotPassword.otpTitle', 'XÁC THỰC OTP')}
             </h3>

@@ -333,7 +333,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+      <div className="bg-transparent backdrop-blur-md p-6 rounded-lg w-full max-w-4xl mx-auto">
         <PageHeaderWithOutColorPicker
           color={color}
           onColorChange={handleChangeColor}
@@ -386,11 +386,6 @@ export default function ForgotPasswordPage() {
             {/* STEP 1: Verify Recovery String */}
             {step === 'VERIFY' && (
               <>
-                <div className="text-center mb-4">
-                  <p className="text-gray-600 text-sm">
-                    {t('forgotPassword.verifyDescription', 'Nhập số tài khoản ngân hàng và ký tự khôi phục tài khoản để xác thực tài khoản của bạn.')}
-                  </p>
-                </div>
 
                 <div className="grid grid-cols-1 items-center gap-4">
                   <input
@@ -424,7 +419,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || isBlocked
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || isBlocked
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
@@ -462,7 +457,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || otp.length < 6
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || otp.length < 6
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
@@ -476,7 +471,7 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {/* Back to verify button */}
-                <div className="text-center mt-2">
+                {/* <div className="text-center mt-2">
                   <button
                     className="text-blue-600 hover:text-blue-800 text-sm underline"
                     onClick={() => {
@@ -490,7 +485,7 @@ export default function ForgotPasswordPage() {
                   >
                     {t('forgotPassword.backToVerify', '← Quay lại bước xác thực')}
                   </button>
-                </div>
+                </div> */}
               </>
             )}
 
@@ -585,7 +580,7 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-full transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
@@ -609,22 +604,12 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
-            {/* Success Message */}
+            {/* Success Message
             {successMessage && (
               <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-center">
                 {successMessage}
               </div>
-            )}
-
-            {/* Back to login link */}
-            <div className="text-center mt-4">
-              <button
-                className="text-gray-600 hover:text-gray-800 text-sm"
-                onClick={() => navigate('/login')}
-              >
-                {t('forgotPassword.backToLogin', '← Quay lại đăng nhập')}
-              </button>
-            </div>
+            )} */}
           </div>
         </div>
       </div>

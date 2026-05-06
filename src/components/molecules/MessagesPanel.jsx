@@ -4,7 +4,7 @@ export default function MessagesPanel({ messages = [], visible, onToggle, compac
   if (!visible) return null;
   return (
     <div className={`fixed left-0 right-0 top-20 z-30 ${compact ? "max-w-3xl mx-auto" : ""}`}>
-      <div className="relative mx-4 bg-white/90 backdrop-blur border rounded shadow">
+      <div className="relative mx-4 bg-white/90 backdrop-blur border rounded">
         <button className="absolute -left-8 top-4 px-2 py-1 bg-blue-600 text-white rounded-l" onClick={onToggle}>TN</button>
         <div className="max-h-64 overflow-auto p-4 space-y-3">
           {messages.map(m => (

@@ -116,7 +116,7 @@ const QRModalComponent = ({
 
     return (
         <div className="fixed inset-0 z-100000 flex items-center justify-center bg-black/50 bg-opacity-50 p-4">
-            <div className="relative bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div className="relative bg-white rounded-lg p-6 w-full max-w-md">
                 {/* Close Button */}
                 <button 
                     className="absolute top-1 right-2 text-gray-600 hover:text-black" 

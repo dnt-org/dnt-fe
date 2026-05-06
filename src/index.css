@@ -24,7 +24,7 @@ html, body {
   width: 100%;
   background: linear-gradient(90deg, #e5e7eb 0%, #cbd5e1 50%, #94a3b8 100%);
   border-radius: 9999px;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.15);
+  
   pointer-events: auto; /* allow thumb to receive events */
   z-index: 5;
 }
@@ -35,7 +35,7 @@ html, body {
   height: 100%;
   background: #2563eb; /* blue */
   border-radius: 9999px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  
   transform: translateX(0);
   transition: transform 80ms linear, width 80ms linear, opacity 120ms ease;
   pointer-events: auto;

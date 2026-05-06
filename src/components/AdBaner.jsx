@@ -16,7 +16,7 @@ export default function AdBanner() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 h-[100px] border-t font-bold bg-white flex items-center overflow-hidden shadow"
+      className="fixed bottom-0 left-0 right-0 h-[100px] border-t font-bold bg-white flex items-center overflow-hidden"
     >
       {/* Close button */}
       {showCloseBtn && (
@@ -30,16 +30,16 @@ export default function AdBanner() {
 
       {/* Sliding ads */}
       <div className="marquee-wrapper whitespace-nowrap flex gap-4 pl-10">
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded shadow">
+        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
           <p>Ad Card 1</p>
         </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded shadow">
+        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
           <p>Ad Card 2</p>
         </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded shadow">
+        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
           <p>Ad Card 3</p>
         </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded shadow">
+        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
           <p>Ad Card 4</p>
         </div>
       </div>

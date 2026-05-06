@@ -22,7 +22,7 @@ export default function AccountBlockedPage() {
 
     return (
         <div className="flex justify-center items-center min-h-screen">
-            <div className="bg-transparent backdrop-blur-md p-6 rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+            <div className="bg-transparent backdrop-blur-md p-6 rounded-lg w-full max-w-4xl mx-auto">
                 <PageHeaderWithOutColorPicker
                     color={color}
                     onColorChange={handleChangeColor}
@@ -49,13 +49,13 @@ export default function AccountBlockedPage() {
                         {t('blocked.sorry', 'Rất tiếc!')}
                     </h2>
 
-                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded shadow-sm max-w-2xl mx-auto mb-8">
+                    <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded max-w-2xl mx-auto mb-8">
                         <p className="text-lg text-red-800 leading-relaxed">
                             {t('blocked.message', 'Tài khoản của bạn đã bị khóa vĩnh viễn do nhập sai ký tự khôi phục tài khoản quá nhiều lần trong lần thử cuối cùng.')}
-                        </p>
+                        Vui lòng <a href="/guide-rules" className="text-blue-600">liên hệ </a> với quản trị viên và làm theo các yêu cầu để được xử lý.</p> 
                     </div>
 
-                    <div className="bg-white/50 backdrop-blur-sm p-8 rounded-xl border border-gray-200 shadow-md max-w-xl mx-auto text-left">
+                    {/* <div className="bg-white/50 backdrop-blur-sm p-8 rounded-xl border border-gray-200 max-w-xl mx-auto text-left">
                         <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                             <Mail size={24} className="text-blue-600" />
                             {t('blocked.contactTitle', 'Thông tin liên hệ hỗ trợ:')}
@@ -86,11 +86,11 @@ export default function AccountBlockedPage() {
                         <p className="mt-6 text-sm text-gray-500 italic">
                             {t('blocked.supportDetails', 'Vui lòng cung cấp Số tài khoản ngân hàng (ID) của bạn khi liên hệ để được xử lý nhanh nhất.')}
                         </p>
-                    </div>
+                    </div> */}
 
                     <div className="mt-10">
                         <button
-                            className="bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-gray-800 transition-all shadow-lg flex items-center gap-2 mx-auto"
+                            className="bg-black text-white font-bold px-8 py-3 rounded-lg hover:bg-gray-800 transition-all flex items-center gap-2 mx-auto"
                             onClick={() => navigate('/login')}
                         >
                             <ArrowLeft size={20} />

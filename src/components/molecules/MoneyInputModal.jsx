@@ -116,7 +116,7 @@ export default function MoneyInputModal({ open, onClose, title, initialValue = "
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative bg-white w-[360px] border border-black rounded shadow-lg overflow-hidden">
+      <div className="relative bg-white w-[360px] border border-black rounded overflow-hidden">
         <div className="border-b border-black p-3 text-center font-bold">{title || t("aiLiveMovie.noAds", "TẮT QUẢNG CÁO")}</div>
         <div className="border-b border-black p-3 flex items-center justify-between">
           <input

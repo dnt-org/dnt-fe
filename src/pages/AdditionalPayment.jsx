@@ -22,7 +22,7 @@ const AdditionalPaymentPage = () => {
     setUser(token);
   }, [color]);
   return (
-    <div className="shadow-lg rounded max-w-2xl mx-auto p-4   ">
+    <div className="rounded max-w-2xl mx-auto p-4   ">
       <div className="flex items-center justify-between relative">
         <button 
           className="text-red-600 hover:text-red-800 relative"

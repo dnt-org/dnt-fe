@@ -26,7 +26,7 @@ function FilterDropdown({ options, selectedValue, onFilterChange, placeholder })
         ▼
       </button>
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-max">
+        <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded z-10 min-w-max">
           <div 
             className="p-2 border-b border-gray-200"
             onClick={(e) => e.stopPropagation()}

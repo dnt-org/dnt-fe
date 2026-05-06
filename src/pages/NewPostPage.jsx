@@ -314,7 +314,7 @@ export default function NewPostPage() {
 
     return (
         <div className="flex justify-center items-center min-h-screen">
-            <div className="bg-transparent backdrop-blur-md rounded-lg shadow-lg w-full max-w-4xl mx-auto">
+            <div className="bg-transparent backdrop-blur-md rounded-lg w-full max-w-4xl mx-auto">
                 <PageHeaderWithOutColorPicker
                     color={color}
                     onColorChange={handleChangeColor}
@@ -443,7 +443,7 @@ export default function NewPostPage() {
                                     <div
                                         className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                                         <button
-                                            className="bg-white text-black px-3 py-2 rounded shadow"
+                                            className="bg-white text-black px-3 py-2 rounded"
                                             onClick={tryStartPreview}
                                         >
                                             {t("camera.clickToPreview")}

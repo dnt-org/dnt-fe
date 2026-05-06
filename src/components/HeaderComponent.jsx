@@ -131,7 +131,7 @@ const HeaderComponent = ({
 
 
             {isNotificationOpen && (
-                <div ref={dropdownRef} className="absolute left w-50 bg-white shadow-lg rounded-md z-50 border border-gray-200">
+                <div ref={dropdownRef} className="absolute left w-50 bg-white rounded-md z-50 border border-gray-200">
                     <h6 className="text-sm px-1 font-bold">{t('common.notifications')}</h6>
                     <div className="px-1">
                         <ul className="max-h-50 overflow-y-auto">

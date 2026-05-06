@@ -15,7 +15,7 @@ const ScanResultModal = ({ isOpen, onClose, result }) => {
 
     return (
         <div className="fixed inset-0 z-[100001] flex items-center justify-center bg-black/50 bg-opacity-50 p-4 backdrop-blur-sm">
-            <div className="relative bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform transition-all scale-100">
+            <div className="relative bg-white rounded-2xl2xl p-6 w-full max-w-sm transform transition-all scale-100">
                 {/* Close Button */}
                 <button 
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors" 
@@ -35,7 +35,7 @@ const ScanResultModal = ({ isOpen, onClose, result }) => {
                 <div className="flex flex-col items-center space-y-6">
                     {/* Avatar */}
                     <div className="relative">
-                        <div className="w-24 h-24 rounded-full border-4 border-blue-100 overflow-hidden shadow-inner bg-gray-50 flex items-center justify-center">
+                        <div className="w-24 h-24 rounded-full border-4 border-blue-100 overflow-hidden bg-gray-50 flex items-center justify-center">
                             {avatar ? (
                                 <img 
                                     src={avatar} 
@@ -76,7 +76,7 @@ const ScanResultModal = ({ isOpen, onClose, result }) => {
                     <div className="w-full pt-2">
                         <button
                             onClick={handleConfirm}
-                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-blue-200"
+                            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors-200"
                         >
                             {t('common.confirm', 'Xác nhận')}
                         </button>
