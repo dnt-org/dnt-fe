@@ -28,7 +28,7 @@ function HomePage() {
     const lang = localStorage.getItem("selectedLang") || "vi";
     // State management
     const [selectedLang, setSelectedLang] = useState(lang || i18n.language);
-    const [color, setColor] = useState("#1242ae");
+    const [color, setColor] = useState("#fcfcfcff");
     const [authToken, setAuthToken] = useState(null);
     const [userCountry, setUserCountry] = useState('Vietnam');
 
