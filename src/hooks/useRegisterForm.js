@@ -175,6 +175,7 @@ export default function useRegisterForm(t) {
           country: selectedCountry,
           benABankName: formData.bank_name,
           contractAddress: selectedCountry?.value,
+          collateralCode: "CONTRACT_TEMPLATE"
         },
         {
           responseType: "blob",
