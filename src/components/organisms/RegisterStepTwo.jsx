@@ -1,6 +1,7 @@
 import React from "react"
 import PropTypes from "prop-types"
 import { useNavigate } from "react-router-dom"
+import { renderAsync } from "docx-preview"
 
 export default function RegisterStepTwo({
   t,
@@ -17,6 +18,19 @@ export default function RegisterStepTwo({
 }) {
   const navigate = useNavigate()
   const [isTick, setIsTick] = React.useState(false)
+  const docxContainerRef = React.useRef(null)
+  const activeFile = contractFiles?.[contractActiveIndex]
+
+  React.useEffect(() => {
+    if (!isContractModalOpen || isContractLoading) return
+    if (!activeFile || activeFile.kind !== "docx" || !activeFile.blob) return
+    const container = docxContainerRef.current
+    if (!container) return
+    container.innerHTML = ""
+    renderAsync(activeFile.blob, container, null, { inWrapper: true }).catch((err) => {
+      console.error("docx-preview render error:", err)
+    })
+  }, [isContractModalOpen, isContractLoading, activeFile])
   const handleCheckboxChange = (e) => {
     console.log(e.target.checked)
     setIsTick(e.target.checked)
@@ -89,13 +103,20 @@ export default function RegisterStepTwo({
                 </div>
               ) : contractFiles && contractFiles.length > 0 ? (
                 <>
-                  <div className="flex-1">
-                    <iframe
-                      key={contractFiles[contractActiveIndex]?.url}
-                      src={contractFiles[contractActiveIndex]?.url}
-                      className="w-full h-full"
-                      title={contractFiles[contractActiveIndex]?.label || "contract-file"}
-                    />
+                  <div className="flex-1 overflow-auto bg-gray-100">
+                    {activeFile?.kind === "docx" ? (
+                      <div
+                        ref={docxContainerRef}
+                        className="w-full h-full overflow-auto p-4"
+                      />
+                    ) : (
+                      <iframe
+                        key={activeFile?.url}
+                        src={activeFile?.url}
+                        className="w-full h-full"
+                        title={activeFile?.label || "contract-file"}
+                      />
+                    )}
                   </div>
                   <div className="border-t px-4 py-2 flex items-center justify-between">
                     <button
@@ -116,6 +137,7 @@ export default function RegisterStepTwo({
                     <div className="flex items-center gap-2">
                       <a
                         href={contractFiles[contractActiveIndex]?.url}
+                        download={contractFiles[contractActiveIndex]?.downloadName || true}
                         target="_blank"
                         rel="noreferrer"
                         className="px-3 py-1 rounded border bg-blue-600 text-white text-sm hover:bg-blue-700"

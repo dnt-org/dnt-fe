@@ -186,7 +186,7 @@ export default function useRegisterForm(t) {
       )
 
       const contentDisposition = generateResponse.headers?.["content-disposition"] || generateResponse.headers?.["Content-Disposition"]
-      let generatedFileName = "contract.pdf"
+      let generatedFileName = "contract.docx"
       if (contentDisposition) {
         const fileNameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i)
         if (fileNameMatch && fileNameMatch[1]) {
@@ -194,29 +194,49 @@ export default function useRegisterForm(t) {
         }
       }
 
-      const generatedBlob =
-        generateResponse.data instanceof Blob ? generateResponse.data : new Blob([generateResponse.data], { type: "application/pdf" })
+      const generatedBlob = new Blob([generateResponse.data], {
+        type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      })
       const generatedUrl = window.URL.createObjectURL(generatedBlob)
 
       const collateralsResponse = await axios.get(`${API_URL}/collaterals/download/CONTRACT`)
       const collateralFilesRaw = collateralsResponse.data?.files || []
-      const collateralFiles = collateralFilesRaw
-        .filter(Boolean)
-        .map((url, index) => ({
-          type: "collateral",
-          url: String(url).replace(/`/g, "").trim(),
-          label: `File ${index + 1}`,
-          downloadName: (() => {
-            const clean = String(url).replace(/`/g, "").trim()
-            const path = clean.split("?")[0]
-            const name = path.split("/").pop()
-            return name || `file_${index + 1}.pdf`
-          })(),
-        }))
+      const collateralFiles = await Promise.all(
+        collateralFilesRaw.filter(Boolean).map(async (rawUrl, index) => {
+          const clean = String(rawUrl).replace(/`/g, "").trim()
+          const path = clean.split("?")[0]
+          const downloadName = path.split("/").pop() || `file_${index + 1}.pdf`
+          try {
+            const fileResp = await axios.get(clean, { responseType: "blob" })
+            const contentType =
+              fileResp.headers?.["content-type"] || fileResp.data?.type || "application/pdf"
+            const inlineBlob =
+              fileResp.data instanceof Blob
+                ? new Blob([fileResp.data], { type: contentType })
+                : new Blob([fileResp.data], { type: contentType })
+            return {
+              type: "collateral",
+              url: window.URL.createObjectURL(inlineBlob),
+              label: `File ${index + 1}`,
+              downloadName,
+            }
+          } catch (err) {
+            console.error(`Lỗi khi tải file collateral ${index + 1}:`, err)
+            return {
+              type: "collateral",
+              url: clean,
+              label: `File ${index + 1}`,
+              downloadName,
+            }
+          }
+        })
+      )
 
       const files = [
         {
           type: "generated",
+          kind: "docx",
+          blob: generatedBlob,
           url: generatedUrl,
           label: t("register.generatedContract", "Hợp đồng đã được sinh"),
           downloadName: generatedFileName,
@@ -240,10 +260,11 @@ export default function useRegisterForm(t) {
 
   const handleCloseContractModal = () => {
     try {
-      const first = contractFiles[0]
-      if (first && first.type === "generated" && first.url && first.url.startsWith("blob:")) {
-        window.URL.revokeObjectURL(first.url)
-      }
+      contractFiles.forEach((file) => {
+        if (file && file.url && file.url.startsWith("blob:")) {
+          window.URL.revokeObjectURL(file.url)
+        }
+      })
     } catch {
       // ignore revoke errors
     }

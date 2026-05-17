@@ -19,6 +19,7 @@
     "@uiw/react-color-wheel": "^2.4.0",
     "@zxing/library": "^0.21.3",
     "axios": "^1.8.4",
+    "docx-preview": "^0.3.7",
     "firebase": "^12.3.0",
     "i18next": "^25.5.2",
     "lucide-react": "^0.523.0",
