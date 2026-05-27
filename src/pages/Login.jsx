@@ -37,6 +37,10 @@ export default function LoginPage() {
   const [otpWidgetId, setOtpWidgetId] = useState(null);
   const [locationData, setLocationData] = useState(null);
 
+  // Refs to resolve pending reCAPTCHA promises (v2 Invisible flow)
+  const recaptchaTokenResolveRef = React.useRef(null);
+  const otpRecaptchaTokenResolveRef = React.useRef(null);
+
   const [recoveryCharacter, setRecoveryCharacter] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -108,13 +112,23 @@ export default function LoginPage() {
     const renderRecaptcha = () => {
       const container = document.getElementById('recaptcha-container');
       if (container && window.grecaptcha && window.grecaptcha.render) {
-        // Clear any existing content
         if (!container.hasChildNodes()) {
           try {
             window.grecaptcha.render('recaptcha-container', {
               sitekey: siteKey,
-              callback: () => setRecaptchaReady(true),
-              'expired-callback': () => setRecaptchaReady(false)
+              size: 'invisible',
+              callback: (token) => {
+                if (recaptchaTokenResolveRef.current) {
+                  recaptchaTokenResolveRef.current(token);
+                  recaptchaTokenResolveRef.current = null;
+                }
+              },
+              'expired-callback': () => {
+                if (recaptchaTokenResolveRef.current) {
+                  recaptchaTokenResolveRef.current(null);
+                  recaptchaTokenResolveRef.current = null;
+                }
+              }
             });
           } catch (error) {
             console.log('reCAPTCHA render error:', error.message);
@@ -146,7 +160,20 @@ export default function LoginPage() {
         if (container && window.grecaptcha && window.grecaptcha.render && !container.hasChildNodes()) {
           try {
             const id = window.grecaptcha.render('recaptcha-container-otp', {
-              sitekey: siteKey
+              sitekey: siteKey,
+              size: 'invisible',
+              callback: (token) => {
+                if (otpRecaptchaTokenResolveRef.current) {
+                  otpRecaptchaTokenResolveRef.current(token);
+                  otpRecaptchaTokenResolveRef.current = null;
+                }
+              },
+              'expired-callback': () => {
+                if (otpRecaptchaTokenResolveRef.current) {
+                  otpRecaptchaTokenResolveRef.current(null);
+                  otpRecaptchaTokenResolveRef.current = null;
+                }
+              }
             });
             setOtpWidgetId(id);
           } catch (error) {
@@ -197,20 +224,38 @@ export default function LoginPage() {
     checkSessionAndVerify();
   }, [location.search, navigate]);
 
+  // Returns a reCAPTCHA token by executing the invisible widget and awaiting its callback
+  const getRecaptchaToken = () =>
+    new Promise((resolve) => {
+      recaptchaTokenResolveRef.current = resolve;
+      window.grecaptcha?.execute();
+    });
+
+  const getOtpRecaptchaToken = () =>
+    new Promise((resolve) => {
+      otpRecaptchaTokenResolveRef.current = resolve;
+      if (otpWidgetId !== null) {
+        window.grecaptcha?.execute(otpWidgetId);
+      } else {
+        window.grecaptcha?.execute();
+      }
+    });
+
   const handleLogin = async () => {
     try {
-      // Lấy token từ reCAPTCHA widget
-      let recaptchaToken = window.grecaptcha?.getResponse();
+      // Lấy token từ reCAPTCHA widget (invisible — triggers background challenge)
+      let recaptchaToken;
 
-      // Bypass for mock verification
       if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
         recaptchaToken = "mock_token";
+      } else {
+        recaptchaToken = await getRecaptchaToken();
+        if (!recaptchaToken) {
+          alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+          return;
+        }
       }
 
-      if (!recaptchaToken) {
-        alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
-        return;
-      }
       setSavedRecaptcha(recaptchaToken);
 
       // Prepare additional login data
@@ -482,24 +527,21 @@ export default function LoginPage() {
       try {
         const device_name = `${browserName} ${osName} ${osVersion} ${deviceType}`;
         const login_type = "password";
-        const loc = (locationData?.city && locationData?.region) 
-          ? `${locationData.city}, ${locationData.region}` 
+        const loc = (locationData?.city && locationData?.region)
+          ? `${locationData.city}, ${locationData.region}`
           : null;
-        
-        let recaptchaToken = savedRecaptcha;
-        
-        if (otpWidgetId !== null && window.grecaptcha) {
-          const freshToken = window.grecaptcha.getResponse(otpWidgetId);
-          if (freshToken) recaptchaToken = freshToken;
-        }
+
+        let recaptchaToken;
 
         if (import.meta.env.VITE_MOCK_RECAPTCHA === 'true') {
           recaptchaToken = "mock_token";
-        }
-
-        if (recaptchaToken === savedRecaptcha && import.meta.env.VITE_MOCK_RECAPTCHA !== 'true') {
-          alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA mới'));
-          return;
+        } else {
+          // Execute the OTP invisible widget to get a fresh token
+          recaptchaToken = await getOtpRecaptchaToken();
+          if (!recaptchaToken) {
+            alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+            return;
+          }
         }
         
         const response = await login(cccd, password, recaptchaToken, device_name, login_type, loc, otp);
@@ -613,10 +655,8 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            {/* Google reCAPTCHA Widget */}
-            <div className="flex justify-center my-4">
-              <div id="recaptcha-container"></div>
-            </div>
+            {/* reCAPTCHA v2 Invisible — no visible UI; widget executes silently on submit */}
+            <div id="recaptcha-container" hidden></div>
 
             {step === 'LOGIN' && !isShowRecover && (
               <>
@@ -715,10 +755,9 @@ export default function LoginPage() {
                 }
               }}
             />
+            {/* reCAPTCHA invisible anchor for OTP flow */}
             {otpFlow === 'UNFAMILIAR_DEVICE' && (
-              <div className="flex justify-center mb-4">
-                <div id="recaptcha-container-otp"></div>
-              </div>
+              <div id="recaptcha-container-otp" hidden></div>
             )}
             <div className="flex gap-2">
               <button
