@@ -5,6 +5,7 @@ import { Eye, EyeOff, ArrowLeft, KeyRound, ShieldCheck, Lock, Smartphone } from 
 import { verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp } from "../services/authService";
 import { useTranslation } from 'react-i18next';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
+import useRecaptcha from '../hooks/useRecaptcha';
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
@@ -48,6 +49,9 @@ export default function ForgotPasswordPage() {
   const triggeredByLoginFailure = location.state?.triggeredByLoginFailure || false;
   // Check if coming from final chance security check (post-temp-block)
   const triggeredByFinalChance = location.state?.triggeredByFinalChance || false;
+
+  // reCAPTCHA v2 Invisible — protects the recovery-string verify step
+  const { getToken: getRecoveryToken, reset: resetRecoveryCaptcha } = useRecaptcha('recaptcha-forgot');
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
@@ -109,7 +113,14 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const response = await verifyRecoveryString(bankAccountId, recoveryString);
+      const recaptchaToken = await getRecoveryToken();
+      if (!recaptchaToken) {
+        setIsLoading(false);
+        setErrorMessage(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+        return;
+      }
+
+      const response = await verifyRecoveryString(bankAccountId, recoveryString, recaptchaToken);
       console.log(response.data)
       if (response.data?.verificationResult === 'PASS' && response.data?.resetToken) {
         setResetToken(response.data.resetToken);
@@ -131,6 +142,7 @@ export default function ForgotPasswordPage() {
         setErrorMessage(t('forgotPassword.errors.verifyFailed', 'Xác thực thất bại. Vui lòng thử lại.'));
       }
     } catch (error) {
+      resetRecoveryCaptcha();
       console.error('Verify recovery string error:', error);
       console.log(error.response?.data)
       const errorData = error.response?.data;
@@ -430,6 +442,8 @@ export default function ForgotPasswordPage() {
                       ? t('common.loading', 'Đang xử lý...')
                       : t('forgotPassword.verifyButton', 'XÁC THỰC')}
                   </button>
+                  {/* reCAPTCHA v2 Invisible anchor */}
+                  <div id="recaptcha-forgot" hidden></div>
                 </div>
               </>
             )}

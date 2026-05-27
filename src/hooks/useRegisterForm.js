@@ -7,11 +7,15 @@ import { getCountries } from "../services/countries"
 import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
 import { getBanks } from "../services/systemService"
+import useRecaptcha from "./useRecaptcha"
 
 export default function useRegisterForm(t) {
   const dispatch = useDispatch()
   const { isAuthenticated } = useSelector((state) => state.auth)
   const navigate = useNavigate()
+
+  // reCAPTCHA v2 Invisible for the register form
+  const { getToken: getRegisterToken, reset: resetRegisterCaptcha } = useRecaptcha('recaptcha-register')
   const [color, setColor] = useState(localStorage.getItem("selectedColor"))
   const [signature, setSignature] = useState()
   const [isReadContract, setIsReadContract] = useState(false)
@@ -291,11 +295,18 @@ export default function useRegisterForm(t) {
       return
     }
     try {
+      // Verify user is human before registering
+      const recaptchaToken = await getRegisterToken()
+      if (!recaptchaToken) {
+        alert(t("auth.captchaRequired", "Vui lòng hoàn thành xác thực reCAPTCHA"))
+        return
+      }
+
       const uploadToCloudinaryResp = "https://res.cloudinary.com/demo/image/upload/v1692323522/sample.jpg"
       const randomPassword = generateRandomPassword()
       formData.id = formData.bank_number
       formData.cccd = formData.id
-      const payload = { ...formData, password: randomPassword, signature: uploadToCloudinaryResp }
+      const payload = { ...formData, password: randomPassword, signature: uploadToCloudinaryResp, recaptchaToken }
       const response = await axios.post(`${API_URL}/auth/register`, payload, { headers: { "Content-Type": "application/json" } })
       dispatch(changePasswordAction(response.data?.user))
       alert(t("auth.registerSuccess", "Đăng ký thành công!"))
@@ -312,6 +323,7 @@ export default function useRegisterForm(t) {
         error.response?.data?.error?.message || error.response?.data?.message || t("auth.registerError", "Đăng ký thất bại. Vui lòng thử lại.")
       setError(errorMessage)
       alert(errorMessage)
+      resetRegisterCaptcha()
     }
   }
 

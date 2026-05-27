@@ -266,14 +266,13 @@ const verifyOtp = async (cccd, otp) => {
  * @param {string} recoveryString - User's recovery string
  * @returns {Promise<Object>} - { verificationResult: "PASS", resetToken: "RST-xxx" }
  */
-const verifyRecoveryString = async (bankAccountId, recoveryString) => {
+const verifyRecoveryString = async (bankAccountId, recoveryString, recaptchaToken = null) => {
     try {
+        const payload = { bankAccountId, recoveryString };
+        if (recaptchaToken) payload.recaptchaToken = recaptchaToken;
         const response = await axios.post(
             `${API_URL}/v1/auth/recover/verify`,
-            {
-                bankAccountId,
-                recoveryString
-            },
+            payload,
             { headers: { 'Content-Type': 'application/json' } }
         );
         return response;
