@@ -82,8 +82,10 @@ export default function RegisterStepTwo({
           </a>"
         </div>
       </div>
-      {/* reCAPTCHA v2 Invisible anchor for register */}
-      <div id="recaptcha-register" hidden></div>
+      {/* reCAPTCHA v2 Checkbox — user must tick before registering */}
+      <div className="flex justify-center my-4">
+        <div id="recaptcha-register"></div>
+      </div>
 
       <div className="text-center mt-4">
         <button className="border-2 border-black text-black font-bold px-1 py-2 rounded hover:bg-gray-200 flex-1" onClick={() => handleSubmited()} title={!isTick ? "Vui lòng xem và chấp nhận hợp đồng" : ""}>

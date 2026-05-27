@@ -134,8 +134,8 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      // Execute invisible reCAPTCHA; resolves with token or null
-      const recaptchaToken = await getLoginToken();
+      // Read the token the user obtained by checking the reCAPTCHA checkbox
+      const recaptchaToken = getLoginToken();
       if (!recaptchaToken) {
         alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
         return;
@@ -414,7 +414,7 @@ export default function LoginPage() {
           ? `${locationData.city}, ${locationData.region}`
           : null;
 
-        const recaptchaToken = await getOtpToken();
+        const recaptchaToken = getOtpToken();
         if (!recaptchaToken) {
           alert(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
           return;
@@ -529,9 +529,10 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            {/* reCAPTCHA v2 Invisible anchors — no visible UI */}
-            <div id="recaptcha-login" hidden></div>
-            <div id="recaptcha-otp" hidden></div>
+            {/* reCAPTCHA v2 Checkbox — user must tick before submitting */}
+            <div className="flex justify-center my-4">
+              <div id="recaptcha-login"></div>
+            </div>
 
             {step === 'LOGIN' && !isShowRecover && (
               <>
@@ -630,7 +631,11 @@ export default function LoginPage() {
                 }
               }}
             />
-            {/* recaptcha-otp is always in DOM (rendered in login form area) */}
+            {otpFlow === 'UNFAMILIAR_DEVICE' && (
+              <div className="flex justify-center mb-4">
+                <div id="recaptcha-otp"></div>
+              </div>
+            )}
             <div className="flex gap-2">
               <button
                 className="flex-1 border p-2 rounded hover:bg-gray-100 transition"

@@ -13,6 +13,7 @@ import PostTypeMenu from "../components/PostTypeMenu";
 import useBlinkIdScanner from "../components/MicrolinkIDScanner";
 import {extractSideDocumentImage} from "@microblink/blinkid";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx";
+import { getMyBusiness } from "../services/businessService";
 
 
 // MOCK MODE: Read from environment variable to bypass camera/video verification
@@ -31,6 +32,7 @@ export default function NewPostPage() {
     const videoRef = useRef(null);
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
+    const [cccdCheckDone, setCccdCheckDone] = useState(false);
     const [hasIdCaptured, setHasIdCaptured] = useState(false);
     const [idPhotoDataUrl, setIdPhotoDataUrl] = useState(null);
     const [hasBusinessVideo, setHasBusinessVideo] = useState(false);
@@ -46,6 +48,25 @@ export default function NewPostPage() {
     const recordTimerRef = useRef(null);
     const [previewBlocked, setPreviewBlocked] = useState(false);
     const containerRef = useRef(null);
+
+    // Guard: redirect to /admin-control if user hasn't completed CCCD verification yet
+    useEffect(() => {
+        const checkCccdVerification = async () => {
+            try {
+                const res = await getMyBusiness();
+                if (!res?.data?.data) {
+                    // No business record means CCCD has not been verified
+                    navigate("/admin-control", { replace: true });
+                } else {
+                    setCccdCheckDone(true);
+                }
+            } catch {
+                // On any error (unauthorized, network, etc.), redirect to admin-control
+                navigate("/admin-control", { replace: true });
+            }
+        };
+        checkCccdVerification();
+    }, [navigate]);
 
     // Redirect to /new-good-post once both verifications are completed
     useEffect(() => {
@@ -311,6 +332,15 @@ export default function NewPostPage() {
             setIsOcrRunning(false);
         }
     };
+
+    // Don't render anything until the CCCD verification check resolves
+    if (!cccdCheckDone) {
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <div className="text-gray-500 text-sm animate-pulse">Đang kiểm tra xác minh…</div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex justify-center items-center min-h-screen">

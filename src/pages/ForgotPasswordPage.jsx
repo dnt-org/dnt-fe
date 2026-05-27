@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
     setIsLoading(true);
 
     try {
-      const recaptchaToken = await getRecoveryToken();
+      const recaptchaToken = getRecoveryToken();
       if (!recaptchaToken) {
         setIsLoading(false);
         setErrorMessage(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
@@ -442,8 +442,10 @@ export default function ForgotPasswordPage() {
                       ? t('common.loading', 'Đang xử lý...')
                       : t('forgotPassword.verifyButton', 'XÁC THỰC')}
                   </button>
-                  {/* reCAPTCHA v2 Invisible anchor */}
-                  <div id="recaptcha-forgot" hidden></div>
+                  {/* reCAPTCHA v2 Checkbox */}
+                  <div className="flex justify-center my-2">
+                    <div id="recaptcha-forgot"></div>
+                  </div>
                 </div>
               </>
             )}

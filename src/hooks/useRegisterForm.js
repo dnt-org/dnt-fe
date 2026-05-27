@@ -296,7 +296,7 @@ export default function useRegisterForm(t) {
     }
     try {
       // Verify user is human before registering
-      const recaptchaToken = await getRegisterToken()
+      const recaptchaToken = getRegisterToken()
       if (!recaptchaToken) {
         alert(t("auth.captchaRequired", "Vui lòng hoàn thành xác thực reCAPTCHA"))
         return
