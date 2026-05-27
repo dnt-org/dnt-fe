@@ -1,5 +1,6 @@
 import './App.css'
 import './styles/body.css'
+import { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import HomePage from './pages/Home.jsx'
 import RegisterPage from './pages/Register.jsx'
@@ -30,6 +31,22 @@ import CookiePolicyPage from './pages/CookiePolicyPage.jsx'
 import GuideRulesPage from './pages/GuideRulesPage.jsx'
 
 function App() {
+  // Restore background (image or color) from localStorage on every page load/navigation
+  useEffect(() => {
+    const root = document.getElementById("root");
+    if (!root) return;
+
+    const savedBgImage = localStorage.getItem("selectedBgImage");
+    if (savedBgImage) {
+      root.style.backgroundImage = `url(${savedBgImage})`;
+      root.style.backgroundSize = "cover";
+      root.style.backgroundRepeat = "no-repeat";
+      root.style.backgroundAttachment = "fixed";
+    } else {
+      const savedColor = localStorage.getItem("selectedColor");
+      if (savedColor) root.style.backgroundColor = savedColor;
+    }
+  }, []);
 
   return (
     <>

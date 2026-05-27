@@ -16,17 +16,36 @@ const HeaderComponent = ({
     const { t, i18n } = useTranslation();
     const notifications = useNotifications(17);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+    const [showBgMenu, setShowBgMenu] = useState(false);
     const dropdownRef = useRef();
+    const bgMenuRef = useRef();
 
     const colors = [
         { name: "VN", value: "vi" },
         { name: "EN", value: "en" },
     ];
 
+    // Apply saved background image on mount
+    useEffect(() => {
+        const savedBgImage = localStorage.getItem("selectedBgImage");
+        if (savedBgImage) {
+            const root = document.getElementById("root");
+            if (root) {
+                root.style.backgroundImage = `url(${savedBgImage})`;
+                root.style.backgroundSize = "cover";
+                root.style.backgroundRepeat = "no-repeat";
+                root.style.backgroundAttachment = "fixed";
+            }
+        }
+    }, []);
+
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsNotificationOpen(false);
+            }
+            if (bgMenuRef.current && !bgMenuRef.current.contains(event.target)) {
+                setShowBgMenu(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -38,6 +57,41 @@ const HeaderComponent = ({
         onLanguageChange(newLang);
         i18n.changeLanguage(newLang);
         localStorage.setItem("selectedLang", newLang);
+    };
+
+    // Wrap onColorChange: clear background image before switching to solid color
+    const handleColorChange = (e) => {
+        const root = document.getElementById("root");
+        if (root) {
+            root.style.backgroundImage = "";
+        }
+        localStorage.removeItem("selectedBgImage");
+        onColorChange(e);
+    };
+
+    // Read selected image file, store as base64 in localStorage, apply to root
+    const handleImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const dataUrl = ev.target.result;
+            localStorage.setItem("selectedBgImage", dataUrl);
+            localStorage.removeItem("selectedColor");
+
+            const root = document.getElementById("root");
+            if (root) {
+                root.style.backgroundImage = `url(${dataUrl})`;
+                root.style.backgroundSize = "cover";
+                root.style.backgroundRepeat = "no-repeat";
+                root.style.backgroundAttachment = "fixed";
+                root.style.backgroundColor = "";
+            }
+        };
+        reader.readAsDataURL(file);
+        // Reset so the same file can be picked again later
+        e.target.value = "";
     };
 
     return (
@@ -68,30 +122,88 @@ const HeaderComponent = ({
                     </div>
                 </div>
 
+                {/* Background picker — click opens a 2-option menu */}
                 <div
-                    onClick={() => document.getElementById("colorPicker").click()}
-                    style={{ width: "100%", minHeight: "3.3vh" }}
+                    ref={bgMenuRef}
+                    style={{ width: "100%", minHeight: "3.3vh", position: "relative" }}
                     className="cursor-pointer flex border-b border-black border-r justify-center items-center min-h-6"
+                    onClick={() => setShowBgMenu(prev => !prev)}
                 >
-                    <div className="table-cell flex items-center font-bold py-1 px-1 ">
+                    <div className="table-cell flex items-center font-bold py-1 px-1 w-full">
+                        {/* Small swatch showing the current solid color */}
                         <div
                             style={{
                                 minHeight: "2vh",
                                 width: "100%",
                                 height: "100%",
+                                backgroundColor: color,
+                                border: "1px solid rgba(0,0,0,0.25)",
+                                borderRadius: "2px",
                             }}
                             className="cursor-pointer"
-                        ></div>
+                        />
 
+                        {/* Hidden color input */}
                         <input
                             id="colorPicker"
                             hidden
                             type="color"
                             value={color}
-                            onChange={onColorChange}
+                            onChange={handleColorChange}
                             className="cursor-pointer"
                         />
+
+                        {/* Hidden image file input */}
+                        <input
+                            id="imagePicker"
+                            hidden
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageSelect}
+                        />
                     </div>
+
+                    {/* 2-option dropdown menu */}
+                    {showBgMenu && (
+                        <div
+                            style={{
+                                position: "absolute",
+                                left: "100%",
+                                top: 0,
+                                zIndex: 1000,
+                                backgroundColor: "white",
+                                border: "1px solid #d1d5db",
+                                borderRadius: "6px",
+                                boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
+                                minWidth: "158px",
+                                overflow: "hidden",
+                            }}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div
+                                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium"
+                                style={{ color: "#111827" }}
+                                onClick={() => {
+                                    setShowBgMenu(false);
+                                    document.getElementById("colorPicker").click();
+                                }}
+                            >
+                                <span>🎨</span>
+                                <span>Màu nền</span>
+                            </div>
+                            <div
+                                style={{ borderTop: "1px solid #e5e7eb", color: "#111827" }}
+                                className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium"
+                                onClick={() => {
+                                    setShowBgMenu(false);
+                                    document.getElementById("imagePicker").click();
+                                }}
+                            >
+                                <span>🖼️</span>
+                                <span>Ảnh nền</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
 
@@ -109,8 +221,6 @@ const HeaderComponent = ({
                                 {colorOption.name}
                             </option>
                         ))}
-
-
                     </select>
                 </div>
 
@@ -160,9 +270,6 @@ const HeaderComponent = ({
             )}
 
         </>
-
-
-
     );
 };
 

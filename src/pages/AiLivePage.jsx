@@ -40,6 +40,9 @@ export default function AiLivePage() {
     const newColor = e.target.value;
     setColor(newColor);
     localStorage.setItem("selectedColor", newColor);
+    // Clear any saved background image so solid color takes over
+    localStorage.removeItem("selectedBgImage");
+    document.getElementById("root").style.backgroundImage = "";
   };
 
   return (
