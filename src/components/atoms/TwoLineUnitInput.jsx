@@ -14,7 +14,8 @@ export default function TwoLineUnitInput({
   disabled = false,
   inputProps = {},
   isInput = false,
-  centerOnly = false
+  centerOnly = false,
+  unit = ""
 }) {
   const resolvedCountry = useMemo(() => {
     return getUserCountry();
@@ -48,8 +49,8 @@ export default function TwoLineUnitInput({
         </div>
       )}
       <div className="absolute right-1 inset-y-0 flex flex-col items-center justify-center leading-tight font-bold">
-        <span className="text-sm">{resolvedCountry}</span>
-        <span className="text-sm">{unitBottom}</span>
+        <span className="text-sm">{unit ? unit : resolvedCountry}</span>
+        <span hidden={unit} className="text-sm">{unitBottom}</span>
       </div>
     </div>
   )

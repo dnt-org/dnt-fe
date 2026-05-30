@@ -222,13 +222,13 @@ export default function GoodsAccount({ title, onTransfer, country: countryProp }
                     type="number"
                     name="exchangeRate"
                     className="w-full border-b border-gray-300 flex-1"
-                    defaultValue="0"
-                    onChange={(e) => {
-                        const value = parseFloat(e.target.value) || 0;
-                        const calculatedValue = value * 1; // Tỉ giá mặc định là 1
-                        document.getElementById("calculatedValue").value =
-                            calculatedValue;
-                    }}
+                    placeholder={t("goods.enter_number", "Nhập số")}
+                    // onChange={(e) => {
+                    //     const value = parseFloat(e.target.value) || 0;
+                    //     const calculatedValue = value * 1; // Tỉ giá mặc định là 1
+                    //     document.getElementById("calculatedValue").value =
+                    //         calculatedValue;
+                    // }}
                     style={{ textAlign: "right" }}
                 />
                 <div className="font-bold flex-1 border-gray-300 w-full flex items-center justify-center">

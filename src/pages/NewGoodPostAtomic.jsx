@@ -114,6 +114,9 @@ export default function NewGoodPostAtomic() {
               </div>
             </div>
           </div>
+           <div className="text-center p-4 border-t border-gray-300">
+            <button type="submit" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.saveDraff")}</button>
+          </div>
           <div className="text-center p-4 border-t border-gray-300">
             <button type="submit" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.sendRequirement")}</button>
           </div>

@@ -2,10 +2,10 @@ import React from "react";
 import ProductGridEditable from "./ProductGridEditable";
 import ProductGridReadOnly from "./ProductGridReadOnly";
 
-export default function ProductGrid({ products = [], readOnly = false, onItemsChange }) {
+export default function ProductGrid({ products = [], category, readOnly = false, onItemsChange }) {
   return readOnly ? (
-    <ProductGridReadOnly products={products} onItemsChange={onItemsChange} />
+    <ProductGridReadOnly products={products} onItemsChange={onItemsChange} category={category} />
   ) : (
-    <ProductGridEditable products={products} onItemsChange={onItemsChange} />
+    <ProductGridEditable products={products} onItemsChange={onItemsChange} category={category}  />
   );
 }

@@ -55,8 +55,9 @@ const getMyBusiness = async () => {
             throw new Error("No authentication token found");
         }
 
-        const response = await axios.get(
-            `${API_URL}/business/me`,
+        const response = await axios.post(
+            `${API_URL}/business/verify`,
+            {},
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -76,4 +77,44 @@ const getMyBusiness = async () => {
     }
 };
 
-export { createOrUpdateBusiness, getMyBusiness };
+const getMyDocuments = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await axios.get(
+        `${API_URL}/user-document/my`,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response;
+};
+
+const verifyMyBusiness = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await axios.post(
+        `${API_URL}/business/verify`,
+        {},
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+    );
+    return response;
+};
+
+const uploadDocumentToStrapi = async (dataUrl, type) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) throw new Error("No authentication token found");
+
+    const response = await axios.post(
+        `${API_URL}/user-document/upload`,
+        { imageBase64: dataUrl, type },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        }
+    );
+    return response.data.file; // { id, url, name, ... }
+};
+
+export { createOrUpdateBusiness, getMyBusiness, uploadDocumentToStrapi, getMyDocuments, verifyMyBusiness };

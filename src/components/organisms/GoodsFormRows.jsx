@@ -11,6 +11,7 @@ import Checkbox from "../atoms/Checkbox"
 import FileInput from "../atoms/FileInput"
 import ProductGrid from "../ProductGrid"
 import TwoLineUnitInput from "../atoms/TwoLineUnitInput"
+import Select from "../atoms/Select"
 
 export default function GoodsFormRows({
   selectedType,
@@ -34,11 +35,14 @@ export default function GoodsFormRows({
 }) {
   const { t } = useTranslation()
 
+  const countryOptions = (countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }))
+  const provinceOptions = (provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }))
+
   return (
     <div className="grid grid-cols-1">
-      <div className="grid grid-cols-17 border-gray-300">
+      <div className="grid grid-cols-30 border-gray-300">
         <RowNumberCell number={1} required className="col-span-1 border-b" />
-        <div className="col-span-16">
+        <div className="col-span-29">
           <CategoryRow
             selectedType={selectedType}
             selectedCategory={selectedCategory}
@@ -53,20 +57,20 @@ export default function GoodsFormRows({
             onCountryChange={onCountryChange}
             onProvinceChange={onProvinceChange}
           />
-          
+
         </div>
       </div>
 
-      <div className="grid grid-cols-17 border-b border-gray-300">
+      <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={2} required className="col-span-1" />
-        <div className="col-span-16">
-          <ProductGrid products={goodsItems} />
+        <div className="col-span-29">
+          <ProductGrid products={goodsItems} category={selectedType} />
         </div>
       </div>
 
-      <div className="grid grid-cols-17 border-b border-gray-300">
+      <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={3} required className="col-span-1 p-2" />
-        <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.priceReviewTime")}</div>
         </div>
         <div className="col-span-12 border-r border-gray-300 p-2 flex items-center gap-2">
@@ -103,9 +107,27 @@ export default function GoodsFormRows({
         </div>
       </div>
 
-      <div className="grid grid-cols-17 border-b border-gray-300">
+      <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={4} required className="col-span-1 p-2" />
-        <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
+          <div>{t("goods.timeLive")}</div>
+        </div>
+        <div className="col-span-12 border-r border-gray-300 p-2">
+          <input
+            type="datetime-local"
+            name="timeLive"
+            value={goodsInfo.timeLive || ""}
+            onChange={onGoodsInfoChange}
+            className="max-w-80 border border-gray-300 p-1 text-right"
+            placeholder={t("goods.enter")}
+            style={{ border: "none" }}
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-30 border-b border-gray-300">
+        <RowNumberCell number={5} required className="col-span-1 p-2" />
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.endPostTime")}</div>
         </div>
         <div className="col-span-12 border-r border-gray-300 p-2">
@@ -121,9 +143,9 @@ export default function GoodsFormRows({
         </div>
       </div>
 
-      <div className="grid grid-cols-17 border-b border-gray-300">
-        <RowNumberCell number={5} required className="col-span-1 p-2" />
-        <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+      <div className="grid grid-cols-30 border-b border-gray-300">
+        <RowNumberCell number={6} required className="col-span-1 p-2" />
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
           <div>{t("goods.goodsAddress")}</div>
         </div>
         <div className="col-span-10 border-r border-gray-300 p-2">
@@ -132,22 +154,25 @@ export default function GoodsFormRows({
         <div className="col-span-2 border-r border-gray-300 p-2 text-center flex items-center justify-center">(MAP)</div>
       </div>
 
-      <div className="grid grid-cols-17 border-gray-300">
-        <RowNumberCell number={6} required className="col-span-1 p-2" />
-        <div className="col-span-16 border-gray-300 p-2 flex items-center">
-          <Checkbox name="confirmOwnership" checked={goodsInfo.confirmOwnership} onChange={onGoodsInfoChange} className="w-4 h-4" />
-          <div className="col-span-10 border-gray-300 p-2 flex items-center">
-            <div>{t("goods.confirmOwnership")}</div>
-          </div>
+      <div className="grid grid-cols-30 border-b border-gray-300">
+        <RowNumberCell number={7} required className="col-span-1 p-2" />
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
+          <div>{t("goods.location")}</div>
+        </div>
+        <div className="col-span-12 border-r border-gray-300 p-2">
+           <div className="flex items-center gap-2">
+              <Select value={selectedCountry} onChange={onCountryChange} options={countryOptions} className="w-full border border-gray-300 p-1 mb-2" />
+              <Select value={selectedProvince} onChange={onProvinceChange} options={provinceOptions} className="w-full border border-gray-300 p-1 mb-2" disabled={!selectedCountry} />
+            </div>
         </div>
       </div>
 
-      <div id="row7" className="grid grid-cols-17 border-b border-gray-300">
+      <div id="row7" className="grid grid-cols-30 border-b border-gray-300">
         <div className="col-span-1 border-r border-t border-gray-300 p-2 text-center flex items-center justify-center">
           <span className="font-bold">7</span>
         </div>
-        <div className="col-span-16">
-        <div className="grid grid-cols-16 border-gray-300">
+        <div className="col-span-29">
+          <div className="grid grid-cols-16 border-gray-300">
             <div className="col-span-4 border-b border-r border-t border-gray-300 p-2 flex items-center">
               <div>{t("goods.successFee")}</div>
             </div>
@@ -158,7 +183,7 @@ export default function GoodsFormRows({
             <div className="col-span-2 p-2 text-left"><div className="text-red-500">*</div></div>
           </div>
 
-          <div className="grid grid-cols-16 border-gray-300">
+          <div className="grid grid-cols-1 border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.vatOtherFees")}</div>
             </div>

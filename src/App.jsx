@@ -33,7 +33,6 @@ import GuideRulesPage from './pages/GuideRulesPage.jsx'
 function App() {
   // Restore background (image or color) from localStorage on every page load/navigation
   useEffect(() => {
-    localStorage.setItem("authToken", "âhkjskjd");
     const root = document.getElementById("root");
     if (!root) return;
 

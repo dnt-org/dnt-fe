@@ -49,16 +49,18 @@ export default function NewPostPage() {
     const [previewBlocked, setPreviewBlocked] = useState(false);
     const containerRef = useRef(null);
 
-    // Guard: redirect to /admin-control if user hasn't completed CCCD verification yet
+    // Guard: if business is already verified on the server → go straight to /new-good-post.
+    // Only redirect to /admin-control when NOT yet verified or on error.
     useEffect(() => {
         const checkCccdVerification = async () => {
             try {
                 const res = await getMyBusiness();
-                if (!res?.data?.data) {
-                    // No business record means CCCD has not been verified
-                    navigate("/admin-control", { replace: true });
+                if (res?.data?.verified) {
+                    // Business already verified – skip capture steps entirely
+                    navigate("/new-good-post", { replace: true });
                 } else {
-                    setCccdCheckDone(true);
+                    // Not verified yet → send to admin-control to complete verification
+                    navigate("/admin-control", { replace: true });
                 }
             } catch {
                 // On any error (unauthorized, network, etc.), redirect to admin-control
@@ -68,7 +70,7 @@ export default function NewPostPage() {
         checkCccdVerification();
     }, [navigate]);
 
-    // Redirect to /new-good-post once both verifications are completed
+    // Redirect to /new-good-post once both local verifications are completed (fallback path)
     useEffect(() => {
         if (hasIdCaptured && hasBusinessVideo) {
             navigate("/new-good-post", { replace: true });

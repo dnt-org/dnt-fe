@@ -4,13 +4,21 @@ import { Home as HomeIcon, Keyboard as KeyboardIcon, ChevronDown, ChevronUp } fr
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
 import { useTranslation } from 'react-i18next';
 import { getSessions, toggleSessionStatus } from "../services/authService";
-import { createOrUpdateBusiness, getMyBusiness } from "../services/businessService";
+import { createOrUpdateBusiness, getMyBusiness, uploadDocumentToStrapi, getMyDocuments, verifyMyBusiness } from "../services/businessService";
 import TwoLineUnitInput from "../components/atoms/TwoLineUnitInput";
-import useBlinkIdScanner from "../components/MicrolinkIDScanner";
-import Tesseract from "tesseract.js";
 import useLocationSelection from "../hooks/useLocationSelection";
 
 const MOCK_VERIFICATION = String(import.meta.env.VITE_MOCK_VERIFICATION || "false").toLowerCase() === "true";
+
+const dataUrlToFile = (dataUrl, filename) => {
+  const arr = dataUrl.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) u8arr[n] = bstr.charCodeAt(n);
+  return new File([u8arr], filename, { type: mime });
+};
 
 function DeviceRow({ item, actionLabel, onActionClick }) {
   const { t } = useTranslation();
@@ -38,7 +46,7 @@ function DeviceRow({ item, actionLabel, onActionClick }) {
 function InfoInputRow({ label, placeholder, value, onChange, inputs = [] }) {
   const { t } = useTranslation();
   const defaultPlaceholder = placeholder || t('adminControl.enter');
-  
+
   if (inputs.length > 0) {
     const inputCols = inputs.map(input => input.width || '1fr').join(' ');
     return (
@@ -78,7 +86,7 @@ function InfoInputRow({ label, placeholder, value, onChange, inputs = [] }) {
       </div>
     );
   }
-  
+
   return (
     <div className="grid grid-cols-[180px_1fr] border-2 border-black border-t-0 text-[13px] leading-tight">
       <div className="border-r-2 border-black px-2 py-1 uppercase">{label}</div>
@@ -95,7 +103,7 @@ function InfoInputRow({ label, placeholder, value, onChange, inputs = [] }) {
 
 export default function AdminControlPage() {
   const { t } = useTranslation();
-  
+
   const hqLocation = useLocationSelection();
   const currLocation = useLocationSelection();
   const hqCountryOptions = (hqLocation.countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }));
@@ -111,25 +119,31 @@ export default function AdminControlPage() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
-  
+
   const navigate = useNavigate();
 
+  // Camera state
   const videoRef = useRef(null);
   const [showCamera, setShowCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
+  const [previewBlocked, setPreviewBlocked] = useState(false);
+  const [cameraMode, setCameraMode] = useState(null); // 'cccd_front' | 'cccd_back' | 'business_reg'
+
+  // CCCD document state
+  const [cccdFrontDataUrl, setCccdFrontDataUrl] = useState(null);
+  const [cccdBackDataUrl, setCccdBackDataUrl] = useState(null);
+  const [cccdFrontFileId, setCccdFrontFileId] = useState(null);
+  const [cccdBackFileId, setCccdBackFileId] = useState(null);
   const [hasIdCaptured, setHasIdCaptured] = useState(false);
-  const [idPhotoDataUrl, setIdPhotoDataUrl] = useState(null);
+
+  // Business registration document state
+  const [businessRegDataUrl, setBusinessRegDataUrl] = useState(null);
+  const [businessRegFileId, setBusinessRegFileId] = useState(null);
   const [hasBusinessVideo, setHasBusinessVideo] = useState(false);
-  const [businessVideoUrl, setBusinessVideoUrl] = useState(null);
-  const [isVideoMode, setIsVideoMode] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const recordedChunksRef = useRef([]);
-  const [isOcrRunning, setIsOcrRunning] = useState(false);
-  const [ocrHasText, setOcrHasText] = useState(null);
-  const [ocrError, setOcrError] = useState(null);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordSeconds, setRecordSeconds] = useState(0);
-  const recordTimerRef = useRef(null);
+
+  // Verification state
+  const [isVerified, setIsVerified] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
@@ -144,225 +158,116 @@ export default function AdminControlPage() {
   });
   const [businessLoading, setBusinessLoading] = useState(false);
   const [businessSaving, setBusinessSaving] = useState(false);
-  const [previewBlocked, setPreviewBlocked] = useState(false);
+
+  // Set video srcObject after camera modal mounts
+  useEffect(() => {
+    if (showCamera && cameraStream && videoRef.current) {
+      videoRef.current.srcObject = cameraStream;
+      videoRef.current.play().catch(() => setPreviewBlocked(true));
+    }
+  }, [showCamera, cameraStream]);
 
   const mockIdCapture = () => {
-      const mockDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-      setIdPhotoDataUrl(mockDataUrl);
-      setHasIdCaptured(true);
+    const mockDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+    setCccdFrontDataUrl(mockDataUrl);
+    setCccdBackDataUrl(mockDataUrl);
+    setCccdFrontFileId(1);
+    setCccdBackFileId(2);
+    setHasIdCaptured(true);
   };
 
-  const mockVideoRecord = () => {
-      setBusinessVideoUrl("blob-mock");
-      setHasBusinessVideo(true);
-      setOcrHasText(true);
-      setIsOcrRunning(false);
-      setOcrError(null);
+  const mockBusinessRegCapture = () => {
+    const mockDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+    setBusinessRegDataUrl(mockDataUrl);
+    setBusinessRegFileId(3);
+    setHasBusinessVideo(true);
   };
 
-  const {scanId, toggle} = useBlinkIdScanner({
-      onSuccess: (result) => {
-          setHasIdCaptured(true);
-          setIdPhotoDataUrl(result.faceImage);
-          closeCamera();
-      },
-      onError: (error) => {
-          console.error("BlinkID Scan Error:", error);
-          alert(t("scanner.error", "Lỗi máy quét"));
-          closeCamera();
-      },
-  });
-
-  const openCamera = async (e, mode) => {
-      if (e && e.preventDefault) e.preventDefault();
-      try {
-          const stream = await navigator.mediaDevices.getUserMedia({video: true});
-          setCameraStream(stream);
-          setShowCamera(true);
-          setIsVideoMode(mode === "video");
-
-          if (videoRef.current) {
-              const video = videoRef.current;
-              video.srcObject = stream;
-              video.muted = true;
-              try {
-                  await video.play();
-                  setPreviewBlocked(false);
-              } catch (_) {
-                  setPreviewBlocked(true);
-              }
-          }
-      } catch (error) {
-          console.error("Error accessing camera:", error);
-          alert(t("camera.error", "Lỗi truy cập máy ảnh"));
-      }
+  const openCamera = async (mode) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setCameraStream(stream);
+      setCameraMode(mode);
+      setPreviewBlocked(false);
+      setShowCamera(true);
+    } catch (error) {
+      console.error("Error accessing camera:", error);
+      alert(t("camera.error", "Lỗi truy cập máy ảnh"));
+    }
   };
 
   const closeCamera = () => {
-      if (cameraStream) {
-          cameraStream.getTracks().forEach((track) => track.stop());
-      }
-      setCameraStream(null);
-      setShowCamera(false);
-      setIsVideoMode(false);
-      if (
-          mediaRecorderRef.current &&
-          mediaRecorderRef.current.state !== "inactive"
-      ) {
-          try {
-              mediaRecorderRef.current.stop();
-          } catch (_) {}
-      }
-      recordedChunksRef.current = [];
-      if (recordTimerRef.current) {
-          clearInterval(recordTimerRef.current);
-          recordTimerRef.current = null;
-      }
-      setIsRecording(false);
-      setRecordSeconds(0);
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+    }
+    setCameraStream(null);
+    setShowCamera(false);
+    setCameraMode(null);
   };
 
   const tryStartPreview = async () => {
-      const video = videoRef.current;
-      if (!video) return;
-      try {
-          await video.play();
-          setPreviewBlocked(false);
-      } catch (_) {
-          setPreviewBlocked(true);
-      }
+    const video = videoRef.current;
+    if (!video) return;
+    try {
+      await video.play();
+      setPreviewBlocked(false);
+    } catch (_) {
+      setPreviewBlocked(true);
+    }
+  };
+
+  const uploadCapturedPhoto = async (dataUrl, type) => {
+    if (MOCK_VERIFICATION) return;
+    try {
+      const uploaded = await uploadDocumentToStrapi(dataUrl, type);
+      if (type === 'cccd_front') setCccdFrontFileId(uploaded.id);
+      else if (type === 'cccd_back') setCccdBackFileId(uploaded.id);
+      else if (type === 'business_reg') setBusinessRegFileId(uploaded.id);
+    } catch (error) {
+      console.error(`Upload ${type} error:`, error);
+    }
   };
 
   const capturePhoto = () => {
-      if (!videoRef.current) return;
-      const video = videoRef.current;
-      const canvas = document.createElement("canvas");
-      const width = video.videoWidth || 640;
-      const height = video.videoHeight || 480;
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      ctx.drawImage(video, 0, 0, width, height);
-      const dataUrl = canvas.toDataURL("image/png");
-      setIdPhotoDataUrl(dataUrl);
+    if (!videoRef.current) return;
+    const video = videoRef.current;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const dataUrl = canvas.toDataURL("image/png");
+
+    if (cameraMode === 'cccd_front') {
+      setCccdFrontDataUrl(dataUrl);
+      uploadCapturedPhoto(dataUrl, 'cccd_front');
+      closeCamera();
+    } else if (cameraMode === 'cccd_back') {
+      setCccdBackDataUrl(dataUrl);
+      uploadCapturedPhoto(dataUrl, 'cccd_back');
       setHasIdCaptured(true);
       closeCamera();
-  };
-
-  const startRecording = () => {
-      if (!cameraStream) return;
-      recordedChunksRef.current = [];
-      const mediaRecorder = new MediaRecorder(cameraStream, {
-          mimeType: "video/webm",
-      });
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-              recordedChunksRef.current.push(event.data);
-          }
-      };
-      mediaRecorder.onstop = () => {
-          const blob = new Blob(recordedChunksRef.current, {type: "video/webm"});
-          const url = URL.createObjectURL(blob);
-          if (businessVideoUrl) {
-              try {
-                  URL.revokeObjectURL(businessVideoUrl);
-              } catch (_) {}
-          }
-          setBusinessVideoUrl(url);
-          setHasBusinessVideo(true);
-          runOcrOnVideo(url);
-      };
-      mediaRecorder.start();
-      setIsRecording(true);
-      setRecordSeconds(0);
-      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
-      recordTimerRef.current = setInterval(() => {
-          setRecordSeconds((s) => s + 1);
-      }, 1000);
-  };
-
-  const stopRecording = () => {
-      if (
-          mediaRecorderRef.current &&
-          mediaRecorderRef.current.state !== "inactive"
-      ) {
-          mediaRecorderRef.current.stop();
-      }
-      if (recordTimerRef.current) {
-          clearInterval(recordTimerRef.current);
-          recordTimerRef.current = null;
-      }
-      setIsRecording(false);
+    } else if (cameraMode === 'business_reg') {
+      setBusinessRegDataUrl(dataUrl);
+      uploadCapturedPhoto(dataUrl, 'business_reg');
+      setHasBusinessVideo(true);
       closeCamera();
-  };
-
-  const runOcrOnVideo = async (videoUrl) => {
-      try {
-          setIsOcrRunning(true);
-          setOcrHasText(null);
-          setOcrError(null);
-
-          const tempVideo = document.createElement("video");
-          tempVideo.src = videoUrl;
-          tempVideo.crossOrigin = "anonymous";
-          tempVideo.preload = "auto";
-
-          await new Promise((resolve, reject) => {
-              const onLoaded = () => resolve();
-              const onError = () =>
-                  reject(new Error("Cannot load recorded video for OCR"));
-              tempVideo.addEventListener("loadedmetadata", onLoaded, {once: true});
-              tempVideo.addEventListener("error", onError, {once: true});
-          });
-
-          const targetTime = Math.min(
-              5,
-              tempVideo.duration ? tempVideo.duration - 0.1 : 5
-          );
-
-          await new Promise((resolve) => {
-              const onSeeked = () => resolve();
-              tempVideo.currentTime = targetTime > 0 ? targetTime : 0;
-              tempVideo.addEventListener("seeked", onSeeked, {once: true});
-          });
-
-          const canvas = document.createElement("canvas");
-          const width = tempVideo.videoWidth || 640;
-          const height = tempVideo.videoHeight || 480;
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          if (!ctx) throw new Error("Canvas context not available");
-          ctx.drawImage(tempVideo, 0, 0, width, height);
-
-          const dataUrl = canvas.toDataURL("image/png");
-          const {data} = await Tesseract.recognize(dataUrl, "eng+vie");
-          const text = data && data.text ? data.text.trim() : "";
-          setOcrHasText(Boolean(text));
-      } catch (err) {
-          console.error("OCR error:", err);
-          setOcrError(err.message || "OCR failed");
-          setOcrHasText(null);
-      } finally {
-          setIsOcrRunning(false);
-      }
+    }
   };
 
   useEffect(() => {
-      return () => {
-          if (cameraStream) {
-              cameraStream.getTracks().forEach((track) => track.stop());
-          }
-      };
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, [cameraStream]);
 
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
 
-  // Fetch business data when both verifications are complete
   const fetchBusiness = useCallback(async () => {
     try {
       setBusinessLoading(true);
@@ -380,7 +285,6 @@ export default function AdminControlPage() {
           current_address_province_code: biz.current_address_province_code || '',
           current_address_nation_code: biz.current_address_nation_code || '',
         }));
-        // Sync location selectors sequentially to ensure provinces list is loaded before setting province
         if (biz.headquarters_address_nation_code) {
           await hqLocation.handleCountryChange({ target: { value: biz.headquarters_address_nation_code } });
           if (biz.headquarters_address_province_code) {
@@ -414,6 +318,21 @@ export default function AdminControlPage() {
   const handleSaveBusiness = async () => {
     try {
       setBusinessSaving(true);
+
+      const documents = [];
+      if (cccdFrontFileId || cccdBackFileId) {
+        documents.push({
+          type: 'cccd',
+          file_ids: [cccdFrontFileId, cccdBackFileId].filter(Boolean),
+        });
+      }
+      if (businessRegFileId) {
+        documents.push({
+          type: 'business_registration',
+          file_ids: [businessRegFileId],
+        });
+      }
+
       const payload = {
         business_fullname: businessForm.business_fullname,
         tax_code: businessForm.tax_code,
@@ -423,6 +342,7 @@ export default function AdminControlPage() {
         current_address: businessForm.current_address,
         current_address_province_code: currLocation.selectedProvince || businessForm.current_address_province_code,
         current_address_nation_code: currLocation.selectedCountry || businessForm.current_address_nation_code,
+        ...(documents.length > 0 ? { documents } : {}),
       };
       await createOrUpdateBusiness(payload);
       alert(t('adminControl.businessSaveSuccess', 'Đã lưu thông tin doanh nghiệp'));
@@ -439,10 +359,56 @@ export default function AdminControlPage() {
     await fetchBusiness();
   };
 
-  // Fetch sessions on component mount
   useEffect(() => {
     fetchSessions();
+    loadExistingDocuments();
   }, []);
+
+  const loadExistingDocuments = async () => {
+    try {
+      const response = await getMyDocuments();
+      const docs = response.data?.data || [];
+
+      let foundCccd = false;
+      let foundBizReg = false;
+
+      for (const doc of docs) {
+        const files = doc.file || [];
+        if (doc.type === 'cccd' && files.length > 0) {
+          if (files[0]) { setCccdFrontDataUrl(files[0].url); setCccdFrontFileId(files[0].id); }
+          if (files[1]) { setCccdBackDataUrl(files[1].url); setCccdBackFileId(files[1].id); }
+          foundCccd = true;
+        }
+        if (doc.type === 'business_registration' && files.length > 0) {
+          setBusinessRegDataUrl(files[0].url);
+          setBusinessRegFileId(files[0].id);
+          foundBizReg = true;
+        }
+      }
+
+      if (foundCccd) setHasIdCaptured(true);
+      if (foundBizReg) setHasBusinessVideo(true);
+
+      if (docs.length > 0) {
+        const verifyRes = await verifyMyBusiness();
+        setIsVerified(verifyRes.data?.verified === true);
+      }
+    } catch (err) {
+      console.error('Error loading existing documents:', err);
+    }
+  };
+
+  const handleMarkVerified = async () => {
+    try {
+      setVerifying(true);
+      const verifyRes = await verifyMyBusiness();
+      setIsVerified(verifyRes.data?.verified === true);
+    } catch (err) {
+      console.error('Verify error:', err);
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const fetchSessions = async () => {
     try {
@@ -468,16 +434,13 @@ export default function AdminControlPage() {
       alert(t('adminControl.otpRequired', 'Vui lòng nhập mã OTP'));
       return;
     }
-
     try {
       const response = await toggleSessionStatus(selectedSession.id, otpInput);
-      
       if (response.data?.success) {
         alert(t('adminControl.toggleSuccess', 'Đã thay đổi trạng thái phiên đăng nhập'));
         setShowOtpModal(false);
         setOtpInput("");
         setSelectedSession(null);
-        // Refresh sessions list
         fetchSessions();
       } else {
         alert(t('adminControl.toggleError', 'Không thể thay đổi trạng thái'));
@@ -495,7 +458,6 @@ export default function AdminControlPage() {
     setSelectedSession(null);
   };
 
-  // Filter sessions by status
   const loggedInDevices = sessions.filter(s => s.status === 'login');
   const loggedOutDevices = sessions.filter(s => s.status === 'logout');
 
@@ -503,6 +465,24 @@ export default function AdminControlPage() {
     const newColor = e.target.value;
     setColor(newColor);
     localStorage.setItem("selectedColor", newColor);
+  };
+
+  const getCameraTitle = () => {
+    switch (cameraMode) {
+      case 'cccd_front': return 'Chụp CCCD - Mặt trước';
+      case 'cccd_back': return 'Chụp CCCD - Mặt sau';
+      case 'business_reg': return 'Chụp giấy đăng ký kinh doanh';
+      default: return t("camera.title", "Xác minh");
+    }
+  };
+
+  const getCameraInstruction = () => {
+    switch (cameraMode) {
+      case 'cccd_front': return 'Đặt mặt trước CCCD vào khung hình, đảm bảo rõ nét và đủ ánh sáng';
+      case 'cccd_back': return 'Đặt mặt sau CCCD vào khung hình, đảm bảo rõ nét và đủ ánh sáng';
+      case 'business_reg': return 'Đặt giấy đăng ký kinh doanh vào khung hình, đảm bảo toàn bộ nội dung hiển thị rõ';
+      default: return '';
+    }
   };
 
   return (
@@ -514,18 +494,17 @@ export default function AdminControlPage() {
           color={color}
           onColorChange={handleChangeColor}
           titlePrefix="3"
-          
           title={t('adminControl.title')}
         />
 
         <section>
           <h2 className="mb-2 text-3xl font-extrabold uppercase">{t('adminControl.header3_1')}</h2>
 
-          <button 
+          <button
             onClick={() => setShowLoggedInDevices(!showLoggedInDevices)}
             className="mb-2 flex items-center gap-2 text-xl font-extrabold uppercase hover:opacity-70"
           >
-            {t('adminControl.loggedInDevicesHeader')} 
+            {t('adminControl.loggedInDevicesHeader')}
             {showLoggedInDevices ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
           {showLoggedInDevices && (
@@ -536,10 +515,10 @@ export default function AdminControlPage() {
                 <div className="border-2 border-black p-4 text-center">{t('adminControl.noLoggedInDevices')}</div>
               ) : (
                 loggedInDevices.map((item) => (
-                  <DeviceRow 
-                    key={item.id} 
-                    item={item} 
-                    actionLabel={t('adminControl.logout')} 
+                  <DeviceRow
+                    key={item.id}
+                    item={item}
+                    actionLabel={t('adminControl.logout')}
                     onActionClick={handleActionClick}
                   />
                 ))
@@ -547,11 +526,11 @@ export default function AdminControlPage() {
             </div>
           )}
 
-          <button 
+          <button
             onClick={() => setShowLoggedOutDevices(!showLoggedOutDevices)}
             className="mb-2 mt-4 flex items-center gap-2 text-xl font-extrabold uppercase hover:opacity-70"
           >
-            {t('adminControl.loggedOutDevicesHeader')} 
+            {t('adminControl.loggedOutDevicesHeader')}
             {showLoggedOutDevices ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
           {showLoggedOutDevices && (
@@ -562,10 +541,10 @@ export default function AdminControlPage() {
                 <div className="border-2 border-black p-4 text-center">{t('adminControl.noLoggedOutDevices')}</div>
               ) : (
                 loggedOutDevices.map((item) => (
-                  <DeviceRow 
-                    key={item.id} 
-                    item={item} 
-                    actionLabel={t('adminControl.login')} 
+                  <DeviceRow
+                    key={item.id}
+                    item={item}
+                    actionLabel={t('adminControl.login')}
                     onActionClick={handleActionClick}
                   />
                 ))
@@ -573,8 +552,6 @@ export default function AdminControlPage() {
             </div>
           )}
         </section>
-
-        {/* OTP Modal moved to root (outside backdrop-blur) */}
 
         <section className="mt-6 max-w-[650px]">
           <div className="grid grid-cols-[110px_1fr_130px] border-2 border-black text-sm font-bold">
@@ -605,41 +582,126 @@ export default function AdminControlPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
+            {/* CCCD Verification Button */}
             <button
               type="button"
-              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${hasIdCaptured ? 'bg-green-100' : ''}`}
-              onClick={(e) => {
-                  if (MOCK_VERIFICATION) {
-                      e.preventDefault();
-                      mockIdCapture();
-                  } else {
-                      toggle(e);
-                  }
+              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${
+                hasIdCaptured ? 'bg-green-100' : cccdFrontDataUrl ? 'bg-yellow-50' : ''
+              }`}
+              onClick={() => {
+                if (MOCK_VERIFICATION) {
+                  mockIdCapture();
+                } else if (!cccdFrontDataUrl) {
+                  openCamera('cccd_front');
+                } else if (!cccdBackDataUrl) {
+                  openCamera('cccd_back');
+                } else {
+                  setCccdFrontDataUrl(null);
+                  setCccdBackDataUrl(null);
+                  setCccdFrontFileId(null);
+                  setCccdBackFileId(null);
+                  setHasIdCaptured(false);
+                  openCamera('cccd_front');
+                }
               }}
             >
               {t('adminControl.idVerification')}
               <br />
               {t('adminControl.forPersonalAccounts')}
-              {hasIdCaptured && <div className="text-sm text-green-600 mt-1">{t("camera.captured", "Đã xác minh")}</div>}
+              {cccdFrontDataUrl && !cccdBackDataUrl && (
+                <div className="text-sm text-yellow-600 mt-1 normal-case font-normal">
+                  Đã chụp mặt trước • Bấm để chụp mặt sau
+                </div>
+              )}
+              {hasIdCaptured && (
+                <div className="text-sm text-green-600 mt-1 normal-case font-normal">
+                  {t("camera.captured", "Đã xác minh")}
+                </div>
+              )}
             </button>
+
+            {/* Business Registration Verification Button */}
             <button
               type="button"
-              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${hasBusinessVideo ? 'bg-green-100' : ''}`}
-              onClick={(e) => {
-                  if (MOCK_VERIFICATION) {
-                      e.preventDefault();
-                      mockVideoRecord();
-                  } else {
-                      openCamera(e, "video");
-                  }
+              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${
+                hasBusinessVideo ? 'bg-green-100' : ''
+              }`}
+              onClick={() => {
+                if (MOCK_VERIFICATION) {
+                  mockBusinessRegCapture();
+                } else {
+                  openCamera('business_reg');
+                }
               }}
             >
               {t('adminControl.businessRegistrationVerification')}
               <br />
               {t('adminControl.forBusinessAccounts')}
-              {hasBusinessVideo && <div className="text-sm text-green-600 mt-1">{t("camera.videoRecorded", "Đã ghi hình")}</div>}
+              {hasBusinessVideo && (
+                <div className="text-sm text-green-600 mt-1 normal-case font-normal">
+                  {t("camera.captured", "Đã xác minh")}
+                </div>
+              )}
             </button>
           </div>
+
+          {/* Verification status */}
+          {isVerified ? (
+            <div className="mt-3 flex items-center gap-2 border-2 border-green-600 bg-green-50 px-3 py-2 text-green-700 font-bold text-sm">
+              <span>✓</span>
+              <span>{t('adminControl.verifiedBadge', 'Tài khoản đã được xác minh')}</span>
+            </div>
+          ) : (hasIdCaptured || hasBusinessVideo) ? (
+            <div className="mt-3 flex items-center gap-3">
+              <div className="border-2 border-yellow-500 bg-yellow-50 px-3 py-2 text-yellow-700 font-bold text-sm">
+                {t('adminControl.notVerified', 'Chưa xác minh')}
+              </div>
+              <button
+                type="button"
+                onClick={handleMarkVerified}
+                disabled={verifying}
+                className="border-2 border-black px-3 py-2 text-sm font-bold uppercase hover:bg-black hover:text-white disabled:opacity-50"
+              >
+                {verifying ? t('adminControl.verifying', 'Đang xác minh...') : t('adminControl.markVerified', 'Xác minh ngay')}
+              </button>
+            </div>
+          ) : null}
+
+          {/* Document photo previews */}
+          {(cccdFrontDataUrl || cccdBackDataUrl || businessRegDataUrl) && (
+            <div className="flex gap-3 mt-1">
+              {cccdFrontDataUrl && (
+                <div className="text-center">
+                  <img
+                    src={cccdFrontDataUrl}
+                    alt="CCCD mặt trước"
+                    className="h-16 w-24 object-cover border border-gray-400 rounded"
+                  />
+                  <div className="text-[10px] text-gray-500 mt-0.5">Mặt trước</div>
+                </div>
+              )}
+              {cccdBackDataUrl && (
+                <div className="text-center">
+                  <img
+                    src={cccdBackDataUrl}
+                    alt="CCCD mặt sau"
+                    className="h-16 w-24 object-cover border border-gray-400 rounded"
+                  />
+                  <div className="text-[10px] text-gray-500 mt-0.5">Mặt sau</div>
+                </div>
+              )}
+              {businessRegDataUrl && (
+                <div className="text-center">
+                  <img
+                    src={businessRegDataUrl}
+                    alt="Giấy ĐKKD"
+                    className="h-16 w-24 object-cover border border-gray-400 rounded"
+                  />
+                  <div className="text-[10px] text-gray-500 mt-0.5">Giấy ĐKKD</div>
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {hasIdCaptured && hasBusinessVideo && (
@@ -659,8 +721,8 @@ export default function AdminControlPage() {
                       value={businessForm.tax_code}
                       onChange={handleBusinessFieldChange('tax_code')}
                     />
-                    <InfoInputRow 
-                      label={t('adminControl.headquartersAddress')} 
+                    <InfoInputRow
+                      label={t('adminControl.headquartersAddress')}
                       inputs={[
                         { type: 'input', placeholder: t('adminControl.enter'), width: '1fr', value: businessForm.headquarters_address, onChange: handleBusinessFieldChange('headquarters_address') },
                         { type: 'select', placeholder: t('adminControl.selectProvince'), width: '600px', value: hqLocation.selectedProvince, onChange: hqLocation.handleProvinceChange, options: hqProvinceOptions },
@@ -669,8 +731,8 @@ export default function AdminControlPage() {
                     />
                   </div>
 
-                  <InfoInputRow 
-                    label={t('adminControl.currentAddress')} 
+                  <InfoInputRow
+                    label={t('adminControl.currentAddress')}
                     inputs={[
                       { type: 'input', placeholder: t('adminControl.enter'), width: '1fr', value: businessForm.current_address, onChange: handleBusinessFieldChange('current_address') },
                       { type: 'select', placeholder: t('adminControl.selectProvince'), width: '300px', value: currLocation.selectedProvince, onChange: currLocation.handleProvinceChange, options: currProvinceOptions },
@@ -703,8 +765,6 @@ export default function AdminControlPage() {
               )}
             </section>
         )}
-
-        {/* Camera Modal moved to root (outside backdrop-blur) */}
 
       </div>
     </div>
@@ -752,95 +812,55 @@ export default function AdminControlPage() {
 
     {/* Camera Modal */}
     {showCamera && (
-        <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-            <div className="bg-white p-4 rounded-lg max-w-2xl w-full">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">{t("camera.title", "Xác minh")}</h2>
-                    <button
-                        className="text-gray-700 hover:text-gray-900"
-                        onClick={closeCamera}
-                    >
-                        ✕
-                    </button>
-                </div>
-                <div className="relative">
-                    <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-auto border border-gray-300 rounded"
-                    />
-                    {previewBlocked && (
-                        <div
-                            className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                            <button
-                                className="bg-white text-black px-3 py-2 rounded"
-                                onClick={tryStartPreview}
-                            >
-                                {t("camera.clickToPreview", "Nhấp để xem trước")}
-                            </button>
-                        </div>
-                    )}
-                    {isVideoMode && isRecording && (
-                        <div
-                            className="absolute top-2 left-2 bg-red-600 text-white text-sm px-2 py-1 rounded">
-                            {t("camera.recording", "Đang ghi hình")}{" "}
-                            {String(Math.floor(recordSeconds / 60)).padStart(2, "0")}:
-                            {String(recordSeconds % 60).padStart(2, "0")}
-                        </div>
-                    )}
-                </div>
-                <div className="mt-4 flex justify-center">
-                    {!isVideoMode ? (
-                        <>
-                            <button
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded mr-2"
-                                onClick={capturePhoto}
-                            >
-                                {t("camera.capture", "Chụp ảnh")}
-                            </button>
-                            <button
-                                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                                onClick={closeCamera}
-                            >
-                                {t("camera.cancel", "Hủy bỏ")}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                className={`px-4 py-2 rounded mr-2 text-white ${
-                                    isRecording
-                                        ? "bg-red-300 cursor-not-allowed"
-                                        : "bg-red-500 hover:bg-red-600"
-                                }`}
-                                onClick={startRecording}
-                                disabled={isRecording}
-                            >
-                                {t("camera.startRecording", "Bắt đầu ghi hình")}
-                            </button>
-                            {isRecording && (
-                                <button
-                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                                    onClick={stopRecording}
-                                >
-                                    {t("camera.stopRecording", "Dừng ghi hình")}
-                                </button>
-                            )}
-                            {!isRecording && (
-                                <button
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                                    onClick={closeCamera}
-                                >
-                                    {t("camera.cancel", "Hủy bỏ")}
-                                </button>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
+      <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
+        <div className="bg-white p-4 rounded-lg max-w-2xl w-full">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="text-xl font-bold">{getCameraTitle()}</h2>
+            <button
+              className="text-gray-700 hover:text-gray-900"
+              onClick={closeCamera}
+            >
+              ✕
+            </button>
+          </div>
+          {getCameraInstruction() && (
+            <p className="text-sm text-gray-600 mb-3">{getCameraInstruction()}</p>
+          )}
+          <div className="relative">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-auto border border-gray-300 rounded"
+            />
+            {previewBlocked && (
+              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                <button
+                  className="bg-white text-black px-3 py-2 rounded"
+                  onClick={tryStartPreview}
+                >
+                  {t("camera.clickToPreview", "Nhấp để xem trước")}
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="mt-4 flex justify-center gap-2">
+            <button
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              onClick={capturePhoto}
+            >
+              {t("camera.capture", "Chụp ảnh")}
+            </button>
+            <button
+              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              onClick={closeCamera}
+            >
+              {t("camera.cancel", "Hủy bỏ")}
+            </button>
+          </div>
         </div>
+      </div>
     )}
   </>
   );
