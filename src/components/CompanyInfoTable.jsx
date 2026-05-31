@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getMe } from '../services/authService';
+import { getMyDocuments } from '../services/businessService';
+import { downloadContract } from '../services/contractService';
 
 const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const { t, i18n } = useTranslation();
@@ -8,6 +10,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dlLoading, setDlLoading] = useState({ license: false, contract: false });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,6 +74,49 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   };
 
   const currentData = getDynamicData();
+
+  const handleDownloadLicense = async () => {
+    setDlLoading(prev => ({ ...prev, license: true }));
+    try {
+      const response = await getMyDocuments();
+      const docs = response.data?.data || [];
+      const bizDoc = docs.find(d => d.type === 'business_registration');
+      const fileUrl = bizDoc?.file?.[0]?.url;
+      if (fileUrl) {
+        const a = document.createElement('a');
+        a.href = fileUrl;
+        a.download = 'giay_phep_kinh_doanh.pdf';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        alert('Chưa có giấy phép kinh doanh.');
+      }
+    } catch (err) {
+      alert('Lỗi tải giấy phép: ' + err.message);
+    } finally {
+      setDlLoading(prev => ({ ...prev, license: false }));
+    }
+  };
+
+  const handleDownloadContract = async () => {
+    setDlLoading(prev => ({ ...prev, contract: true }));
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await getMe(authToken);
+      const user = response.data;
+      await downloadContract({
+        benAIdentityNumber: user?.identityNumber || user?.cccd || '',
+        benAName: user?.fullName || user?.username || '',
+        benAAddress: user?.address || '',
+      });
+    } catch (err) {
+      alert('Lỗi tải hợp đồng: ' + err.message);
+    } finally {
+      setDlLoading(prev => ({ ...prev, contract: false }));
+    }
+  };
 
   if (loading) {
     return (
@@ -172,6 +218,24 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Download buttons */}
+      <div className="flex gap-1 mt-1">
+        <button
+          onClick={handleDownloadLicense}
+          disabled={dlLoading.license}
+          className="flex-1 text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 leading-tight"
+        >
+          {dlLoading.license ? '...' : (currentLang === 'vi' ? 'Tải GPKD' : 'Biz License')}
+        </button>
+        <button
+          onClick={handleDownloadContract}
+          disabled={dlLoading.contract}
+          className="flex-1 text-[10px] py-1 px-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 leading-tight"
+        >
+          {dlLoading.contract ? '...' : (currentLang === 'vi' ? 'Tải Hợp Đồng' : 'Contract')}
+        </button>
       </div>
     </div>
   );

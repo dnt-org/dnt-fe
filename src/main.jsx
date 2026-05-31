@@ -6,6 +6,8 @@ import App from './App.jsx'
 import { Provider } from 'react-redux';
 import store from './context/store'
 import './i18n'
+import { Agentation } from "agentation";
+
 
 const qrloginPaths = import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login';
 
@@ -23,6 +25,7 @@ function PasswordGate({ children }) {
   const [error, setError] = useState('');
   const qrLoginPath = ['/qr-login', '/admin/qr-login'];
   const isQrLoginPath = qrLoginPath.includes(location.pathname);
+
   console.log("isQrLoginPath",location.pathname,   isQrLoginPath);
   if (isQrLoginPath) {
     return children;
@@ -79,6 +82,7 @@ createRoot(document.getElementById('root')).render(
       <BrowserRouter>
         <PasswordGate>
           <App />
+          <Agentation />
         </PasswordGate>
       </BrowserRouter>
     </StrictMode>
