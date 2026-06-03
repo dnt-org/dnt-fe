@@ -14,7 +14,7 @@ const qrloginPaths = import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login';
 
 // Simple password gate without blocking initial render
 function PasswordGate({ children }) {
-  const pwd = import.meta.env.VITE_REACT_APP_PASSWORD || '123456';
+  const pwd = 'NghiA(80808';
   const isEnabled = import.meta.env.VITE_REACT_APP_ENABLE_PASSWORD_GATE === 'true';
   if (!isEnabled) {
     return children;
