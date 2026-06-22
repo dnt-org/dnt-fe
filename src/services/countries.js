@@ -2,34 +2,33 @@
 
 export const getCountries = async () => {
   try {
-    const response = await fetch("https://api.restcountries.com/countries/v5/all?fields=name,cca2,flags", {
-      headers: { 'Authorization': `Bearer ${import.meta.env.VITE_RESTCOUNTRIES_API_KEY}` }
-    });
+    const response = await fetch("https://countriesnow.space/api/v0.1/countries/flag/images");
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
-    const countries = await response.json();
+    const result = await response.json();
+    const countries = result.data || [];
     const all = { vi: "Tất cả", en: "All", cca2: "" }
 
     const priorityCodes = ["VN", "US"];
 
     const reordered = countries.sort((a, b) => {
-      const aPriority = priorityCodes.indexOf(a.cca2);
-      const bPriority = priorityCodes.indexOf(b.cca2);
+      const aPriority = priorityCodes.indexOf(a.iso2);
+      const bPriority = priorityCodes.indexOf(b.iso2);
 
       // 🔹 1. Prioritize VN, US
       if (aPriority !== -1 && bPriority !== -1) return aPriority - bPriority;
       if (aPriority !== -1) return -1;
       if (bPriority !== -1) return 1;
 
-      // 🔹 2. Then sort alphabetically by name.common
-      return a.name.common.localeCompare(b.name.common, "en", { sensitivity: "base" });
+      // 🔹 2. Then sort alphabetically by name
+      return a.name.localeCompare(b.name, "en", { sensitivity: "base" });
     });
     const countriesWithAll = [all, ...reordered.map(country => ({
-      vi: country.name.common,
-      en: country.name.common,
-      flag: country.flags.svg,
-      cca2: country.cca2
+      vi: country.name,
+      en: country.name,
+      flag: country.flag,
+      cca2: country.iso2
     }))];
 
     return countriesWithAll;
