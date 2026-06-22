@@ -205,8 +205,8 @@ export default function ForgotPasswordPage() {
       if (errorData?.tempBlockedUntil) {
         setTempBlockedUntil(new Date(errorData.tempBlockedUntil));
         setErrorMessage(t(
-          'forgotPassword.errors.tempBlockedFinalChance',
-          'Tài khoản này đã bị khóa do nhập sai ký tự khôi phục quá 5 lần. Bạn chỉ còn cơ hội cuối cùng lấy lại tài khoản của mình bằng việc nhập đúng ký tự khôi phục tài khoản sau 10 phút.'
+          'forgotPassword.blockedWarning',
+          'Tài khoản đã bị khóa do nhập sai ký tự khôi phục quá 5 lần. Bạn chỉ còn cơ hội cuối cùng lấy lại tài khoản của mình bằng việc nhập ký tự khôi phục tài khoản của mình sau 10 phút.'
         ));
         return;
       }
@@ -456,7 +456,7 @@ export default function ForgotPasswordPage() {
           {/* Blocked account warning */}
           {isBlocked && (
             <div className="bg-red-50 text-red-700 px-4 py-3 rounded mb-4 flex items-center gap-2">
-              <span>{t('forgotPassword.blockedWarning', 'Tài khoản đã bị khóa do nhập sai ký tự khôi phục tài khoản quá 5 lần. Vui lòng liên hệ hỗ trợ.')}</span>
+              <span>{t('forgotPassword.errors.accountBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.')}</span>
             </div>
           )}
 
@@ -526,7 +526,10 @@ export default function ForgotPasswordPage() {
               <>
                 <div className="text-center mb-4">
                   <p className="text-gray-600 text-sm">
-                    {t('forgotPassword.otpDescription', 'Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.')}
+                    {t('forgotPassword.otpDescription', 'Vui lòng nhập mật mã OTP của bạn.')}
+                  </p>
+                  <p className="text-gray-400 text-xs mt-1">
+                    {t('forgotPassword.otpDescriptionHint', '(mã OTP này do bạn tự đặt ở trang đăng ký, hệ thống không gửi tin nhắn)')}
                   </p>
                 </div>
 
