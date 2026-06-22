@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", leftButton, rightButton, title }) => {
+const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", leftButton, rightButton, title, titleClassName = "text-3xl" }) => {
   const { t } = useTranslation();
 
   // If leftButton or rightButton are provided, use the flex layout with absolute positioned buttons
@@ -25,7 +25,7 @@ const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", 
                 className="w-10 h-8 cursor-pointer mt-1"
             />
             <div className="text-center mb-4 relative">
-                <h1 className="text-3xl font-bold text-black relative inline-block">
+                <h1 className={`${titleClassName} font-bold text-black relative inline-block`}>
                     &nbsp;{titlePrefix ? `${titlePrefix} - ` : ""}  {title}
                 </h1>
             </div>

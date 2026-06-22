@@ -5,7 +5,7 @@ export default function RegisterAccountTypeSelect({ value, onChange, error, t })
   return (
     <div className="grid grid-cols-1 items-center gap-4">
       <div className="relative w-full flex items-center">
-        <select className="border p-2 rounded w-full" name="account_type" value={value} onChange={onChange}>
+        <select className="border py-1.5 px-2 rounded w-full text-[13px]" name="account_type" value={value} onChange={onChange}>
           <option value="">{t("register.accountTypePlaceholder", "Loại tài khoản")}</option>
           <option value="ca_nhan">{t("register.accountTypePersonal", "Tài khoản cá nhân")}</option>
           <option value="ho_kinh_doanh">{t("register.accountTypeHousehold", "Tài khoản hộ kinh doanh")}</option>
@@ -13,7 +13,7 @@ export default function RegisterAccountTypeSelect({ value, onChange, error, t })
         </select>
         <span className="text-red-500 ml-2">*</span>
       </div>
-      {error ? <p className="text-red-500 text-sm mt-1">{error}</p> : null}
+      {error ? <p className="text-red-500 text-xs mt-0.5">{error}</p> : null}
     </div>
   )
 }

@@ -13,7 +13,7 @@ function SecureField({ name, value, placeholder, onChange, error, visible, onTog
         <div className="relative w-full">
           <input
             type={visible ? "text" : "password"}
-            className="border p-2 rounded w-full pr-10"
+            className="border py-1.5 px-2 rounded w-full pr-10 text-[13px]"
             placeholder={placeholder}
             name={name}
             value={value}
@@ -33,7 +33,7 @@ function SecureField({ name, value, placeholder, onChange, error, visible, onTog
         </div>
         <span className="text-red-500 ml-2">*</span>
       </div>
-      {error ? <p className="text-red-500 text-sm mt-1">{error}</p> : null}
+      {error ? <p className="text-red-500 text-xs mt-0.5">{error}</p> : null}
     </div>
   )
 }
@@ -79,9 +79,9 @@ export default function RegisterStepOne({
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-3">
       {/* {error ? <p className="text-red-500">{error}</p> : null} */}
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <RegisterCountrySelect
           countries={countries}
           selectedCountry={selectedCountry}
@@ -101,17 +101,17 @@ export default function RegisterStepOne({
           error={validationErrors.account_type}
         />
       </div>
-      <div className="space-y-4 mt-4">
+      <div className="space-y-1.5 mt-2">
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
-            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.accountNumberPlaceholder", "ID = SỐ TÀI KHOẢN NGÂN HÀNG")} name="bank_number" value={formData.bank_number} onChange={handleInputChange} onBlur={handleBankNumberBlur} />
+            <input type="text" className="border py-1.5 px-2 rounded w-full text-[13px]" placeholder={t("register.accountNumberPlaceholder", "ID = SỐ TÀI KHOẢN NGÂN HÀNG")} name="bank_number" value={formData.bank_number} onChange={handleInputChange} onBlur={handleBankNumberBlur} />
             <span className="text-red-500 ml-2">*</span>
           </div>
-          {validationErrors.bank_number ? <p className="text-red-500 text-sm mt-1">{validationErrors.bank_number}</p> : null}
+          {validationErrors.bank_number ? <p className="text-red-500 text-xs mt-0.5">{validationErrors.bank_number}</p> : null}
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
-            <select className="border p-2 rounded w-full" name="bank_name" value={formData.bank_name} onChange={handleInputChange}>
+            <select className="border py-1.5 px-2 rounded w-full text-[13px]" name="bank_name" value={formData.bank_name} onChange={handleInputChange}>
               <option value="">{t("register.selectBankPlaceholder", "Chọn ngân hàng (With bank)")}</option>
               {banks && banks.length > 0 ? (
                 banks.map((bank) => (
@@ -125,14 +125,14 @@ export default function RegisterStepOne({
             </select>
             <span className="text-red-500 ml-2">*</span>
           </div>
-          {validationErrors.bank_name ? <p className="text-red-500 text-sm mt-1">{validationErrors.bank_name}</p> : null}
+          {validationErrors.bank_name ? <p className="text-red-500 text-xs mt-0.5">{validationErrors.bank_name}</p> : null}
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
             <input
               type="text"
               readOnly
-              className="border p-2 rounded w-full bg-gray-100 text-gray-700"
+              className="border py-1.5 px-2 rounded w-full text-[13px] bg-gray-100 text-gray-700"
               placeholder={t("register.accountHolderNamePlaceholder", "Tên chủ tài khoản (tự động hiển thị)")}
               name="full_name"
               value={isFetchingAccountName ? t("common.loading", "Đang tải...") : formData.full_name}
@@ -140,7 +140,7 @@ export default function RegisterStepOne({
               onChange={() => {}}
             />
           </div>
-          {accountNameError ? <p className="text-red-500 text-sm mt-1">{accountNameError}</p> : null}
+          {accountNameError ? <p className="text-red-500 text-xs mt-0.5">{accountNameError}</p> : null}
         </div>
         <SecureField
           name="password"
@@ -200,21 +200,21 @@ export default function RegisterStepOne({
           <div className="relative w-full flex items-center">
             <button
               type="button"
-              className="mr-2 p-2 bg-gray-200 rounded hover:bg-gray-300"
+              className="mr-2 p-1.5 bg-gray-200 rounded hover:bg-gray-300"
               onClick={() => setIsQrModalOpen(true)}
               title={t("register.scanQr", "Quét QR")}
             >
               <QrCode size={20} />
             </button>
-            <input type="text" className="border p-2 rounded w-full" placeholder={t("register.referrerIdPlaceholder", "ID NGƯỜI GIỚI THIỆU")} name="reference_id" value={formData.reference_id} onChange={handleInputChange} />
+            <input type="text" className="border py-1.5 px-2 rounded w-full text-[13px]" placeholder={t("register.referrerIdPlaceholder", "ID NGƯỜI GIỚI THIỆU")} name="reference_id" value={formData.reference_id} onChange={handleInputChange} />
             <span className="text-red-500 ml-2"></span>
             <span className="text-red-500 ml-2"> </span>
           </div>
-          {validationErrors.reference_id ? <p className="text-red-500 text-sm mt-1">{validationErrors.reference_id}</p> : null}
+          {validationErrors.reference_id ? <p className="text-red-500 text-xs mt-0.5">{validationErrors.reference_id}</p> : null}
         </div>
       </div>
-      <div className="text-center mt-4">
-        <button className={`border-2 border-black font-bold px-1 py-2 rounded flex-1  ${isFormValid() && !isVerifying ? "text-black hover:bg-gray-200" : "text-gray-400 bg-gray-100 cursor-not-allowed"}`} onClick={handleNextClick} disabled={!isFormValid() || isVerifying}>
+      <div className="text-center mt-2">
+        <button className={`border-2 border-black font-bold px-1 py-1.5 rounded flex-1  ${isFormValid() && !isVerifying ? "text-black hover:bg-gray-200" : "text-gray-400 bg-gray-100 cursor-not-allowed"}`} onClick={handleNextClick} disabled={!isFormValid() || isVerifying}>
           {t("register.next", "Tiếp Theo")} <br />
         </button>
       </div>
