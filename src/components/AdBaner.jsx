@@ -28,20 +28,16 @@ export default function AdBanner() {
         </button>
       )}
 
-      {/* Sliding ads */}
+      {/* Sliding ads - the 4 featured slots get a raised 3D hover effect */}
       <div className="marquee-wrapper whitespace-nowrap flex gap-4 pl-10">
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
-          <p>Ad Card 1</p>
-        </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
-          <p>Ad Card 2</p>
-        </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
-          <p>Ad Card 3</p>
-        </div>
-        <div className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded">
-          <p>Ad Card 4</p>
-        </div>
+        {[1, 2, 3, 4].map((n) => (
+          <div
+            key={n}
+            className="w-48 h-20 bg-gray-200 flex items-center justify-center rounded border-2 border-gray-800 shadow-[4px_4px_0px_rgba(0,0,0,0.15)] -translate-y-0.5 transition-transform duration-150 hover:-translate-y-1 hover:shadow-[6px_6px_0px_rgba(0,0,0,0.2)]"
+          >
+            <p>Ad Card {n}</p>
+          </div>
+        ))}
       </div>
     </footer>
   );
