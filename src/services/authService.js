@@ -449,6 +449,33 @@ const changeOtp = async (otp) => {
     }
 };
 
+/**
+ * Set/update the recovery string for the authenticated user.
+ * Requires the current password for security.
+ * POST /auth/set-recovery-string
+ * @param {string} currentPassword
+ * @param {string} recoveryString
+ * @returns {Promise<Object>} - axios response
+ */
+const setRecoveryString = async (currentPassword, recoveryString) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        throw new Error("No authentication token found");
+    }
+
+    const response = await axios.post(
+        `${API_URL}/auth/set-recovery-string`,
+        { currentPassword, recoveryString },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    return response;
+};
+
 const verifyRecoveryAccount = async (accountId) => {
     const response = await axios.post(
         `${API_URL}/auth/recovery/verify-account`,
@@ -498,5 +525,6 @@ export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
     verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp,
-    verifyRecoveryAccount, verifyRecoveryKey, verifyRecoveryOtpStep, verifyRecoveryBalance, verifyRecoveryCccd
+    verifyRecoveryAccount, verifyRecoveryKey, verifyRecoveryOtpStep, verifyRecoveryBalance, verifyRecoveryCccd,
+    setRecoveryString
 };

@@ -56,7 +56,9 @@ export default function GuideRulesPage() {
             title: t('guideRules.step3.title', 'Đăng nhập lại bằng mật khẩu mới'),
             description: t('guideRules.step3.description', 'Sử dụng Mật khẩu nền tảng cung cấp và đăng nhập lại để hoàn thành khôi phục tài khoản bị khóa vĩnh viễn.'),
             action: t('guideRules.step3.action', 'Đến trang Đăng nhập'),
-            onAction: () => navigate('/login'),
+            // Flag this login as the post-unblock recovery login so Login.jsx routes
+            // to the new security setup page instead of straight home.
+            onAction: () => navigate('/login', { state: { recoveryFlow: true } }),
         },
     ];
 

@@ -133,6 +133,20 @@ export default function LoginPage() {
     checkSessionAndVerify();
   }, [location.search, navigate]);
 
+  // Stores the session and routes home — or, if this login was reached via the
+  // /guide-rules permanent-block recovery flow (step 3, logging in with the
+  // platform-issued password), routes to the new security setup page instead.
+  const completeLogin = (token, userData) => {
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("user", JSON.stringify(userData));
+    dispatch(loginAction(userData));
+    if (location.state?.recoveryFlow) {
+      navigate('/setup-new-security', { state: { fromRecovery: true } });
+    } else {
+      navigate("/");
+    }
+  };
+
   const handleLogin = async () => {
     setErrorMessage("");
     setIsPermanentlyBlocked(false);
@@ -213,10 +227,7 @@ export default function LoginPage() {
 
         if (response.data?.token) {
           // Standard login success (if applicable)
-          localStorage.setItem("authToken", response.data.token);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          dispatch(loginAction(response.data.user));
-          navigate("/");
+          completeLogin(response.data.token, response.data.user);
         } else if (response.data?.require_recovery_character) {
           // Redundant check but safe
           alert(t('auth.tempBlocked', 'Tài khoản đang bị tạm khóa. Vui lòng nhập ký tự khôi phục để xác thực.'));
@@ -349,10 +360,7 @@ export default function LoginPage() {
             clearInterval(pollInterval);
             handleCloseQrModal();
 
-            localStorage.setItem("authToken", response.data.token);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
-            dispatch(loginAction(response.data.user));
-            navigate("/");
+            completeLogin(response.data.token, response.data.user);
           }
         } catch (error) {
           console.error("Polling error:", error);
@@ -426,10 +434,7 @@ export default function LoginPage() {
         const response = await login(cccd, password, recaptchaToken, device_name, login_type, loc, otp);
 
         if (response.status === 200 && response.data?.token) {
-          localStorage.setItem("authToken", response.data.token);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          dispatch(loginAction(response.data.user));
-          navigate("/");
+          completeLogin(response.data.token, response.data.user);
         } else {
           setErrorMessage(t('auth.loginError', 'THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI'));
         }

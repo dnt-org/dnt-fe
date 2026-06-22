@@ -29,6 +29,7 @@ import ContactAdminPage from './pages/ContactAdminPage.jsx'
 import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
 import CookiePolicyPage from './pages/CookiePolicyPage.jsx'
 import GuideRulesPage from './pages/GuideRulesPage.jsx'
+import SetupNewSecurityPage from './pages/SetupNewSecurityPage.jsx'
 
 function App() {
   // Restore background (image or color) from localStorage on every page load/navigation
@@ -60,6 +61,7 @@ function App() {
         <Route exact path="/contact" element={<ContactAdminPage />} />
         <Route exact path="/cookie-policy" element={<CookiePolicyPage />} />
         <Route exact path="/guide-rules" element={<GuideRulesPage />} />
+        <Route exact path="/setup-new-security" element={<SetupNewSecurityPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/change-otp-code" element={<ChangeOTPPage />} />
 
