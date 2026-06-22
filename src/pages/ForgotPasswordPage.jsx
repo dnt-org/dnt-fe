@@ -36,6 +36,8 @@ export default function ForgotPasswordPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
+  const [tempBlockedUntil, setTempBlockedUntil] = useState(null); // Date or null — 10-minute lock after 5 wrong recovery attempts
+  const [tempBlockRemainingSeconds, setTempBlockRemainingSeconds] = useState(0);
   const [otpSkipped, setOtpSkipped] = useState(false); // Track if OTP step was skipped
   const [newPasswordCrossError, setNewPasswordCrossError] = useState("");
 
@@ -68,6 +70,32 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
   }, [color]);
+
+  // Tick the temp-block countdown every second; clear it once the 10 minutes are up
+  // so the user gets their last chance to enter the recovery character again.
+  useEffect(() => {
+    if (!tempBlockedUntil) {
+      setTempBlockRemainingSeconds(0);
+      return;
+    }
+    const tick = () => {
+      const seconds = Math.max(0, Math.round((tempBlockedUntil.getTime() - Date.now()) / 1000));
+      setTempBlockRemainingSeconds(seconds);
+      if (seconds <= 0) {
+        setTempBlockedUntil(null);
+        setErrorMessage("");
+      }
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [tempBlockedUntil]);
+
+  const formatCountdown = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   // Password validation function
   const validatePassword = (password) => {
@@ -115,6 +143,8 @@ export default function ForgotPasswordPage() {
   // Handle verify recovery string
   const handleVerifyRecoveryString = async () => {
     console.log(bankAccountId, recoveryString);
+    if (tempBlockedUntil && tempBlockRemainingSeconds > 0) return;
+
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -170,23 +200,14 @@ export default function ForgotPasswordPage() {
       console.log(error.response?.data)
       const errorData = error.response?.data;
       const errorCode = errorData?.error?.code || errorData?.code;
-      const httpStatus = error.response?.status;
 
-      // Handle 403 - TEMP_BLOCKED (recovery failed 5 times)
-      if (httpStatus === 403) {
-        if (errorData?.tempBlockedUntil) {
-          const blockedUntil = new Date(errorData.tempBlockedUntil);
-          const formattedTime = blockedUntil.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-          setErrorMessage(t('forgotPassword.errors.tempBlocked', `Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc ${formattedTime}`, { time: formattedTime }));
-          return;
-        }
-      }
-
-      // Handle TEMP_BLOCKED from data
+      // Handle TEMP_BLOCKED (5 wrong recovery-character attempts) — 10-minute lock, last chance after
       if (errorData?.tempBlockedUntil) {
-        const blockedUntil = new Date(errorData.tempBlockedUntil);
-        const formattedTime = blockedUntil.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
-        setErrorMessage(t('forgotPassword.errors.tempBlocked', `Tài khoản đang bị khóa tạm thời. Vui lòng quay lại lúc ${formattedTime}`, { time: formattedTime }));
+        setTempBlockedUntil(new Date(errorData.tempBlockedUntil));
+        setErrorMessage(t(
+          'forgotPassword.errors.tempBlockedFinalChance',
+          'Tài khoản này đã bị khóa do nhập sai ký tự khôi phục quá 5 lần. Bạn chỉ còn cơ hội cuối cùng lấy lại tài khoản của mình bằng việc nhập đúng ký tự khôi phục tài khoản sau 10 phút.'
+        ));
         return;
       }
 
@@ -378,6 +399,8 @@ export default function ForgotPasswordPage() {
     }
   };
 
+  const isTempBlocked = !!tempBlockedUntil && tempBlockRemainingSeconds > 0;
+
   // Get step indicator state
   const getStepState = (stepName) => {
     const steps = ['VERIFY', 'OTP', 'RESET'];
@@ -452,7 +475,7 @@ export default function ForgotPasswordPage() {
                     placeholder={t('forgotPassword.bankAccountPlaceholder', 'Số tài khoản ngân hàng (Bank Account ID)')}
                     value={bankAccountId}
                     onChange={(e) => setBankAccountId(e.target.value)}
-                    disabled={isLoading || isBlocked}
+                    disabled={isLoading || isBlocked || isTempBlocked}
                   />
                 </div>
 
@@ -463,13 +486,13 @@ export default function ForgotPasswordPage() {
                     placeholder={t('forgotPassword.recoveryStringPlaceholder', 'ký tự khôi phục tài khoản')}
                     value={recoveryString}
                     onChange={(e) => setRecoveryString(e.target.value)}
-                    disabled={isLoading || isBlocked}
+                    disabled={isLoading || isBlocked || isTempBlocked}
                   />
                   <button
                     type="button"
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                     onClick={() => setShowRecoveryString(!showRecoveryString)}
-                    disabled={isLoading || isBlocked}
+                    disabled={isLoading || isBlocked || isTempBlocked}
                   >
                     {showRecoveryString ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -477,16 +500,18 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || isBlocked
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || isBlocked || isTempBlocked
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
                     onClick={handleVerifyRecoveryString}
-                    disabled={isLoading || isBlocked}
+                    disabled={isLoading || isBlocked || isTempBlocked}
                   >
-                    {isLoading
-                      ? t('common.loading', 'Đang xử lý...')
-                      : t('forgotPassword.verifyButton', 'XÁC THỰC')}
+                    {isTempBlocked
+                      ? `${t('forgotPassword.tempBlockedCountdown', 'Còn lại')} ${formatCountdown(tempBlockRemainingSeconds)}`
+                      : isLoading
+                        ? t('common.loading', 'Đang xử lý...')
+                        : t('forgotPassword.verifyButton', 'XÁC THỰC')}
                   </button>
                   {/* reCAPTCHA v2 Checkbox */}
                   <div className="flex justify-center my-2">
