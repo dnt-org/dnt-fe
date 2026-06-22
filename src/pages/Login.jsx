@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isPermanentlyBlocked, setIsPermanentlyBlocked] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [isQrLoading, setIsQrLoading] = useState(false);
   const [qrError, setQrError] = useState("");
@@ -133,6 +134,8 @@ export default function LoginPage() {
   }, [location.search, navigate]);
 
   const handleLogin = async () => {
+    setErrorMessage("");
+    setIsPermanentlyBlocked(false);
     try {
       // Read the token the user obtained by checking the reCAPTCHA checkbox
       const recaptchaToken = getLoginToken();
@@ -166,7 +169,7 @@ export default function LoginPage() {
 
       // Handle permanent BLOCKED
       if (response.data?.blocked || response.data?.isBlocked) {
-        setErrorMessage(response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.'));
+        setIsPermanentlyBlocked(true);
         return;
       }
 
@@ -238,7 +241,7 @@ export default function LoginPage() {
 
       // Handle permanent BLOCKED from error response
       if (error.response?.data?.blocked || error.response?.data?.isBlocked) {
-        setErrorMessage(error.response.data.message || t('auth.userBlocked', 'Tài khoản đã bị khóa vĩnh viễn. Vui lòng liên hệ hỗ trợ.'));
+        setIsPermanentlyBlocked(true);
         return;
       }
 
@@ -583,7 +586,21 @@ export default function LoginPage() {
 
 
 
-            {errorMessage && (
+            {isPermanentlyBlocked && (
+              <h2 className="text-xl text-center text-red-500">
+                {t('auth.permanentlyBlockedPrefix', 'Tài khoản này đang bị khóa vĩnh viễn. Vui lòng')}{' '}
+                <button
+                  type="button"
+                  className="underline text-blue-600 hover:text-blue-800"
+                  onClick={() => navigate('/guide-rules')}
+                >
+                  {t('auth.contactLink', 'Liên hệ')}
+                </button>{' '}
+                {t('auth.permanentlyBlockedSuffix', 'và làm theo hướng dẫn.')}
+              </h2>
+            )}
+
+            {!isPermanentlyBlocked && errorMessage && (
               <h2 className="text-xl text-center text-red-500">
                 {errorMessage} <br />
 
