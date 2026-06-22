@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
-    Home,
     LogIn,
     MessageCircle,
     CheckCircle2,
@@ -31,33 +30,33 @@ export default function GuideRulesPage() {
     const steps = [
         {
             number: 1,
-            icon: <Home size={28} className="text-blue-600" />,
+            icon: <LogIn size={28} className="text-blue-600" />,
             iconBg: "bg-blue-100",
             badge: "bg-blue-600",
-            title: t('guideRules.step1.title', 'Truy cập trang chủ'),
-            description: t('guideRules.step1.description', 'Mở trình duyệt và truy cập trang chủ của hệ thống tại địa chỉ "/" để bắt đầu quy trình khôi phục tài khoản.'),
-            action: t('guideRules.step1.action', 'Đi đến Trang chủ'),
-            onAction: () => navigate('/'),
-        },
-        {
-            number: 2,
-            icon: <LogIn size={28} className="text-purple-600" />,
-            iconBg: "bg-purple-100",
-            badge: "bg-purple-600",
-            title: t('guideRules.step2.title', 'Đăng nhập bằng tài khoản khác'),
-            description: t('guideRules.step2.description', 'Sử dụng một tài khoản khác mà bạn đang sở hữu (của người thân, bạn bè hoặc tài khoản phụ) để đăng nhập vào hệ thống.'),
-            action: t('guideRules.step2.action', 'Đến trang Đăng nhập'),
+            title: t('guideRules.step1.title', 'Đăng nhập vào nền tảng bằng một tài khoản khác'),
+            description: t('guideRules.step1.description', 'Sử dụng một tài khoản khác mà bạn đang sở hữu (của người thân, bạn bè hoặc tài khoản phụ) để đăng nhập vào hệ thống.'),
+            action: t('guideRules.step1.action', 'Đến trang Đăng nhập'),
             onAction: () => navigate('/login'),
         },
         {
+            number: 2,
+            icon: <MessageCircle size={28} className="text-purple-600" />,
+            iconBg: "bg-purple-100",
+            badge: "bg-purple-600",
+            title: t('guideRules.step2.title', 'Cung cấp các thông tin đúng về tài khoản bị khóa vĩnh viễn'),
+            description: t('guideRules.step2.description', 'Cung cấp các thông tin đúng về tài khoản bị khóa vĩnh viễn muốn khôi phục lại theo yêu cầu của nền tảng.'),
+            action: t('guideRules.step2.action', 'Mở trang Liên hệ'),
+            onAction: () => navigate('/contact'),
+        },
+        {
             number: 3,
-            icon: <MessageCircle size={28} className="text-green-600" />,
+            icon: <LogIn size={28} className="text-green-600" />,
             iconBg: "bg-green-100",
             badge: "bg-green-600",
-            title: t('guideRules.step3.title', 'Bấm nút "Liên hệ" để trò chuyện'),
-            description: t('guideRules.step3.description', 'Sau khi đăng nhập thành công, bấm vào nút "Liên hệ" (biểu tượng chat) ở góc phải phía dưới màn hình để bắt đầu trò chuyện với quản trị viên và yêu cầu khôi phục tài khoản.'),
-            action: t('guideRules.step3.action', 'Mở trang Liên hệ'),
-            onAction: () => navigate('/contact'),
+            title: t('guideRules.step3.title', 'Đăng nhập lại bằng mật khẩu mới'),
+            description: t('guideRules.step3.description', 'Sử dụng Mật khẩu nền tảng cung cấp và đăng nhập lại để hoàn thành khôi phục tài khoản bị khóa vĩnh viễn.'),
+            action: t('guideRules.step3.action', 'Đến trang Đăng nhập'),
+            onAction: () => navigate('/login'),
         },
     ];
 
@@ -68,7 +67,7 @@ export default function GuideRulesPage() {
                     color={color}
                     onColorChange={handleChangeColor}
                     titlePrefix=""
-                    title={t('guideRules.title', 'HƯỚNG DẪN KHÔI PHỤC TÀI KHOẢN')}
+                    title={t('guideRules.title', 'HƯỚNG DẪN KHÔI PHỤC TÀI KHOẢN BỊ KHÓA VĨNH VIỄN')}
                     leftButton={
                         <button
                             className="text-gray-600 hover:text-gray-800"
