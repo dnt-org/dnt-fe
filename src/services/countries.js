@@ -2,7 +2,9 @@
 
 export const getCountries = async () => {
   try {
-    const response = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flags");
+    const response = await fetch("https://api.restcountries.com/countries/v5/all?fields=name,cca2,flags", {
+      headers: { 'Authorization': `Bearer ${import.meta.env.VITE_RESTCOUNTRIES_API_KEY}` }
+    });
     if (!response.ok) {
       throw new Error("Network response was not ok");
     }
