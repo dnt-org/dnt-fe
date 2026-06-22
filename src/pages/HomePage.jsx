@@ -174,19 +174,23 @@ function HomePageLogin() {
                          style={{maxWidth: "clamp(50px, 123px, 130px) ", margin: "0 2px"}}>
                         <CountrySpecificComponent userCountry={selectedLang}/>
                     </div>)}
+
+                {/* Company/user info panel moved to the top-left, sticky so it stays visible while scrolling */}
+                {isUserLoggedIn && (
+                    <div className="!hidden md:!block flex-2 self-start sticky top-0 z-20" style={{height: "100%", flex: 3}}>
+                        <CompanyInfoTable userCountry={selectedLang}/>
+                    </div>
+                )}
                 {isUserLoggedIn && (
                     <div className="flex-1 avtblock !hidden md:!block w-full h-full flex flex-col avt"
                          style={{maxWidth: "clamp(50px, 130px, 130px) ", margin: "0 2px"}}>
                         <GlobalInfoComponent userCountry={selectedLang}/>
                     </div>)}
-
-                <div className="!hidden md:!block flex-2" style={{height: "100%", flex: 3}}>
-                    {isUserLoggedIn ? (
-                        <CompanyInfoTable userCountry={selectedLang}/>
-                    ) : (
+                {!isUserLoggedIn && (
+                    <div className="!hidden md:!block flex-2" style={{height: "100%", flex: 3}}>
                         <DataTableComponent/>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 {/* HeroHeader as fourth column when logged in */}
                 {isUserLoggedIn && (
