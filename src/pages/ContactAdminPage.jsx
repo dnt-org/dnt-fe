@@ -754,6 +754,21 @@ export default function ContactAdminPage() {
   // #C-10: chat header "more actions" menu (Gửi vị trí / Chia sẻ trực tiếp)
   const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
 
+  // #C-13: ad banner — covered for 5s, then closable, hidden for the rest of the session
+  const [showAdBanner, setShowAdBanner] = useState(() => sessionStorage.getItem('contactAdBannerClosed') !== 'true');
+  const [canCloseAdBanner, setCanCloseAdBanner] = useState(false);
+
+  useEffect(() => {
+    if (!showAdBanner) return;
+    const timer = setTimeout(() => setCanCloseAdBanner(true), 5000);
+    return () => clearTimeout(timer);
+  }, [showAdBanner]);
+
+  const handleCloseAdBanner = () => {
+    setShowAdBanner(false);
+    sessionStorage.setItem('contactAdBannerClosed', 'true');
+  };
+
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
     const newMessage = {
@@ -1116,6 +1131,23 @@ export default function ContactAdminPage() {
             );
           })}
         </div>
+
+        {/* #C-13: ad banner — covered for 5s, then an X appears to close it for the session */}
+        {showAdBanner && (
+          <div className="relative bg-blue-50 border-t border-blue-100 px-3 py-2.5 flex items-center gap-2 text-blue-900">
+            <Megaphone size={16} className="flex-shrink-0" />
+            <span className="text-xs flex-1">Khuyến mãi đặc biệt dành cho thành viên mới!</span>
+            {canCloseAdBanner && (
+              <button
+                type="button"
+                onClick={handleCloseAdBanner}
+                className="text-blue-400 hover:text-blue-800 flex-shrink-0"
+              >
+                <XCircle size={16} />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Bottom Banner — click to open bot */}
         <div
