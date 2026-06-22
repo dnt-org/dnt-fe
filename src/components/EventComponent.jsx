@@ -15,7 +15,7 @@ export default function EventComponent() {
 
   // Desktop: hiển thị 6 cột x 2 dòng = 12 events
   // Mobile: hiển thị 2 cột x 2 dòng = 4 events
-  // Thứ tự: dòng 1 (1,3,5,7,9,11), dòng 2 (2,4,6,8,10,12)
+  // Thứ tự: dòng 1 (1,2,3,4,5,6), dòng 2 (7,8,9,10,11,12)
   const columnsDesktop = 6;
   const columnsMobile = 2;
 
@@ -80,33 +80,17 @@ export default function EventComponent() {
   const getCurrentEvents = (isMobile = false) => {
     const columns = isMobile ? columnsMobile : columnsDesktop;
     const page = isMobile ? pageMobile : pageDesktop;
-    const startColumnIndex = page * columns; // mỗi trang chứa đúng số cột
-    const events = [];
+    const eventsPerPage = columns * 2; // 2 rows per page
 
-    // Tạo grid đúng thứ tự: dòng trên (1,3,5...), dòng dưới (2,4,6...)
-    // Dòng 1: events có index lẻ (0,2,4,6,8,10...)
-    for (let col = 0; col < columns; col++) {
-      const eventIndex = (startColumnIndex + col) * 2; // 0,2,4,6,8,10...
-      if (eventIndex < mockEvents.length) {
-        events.push(mockEvents[eventIndex]);
-      }
-    }
-
-    // Dòng 2: events có index chẵn (1,3,5,7,9,11...)
-    for (let col = 0; col < columns; col++) {
-      const eventIndex = (startColumnIndex + col) * 2 + 1; // 1,3,5,7,9,11...
-      if (eventIndex < mockEvents.length) {
-        events.push(mockEvents[eventIndex]);
-      }
-    }
-
-    return events;
+    // Sequential row-major order: row 1 = 1..columns, row 2 = columns+1..columns*2
+    const startIndex = page * eventsPerPage;
+    return mockEvents.slice(startIndex, startIndex + eventsPerPage);
   };
 
   const getMaxPages = (isMobile = false) => {
     const columns = isMobile ? columnsMobile : columnsDesktop;
-    const maxColumns = Math.ceil(mockEvents.length / 2); // mỗi cột = 2 events
-    return Math.max(1, Math.ceil(maxColumns / columns));
+    const eventsPerPage = columns * 2;
+    return Math.max(1, Math.ceil(mockEvents.length / eventsPerPage));
   };
 
   const handlePrevious = (isMobile = false) => {
