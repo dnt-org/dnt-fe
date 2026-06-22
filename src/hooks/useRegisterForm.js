@@ -46,7 +46,10 @@ export default function useRegisterForm(t) {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: "123456",
+    password: "",
+    repeat_password: "",
+    otp: "",
+    repeat_otp: "",
     id: "",
     account_type: "",
     reference_id: "",
@@ -60,6 +63,8 @@ export default function useRegisterForm(t) {
     recovery_character: "",
     repeat_recovery_character: "",
   })
+
+  const SECURITY_FIELDS = ["password", "repeat_password", "otp", "repeat_otp", "recovery_character", "repeat_recovery_character"]
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value
@@ -129,42 +134,66 @@ export default function useRegisterForm(t) {
     return { hasUppercase, hasLowercase, hasNumber, hasSpecialChar, isValid }
   }
 
+  // Validates the 3 security pairs (password, otp, recovery character): each pair
+  // must match itself, and the 3 values must all be different from one another.
+  const getSecurityFieldErrors = (data) => {
+    const errors = {}
+
+    if (!data.password) errors.password = t("auth.passwordRequired", "Vui lòng nhập mật khẩu")
+    if (!data.repeat_password) errors.repeat_password = t("auth.repeatPasswordRequired", "Vui lòng nhập lại mật khẩu")
+    if (data.password && data.repeat_password && data.password !== data.repeat_password) {
+      errors.repeat_password = t("auth.passwordMismatch", "Mật khẩu không khớp")
+    }
+
+    if (!data.otp) errors.otp = t("auth.otpRequired", "Vui lòng nhập mã OTP")
+    if (!data.repeat_otp) errors.repeat_otp = t("auth.repeatOtpRequired", "Vui lòng nhập lại mã OTP")
+    if (data.otp && data.repeat_otp && data.otp !== data.repeat_otp) {
+      errors.repeat_otp = t("auth.otpMismatch", "Mã OTP không khớp")
+    }
+
+    if (!data.recovery_character) {
+      errors.recovery_character = t("auth.recoveryCharacterRequired", "Ký tự khôi phục tài khoản là bắt buộc")
+    } else if (!validateRecoveryCharacter(data.recovery_character).isValid) {
+      errors.recovery_character = t(
+        "auth.invalidRecoveryCharacter",
+        "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_)."
+      )
+    }
+    if (!data.repeat_recovery_character) errors.repeat_recovery_character = t("auth.repeatRecoveryCharacterRequired", "Vui lòng nhập lại ký tự khôi phục tài khoản")
+    if (data.recovery_character && data.repeat_recovery_character && data.recovery_character !== data.repeat_recovery_character) {
+      errors.repeat_recovery_character = t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp")
+    }
+
+    if (data.password && data.otp && data.password === data.otp) {
+      errors.otp = t("auth.otpSameAsPassword", "Mã OTP không được trùng với Mật khẩu")
+    }
+    if (data.password && data.recovery_character && data.password === data.recovery_character) {
+      errors.recovery_character = t("auth.recoverySameAsPassword", "Ký tự khôi phục không được trùng với Mật khẩu")
+    }
+    if (data.otp && data.recovery_character && data.otp === data.recovery_character) {
+      errors.recovery_character = t("auth.recoverySameAsOtp", "Ký tự khôi phục không được trùng với Mã OTP")
+    }
+
+    return errors
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
-    if (name === "bank_number") {
-      const alphanumericValue = value.replace(/[^a-zA-Z0-9]/g, "")
-      setFormData({ ...formData, [name]: alphanumericValue })
-    } else {
-      setFormData({ ...formData, [name]: value })
-    }
-    if (validationErrors[name]) setValidationErrors({ ...validationErrors, [name]: "" })
-    if (name === "recovery_character") {
-      const validation = validateRecoveryCharacter(value)
-      setRecoveryCharacterValidation(validation)
-      if (!validation.isValid) {
-        setValidationErrors((prev) => ({
-          ...prev,
-          recovery_character:
-            t(
-              "auth.invalidRecoveryCharacter",
-              "Ký tự khôi phục tài khoản phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_)."
-            ),
-        }))
-      } else {
-        setValidationErrors((prev) => ({ ...prev, recovery_character: "" }))
-      }
-    }
-    if (name === "repeat_recovery_character" || name === "recovery_character") {
-      const recoveryChar = name === "recovery_character" ? value : formData.recovery_character
-      const repeatRecoveryChar = name === "repeat_recovery_character" ? value : formData.repeat_recovery_character
-      if (repeatRecoveryChar && recoveryChar !== repeatRecoveryChar) {
-        setValidationErrors((prev) => ({
-          ...prev,
-          repeat_recovery_character: t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp"),
-        }))
-      } else if (repeatRecoveryChar && recoveryChar === repeatRecoveryChar) {
-        setValidationErrors((prev) => ({ ...prev, repeat_recovery_character: "" }))
-      }
+    const updated = name === "bank_number" ? { ...formData, [name]: value.replace(/[^a-zA-Z0-9]/g, "") } : { ...formData, [name]: value }
+    setFormData(updated)
+    if (validationErrors[name]) setValidationErrors((prev) => ({ ...prev, [name]: "" }))
+
+    if (name === "recovery_character") setRecoveryCharacterValidation(validateRecoveryCharacter(value))
+
+    if (SECURITY_FIELDS.includes(name)) {
+      const securityErrors = getSecurityFieldErrors(updated)
+      setValidationErrors((prev) => {
+        const next = { ...prev }
+        SECURITY_FIELDS.forEach((field) => {
+          next[field] = securityErrors[field] || ""
+        })
+        return next
+      })
     }
   }
 
@@ -172,15 +201,11 @@ export default function useRegisterForm(t) {
     const errors = {}
     if (!formData.account_type) errors.account_type = t("auth.accountTypeRequired", "Vui lòng chọn loại tài khoản")
     if (!formData.bank_name) errors.bank_name = t("auth.bankRequired", "Vui lòng chọn ngân hàng")
-    if (formData.recovery_character && formData.repeat_recovery_character && formData.recovery_character !== formData.repeat_recovery_character) {
-      errors.repeat_recovery_character = t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp")
-    }
-    if (!formData.recovery_character) errors.recovery_character = t("auth.recoveryCharacterRequired", "Ký tự khôi phục tài khoản là bắt buộc")
-    if (!formData.repeat_recovery_character) errors.repeat_recovery_character = t("auth.repeatRecoveryCharacterRequired", "Vui lòng nhập lại ký tự khôi phục tài khoản")
     if (!selectedCountry) errors.country = t("auth.countryRequired", "Vui lòng chọn quốc gia")
     if (formData.reference_id && formData.reference_id === formData.bank_number) {
       errors.reference_id = t("auth.referenceIdMatchesId", "ID thành viên nhận giảm giá không hợp lệ")
     }
+    Object.assign(errors, getSecurityFieldErrors(formData))
     setValidationErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -188,12 +213,9 @@ export default function useRegisterForm(t) {
   const isFormValid = () => {
     if (!formData.account_type) return false
     if (!formData.bank_name) return false
-    if (!recoveryCharacterValidation.isValid && formData.recovery_character) return false
-    if (formData.recovery_character && formData.repeat_recovery_character && formData.recovery_character !== formData.repeat_recovery_character) return false
-    if (!formData.recovery_character) return false
-    if (!formData.repeat_recovery_character) return false
     if (!selectedCountry) return false
     if (formData.reference_id && formData.reference_id === formData.bank_number) return false
+    if (Object.keys(getSecurityFieldErrors(formData)).length > 0) return false
     return true
   }
 
@@ -307,20 +329,6 @@ export default function useRegisterForm(t) {
     setIsContractModalOpen(false)
   }
 
-  const generateRandomPassword = (length = 8) => {
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    const lower = "abcdefghijklmnopqrstuvwxyz"
-    const numbers = "0123456789"
-    const symbols = "!@#$%^&*()_+[]{}|;:,.<>?"
-    const allChars = upper + lower + numbers + symbols
-    let password = ""
-    password += upper[Math.floor(Math.random() * upper.length)]
-    password += numbers[Math.floor(Math.random() * numbers.length)]
-    password += symbols[Math.floor(Math.random() * symbols.length)]
-    for (let i = 3; i < length; i++) password += allChars[Math.floor(Math.random() * allChars.length)]
-    return password.split("").sort(() => 0.5 - Math.random()).join("")
-  }
-
   const handleRegister = async () => {
     if (!isFormValid() || !isReadContract) {
       alert(t("auth.invalidForm", "Vui lòng đọc và chấp nhận hợp đồng"))
@@ -335,10 +343,9 @@ export default function useRegisterForm(t) {
       }
 
       const uploadToCloudinaryResp = "https://res.cloudinary.com/demo/image/upload/v1692323522/sample.jpg"
-      const randomPassword = generateRandomPassword()
       formData.id = formData.bank_number
       formData.cccd = formData.id
-      const payload = { ...formData, password: randomPassword, signature: uploadToCloudinaryResp, recaptchaToken }
+      const payload = { ...formData, signature: uploadToCloudinaryResp, recaptchaToken }
       const response = await axios.post(`${API_URL}/auth/register`, payload, { headers: { "Content-Type": "application/json" } })
       const authToken = response.data?.token || response.data?.jwt
       localStorage.setItem("authToken", authToken)

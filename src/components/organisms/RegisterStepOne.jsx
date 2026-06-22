@@ -5,6 +5,49 @@ import RegisterCountrySelect from "../molecules/RegisterCountrySelect"
 import RegisterAccountTypeSelect from "../molecules/RegisterAccountTypeSelect"
 import QRModalComponent from "../QRModalComponent"
 
+function SecureField({ name, value, placeholder, onChange, error, visible, onToggleVisible }) {
+  const preventEvent = (e) => e.preventDefault()
+  return (
+    <div className="grid grid-cols-1 items-center gap-4">
+      <div className="relative w-full flex items-center">
+        <div className="relative w-full">
+          <input
+            type={visible ? "text" : "password"}
+            className="border p-2 rounded w-full pr-10"
+            placeholder={placeholder}
+            name={name}
+            value={value}
+            onChange={onChange}
+            onCopy={preventEvent}
+            onPaste={preventEvent}
+            onCut={preventEvent}
+            onContextMenu={preventEvent}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            onClick={onToggleVisible}
+          >
+            {visible ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+        <span className="text-red-500 ml-2">*</span>
+      </div>
+      {error ? <p className="text-red-500 text-sm mt-1">{error}</p> : null}
+    </div>
+  )
+}
+
+SecureField.propTypes = {
+  name: PropTypes.string.isRequired,
+  value: PropTypes.string,
+  placeholder: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  error: PropTypes.string,
+  visible: PropTypes.bool,
+  onToggleVisible: PropTypes.func.isRequired,
+}
+
 export default function RegisterStepOne({
   t,
   error,
@@ -22,12 +65,11 @@ export default function RegisterStepOne({
   isFetchingAccountName,
   accountNameError,
 }) {
-  const [showRecovery, setShowRecovery] = useState(false)
-  const [showRepeatRecovery, setShowRepeatRecovery] = useState(false)
+  const [visibleFields, setVisibleFields] = useState({})
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
 
-  const handleSecureFieldEvent = (e) => {
-    e.preventDefault()
+  const toggleFieldVisible = (name) => {
+    setVisibleFields((prev) => ({ ...prev, [name]: !prev[name] }))
   }
 
   const handleScanResult = (result) => {
@@ -100,60 +142,60 @@ export default function RegisterStepOne({
           </div>
           {accountNameError ? <p className="text-red-500 text-sm mt-1">{accountNameError}</p> : null}
         </div>
-        <div className="grid grid-cols-1 items-center gap-4">
-          <div className="relative w-full flex items-center">
-            <div className="relative w-full">
-              <input
-                type={showRecovery ? "text" : "password"}
-                className="border p-2 rounded w-full pr-10"
-                placeholder={t("register.recoveryCharacterPlaceholder", "KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Account recovery character)")}
-                name="recovery_character"
-                value={formData.recovery_character}
-                onChange={handleInputChange}
-                onCopy={handleSecureFieldEvent}
-                onPaste={handleSecureFieldEvent}
-                onCut={handleSecureFieldEvent}
-                onContextMenu={handleSecureFieldEvent}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowRecovery(!showRecovery)}
-              >
-                {showRecovery ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            <span className="text-red-500 ml-2">*</span>
-          </div>
-          {validationErrors.recovery_character ? <p className="text-red-500 text-sm mt-1">{validationErrors.recovery_character}</p> : null}
-        </div>
-        <div className="grid grid-cols-1 items-center gap-4">
-          <div className="relative w-full flex items-center">
-            <div className="relative w-full">
-              <input
-                type={showRepeatRecovery ? "text" : "password"}
-                className="border p-2 rounded w-full pr-10"
-                placeholder={t("register.repeatRecoveryCharacterPlaceholder", "NHẬP LẠI KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Repeat account recovery character)")}
-                name="repeat_recovery_character"
-                value={formData.repeat_recovery_character}
-                onChange={handleInputChange}
-                onCopy={handleSecureFieldEvent}
-                onPaste={handleSecureFieldEvent}
-                onCut={handleSecureFieldEvent}
-                onContextMenu={handleSecureFieldEvent}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                onClick={() => setShowRepeatRecovery(!showRepeatRecovery)}
-              >
-                {showRepeatRecovery ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-            <span className="text-red-500 ml-2">*</span>
-          </div>
-          {validationErrors.repeat_recovery_character ? <p className="text-red-500 text-sm mt-1">{validationErrors.repeat_recovery_character}</p> : null}
-        </div>
+        <SecureField
+          name="password"
+          value={formData.password}
+          placeholder={t("register.passwordPlaceholder", "MẬT KHẨU")}
+          onChange={handleInputChange}
+          error={validationErrors.password}
+          visible={!!visibleFields.password}
+          onToggleVisible={() => toggleFieldVisible("password")}
+        />
+        <SecureField
+          name="repeat_password"
+          value={formData.repeat_password}
+          placeholder={t("register.repeatPasswordPlaceholder", "NHẬP LẠI MẬT KHẨU")}
+          onChange={handleInputChange}
+          error={validationErrors.repeat_password}
+          visible={!!visibleFields.repeat_password}
+          onToggleVisible={() => toggleFieldVisible("repeat_password")}
+        />
+        <SecureField
+          name="otp"
+          value={formData.otp}
+          placeholder={t("register.otpPlaceholder", "MÃ OTP")}
+          onChange={handleInputChange}
+          error={validationErrors.otp}
+          visible={!!visibleFields.otp}
+          onToggleVisible={() => toggleFieldVisible("otp")}
+        />
+        <SecureField
+          name="repeat_otp"
+          value={formData.repeat_otp}
+          placeholder={t("register.repeatOtpPlaceholder", "NHẬP LẠI MÃ OTP")}
+          onChange={handleInputChange}
+          error={validationErrors.repeat_otp}
+          visible={!!visibleFields.repeat_otp}
+          onToggleVisible={() => toggleFieldVisible("repeat_otp")}
+        />
+        <SecureField
+          name="recovery_character"
+          value={formData.recovery_character}
+          placeholder={t("register.recoveryCharacterPlaceholder", "KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Account recovery character)")}
+          onChange={handleInputChange}
+          error={validationErrors.recovery_character}
+          visible={!!visibleFields.recovery_character}
+          onToggleVisible={() => toggleFieldVisible("recovery_character")}
+        />
+        <SecureField
+          name="repeat_recovery_character"
+          value={formData.repeat_recovery_character}
+          placeholder={t("register.repeatRecoveryCharacterPlaceholder", "NHẬP LẠI KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Repeat account recovery character)")}
+          onChange={handleInputChange}
+          error={validationErrors.repeat_recovery_character}
+          visible={!!visibleFields.repeat_recovery_character}
+          onToggleVisible={() => toggleFieldVisible("repeat_recovery_character")}
+        />
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
             <button
