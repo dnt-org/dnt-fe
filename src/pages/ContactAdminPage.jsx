@@ -691,6 +691,16 @@ export default function ContactAdminPage() {
   // #C-03: which item's right-tap quick-action menu is open
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  // #C-05 / #C-07: pending invite list modals
+  const [isFriendRequestsOpen, setIsFriendRequestsOpen] = useState(false);
+  const [isGroupInvitesOpen, setIsGroupInvitesOpen] = useState(false);
+
+  // #C-06 / #C-09: QR add-friend / join-group flow
+  const [isAddFriendQrOpen, setIsAddFriendQrOpen] = useState(false);
+  const [isJoinGroupQrOpen, setIsJoinGroupQrOpen] = useState(false);
+  const [scannedFriend, setScannedFriend] = useState(null);
+  const [scannedGroup, setScannedGroup] = useState(null);
+
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
     const newMessage = {
@@ -758,6 +768,125 @@ export default function ContactAdminPage() {
     if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
   };
 
+  // #C-05: friend requests — accept moves the request into the friends list
+  const handleAcceptFriendRequest = (id) => {
+    const req = friendRequests.find(r => r.id === id);
+    if (!req) return;
+    setFriends(prev => [
+      ...prev,
+      {
+        id: req.id,
+        name: req.name,
+        displayName: req.displayName || req.name,
+        avatar: req.avatar,
+        lastMessage: 'Các bạn đã trở thành bạn bè.',
+        updatedAt: new Date().toISOString(),
+        unread: 0,
+        hasUnseenAiLive: false,
+        otpPending: false,
+      },
+    ]);
+    setFriendRequests(prev => prev.filter(r => r.id !== id));
+  };
+
+  const handleRejectFriendRequest = (id) => {
+    setFriendRequests(prev => prev.filter(r => r.id !== id));
+  };
+
+  const handleRenameFriendRequest = (id, newName) => {
+    setFriendRequests(prev => prev.map(r => r.id === id ? { ...r, displayName: newName } : r));
+  };
+
+  // #C-07: group invites — accept moves the invite into the groups list
+  const handleAcceptGroupInvite = (id) => {
+    const invite = groupInvites.find(i => i.id === id);
+    if (!invite) return;
+    setGroups(prev => [
+      ...prev,
+      {
+        id: invite.id,
+        name: invite.name,
+        avatar: invite.avatar,
+        memberIds: invite.memberIds || [],
+        ownerId: invite.ownerId || 'other',
+        lastMessage: 'Bạn đã tham gia nhóm.',
+        updatedAt: new Date().toISOString(),
+        unread: 0,
+      },
+    ]);
+    setGroupInvites(prev => prev.filter(i => i.id !== id));
+  };
+
+  const handleRejectGroupInvite = (id) => {
+    setGroupInvites(prev => prev.filter(i => i.id !== id));
+  };
+
+  // #C-06: QR add-friend — after a successful scan, show a single confirm row
+  const handleAddFriendScanResult = (resultText) => {
+    setIsAddFriendQrOpen(false);
+    let name = resultText;
+    try {
+      const parsed = JSON.parse(resultText);
+      name = parsed.name || parsed.fullName || resultText;
+    } catch { /* raw text QR, use as-is */ }
+    setScannedFriend({ id: `scan-friend-${Date.now()}`, name, avatar: `https://i.pravatar.cc/150?u=${Date.now()}` });
+  };
+
+  const handleConfirmScannedFriend = () => {
+    if (!scannedFriend) return;
+    setFriends(prev => [
+      ...prev,
+      {
+        ...scannedFriend,
+        displayName: scannedFriend.displayName || scannedFriend.name,
+        lastMessage: 'Các bạn đã trở thành bạn bè.',
+        updatedAt: new Date().toISOString(),
+        unread: 0,
+        hasUnseenAiLive: false,
+        otpPending: false,
+      },
+    ]);
+    setScannedFriend(null);
+  };
+
+  // #C-09: QR join-group — after a successful scan, show a single confirm row
+  const handleJoinGroupScanResult = (resultText) => {
+    setIsJoinGroupQrOpen(false);
+    let name = resultText;
+    try {
+      const parsed = JSON.parse(resultText);
+      name = parsed.name || parsed.groupName || resultText;
+    } catch { /* raw text QR, use as-is */ }
+    setScannedGroup({ id: `scan-group-${Date.now()}`, name, avatar: `https://i.pravatar.cc/150?u=g${Date.now()}` });
+  };
+
+  const handleConfirmScannedGroup = () => {
+    if (!scannedGroup) return;
+    setGroups(prev => [
+      ...prev,
+      {
+        ...scannedGroup,
+        memberIds: [],
+        ownerId: 'other',
+        lastMessage: 'Bạn đã tham gia nhóm.',
+        updatedAt: new Date().toISOString(),
+        unread: 0,
+      },
+    ]);
+    setScannedGroup(null);
+  };
+
+  // The Search bar's "thêm bạn/thêm nhóm" and QR icons switch meaning with the active tab
+  const handleAddIconClick = () => {
+    if (activeTab === 'personal') setIsFriendRequestsOpen(true);
+    else setIsGroupInvitesOpen(true);
+  };
+
+  const handleQrIconClick = () => {
+    if (activeTab === 'personal') setIsAddFriendQrOpen(true);
+    else setIsJoinGroupQrOpen(true);
+  };
+
   // Most recently updated conversation first
   const sortedFriends = [...friends].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   const sortedGroups = [...groups].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
@@ -811,8 +940,12 @@ export default function ContactAdminPage() {
               className="bg-transparent border-none outline-none w-full ml-2 text-sm"
             />
           </div>
-          <UserPlus className="text-blue-800 cursor-pointer" size={20} />
-          <QrCode className="text-blue-800 cursor-pointer" size={20} />
+          <button type="button" onClick={handleAddIconClick} title={activeTab === 'personal' ? 'Lời mời kết bạn' : 'Lời mời vào nhóm'}>
+            <UserPlus className="text-blue-800 cursor-pointer" size={20} />
+          </button>
+          <button type="button" onClick={handleQrIconClick} title="Quét QR">
+            <QrCode className="text-blue-800 cursor-pointer" size={20} />
+          </button>
         </div>
 
         {/* #C-01: Cá nhân / Nhóm tabs */}
@@ -976,6 +1109,64 @@ export default function ContactAdminPage() {
           />
         )}
       </div>
+
+      {/* #C-05: pending friend requests */}
+      <PendingListModal
+        isOpen={isFriendRequestsOpen}
+        onClose={() => setIsFriendRequestsOpen(false)}
+        title="Lời mời kết bạn"
+        items={friendRequests}
+        onAccept={handleAcceptFriendRequest}
+        onReject={handleRejectFriendRequest}
+        allowRename
+        onRename={handleRenameFriendRequest}
+        emptyText="Không có lời mời kết bạn nào đang chờ."
+      />
+
+      {/* #C-07: pending group invites */}
+      <PendingListModal
+        isOpen={isGroupInvitesOpen}
+        onClose={() => setIsGroupInvitesOpen(false)}
+        title="Lời mời vào nhóm"
+        items={groupInvites}
+        onAccept={handleAcceptGroupInvite}
+        onReject={handleRejectGroupInvite}
+        emptyText="Không có lời mời vào nhóm nào đang chờ."
+      />
+
+      {/* #C-06: scan a friend's QR to add them */}
+      <ContactQrModal
+        isOpen={isAddFriendQrOpen}
+        onClose={() => setIsAddFriendQrOpen(false)}
+        onScanResult={handleAddFriendScanResult}
+        myQrLabel="Mã QR của bạn — cho người khác quét để kết bạn"
+      />
+      <PendingListModal
+        isOpen={!!scannedFriend}
+        onClose={() => setScannedFriend(null)}
+        title="Kết bạn"
+        items={scannedFriend ? [scannedFriend] : []}
+        onAccept={handleConfirmScannedFriend}
+        acceptLabel="KẾT BẠN"
+        allowRename
+        onRename={(id, name) => setScannedFriend(prev => prev ? { ...prev, displayName: name } : prev)}
+      />
+
+      {/* #C-09: scan a group's QR to join it */}
+      <ContactQrModal
+        isOpen={isJoinGroupQrOpen}
+        onClose={() => setIsJoinGroupQrOpen(false)}
+        onScanResult={handleJoinGroupScanResult}
+        myQrLabel="Mã QR nhóm của bạn — cho người khác quét để tham gia"
+      />
+      <PendingListModal
+        isOpen={!!scannedGroup}
+        onClose={() => setScannedGroup(null)}
+        title="Tham gia nhóm"
+        items={scannedGroup ? [scannedGroup] : []}
+        onAccept={handleConfirmScannedGroup}
+        acceptLabel="ĐỒNG Ý"
+      />
     </div>
   );
 }
