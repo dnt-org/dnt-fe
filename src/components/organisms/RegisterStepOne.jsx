@@ -2,6 +2,7 @@ import React, { useState } from "react"
 import PropTypes from "prop-types"
 import { Eye, EyeOff, QrCode } from "lucide-react"
 import RegisterCountrySelect from "../molecules/RegisterCountrySelect"
+import RegisterAccountTypeSelect from "../molecules/RegisterAccountTypeSelect"
 import QRModalComponent from "../QRModalComponent"
 
 export default function RegisterStepOne({
@@ -36,7 +37,7 @@ export default function RegisterStepOne({
   return (
     <div className="mt-6">
       {/* {error ? <p className="text-red-500">{error}</p> : null} */}
-      <div className="space-y-4 mt-4">
+      <div className="grid grid-cols-2 gap-4 mt-4">
         <RegisterCountrySelect
           countries={countries}
           selectedCountry={selectedCountry}
@@ -48,6 +49,12 @@ export default function RegisterStepOne({
           }}
           placeholder={t("register.countryPlaceholder", "Quốc gia (Nation)")}
           error={validationErrors.country}
+        />
+        <RegisterAccountTypeSelect
+          t={t}
+          value={formData.account_type}
+          onChange={handleInputChange}
+          error={validationErrors.account_type}
         />
       </div>
       <div className="space-y-4 mt-4">

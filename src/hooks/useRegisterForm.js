@@ -45,6 +45,7 @@ export default function useRegisterForm(t) {
     email: "",
     password: "123456",
     id: "",
+    account_type: "",
     reference_id: "",
     full_name: "",
     mobile_number: "",
@@ -140,6 +141,7 @@ export default function useRegisterForm(t) {
 
   const validateForm = () => {
     const errors = {}
+    if (!formData.account_type) errors.account_type = t("auth.accountTypeRequired", "Vui lòng chọn loại tài khoản")
     if (!formData.bank_name) errors.bank_name = t("auth.bankRequired", "Vui lòng chọn ngân hàng")
     if (formData.recovery_character && formData.repeat_recovery_character && formData.recovery_character !== formData.repeat_recovery_character) {
       errors.repeat_recovery_character = t("auth.recoveryCharacterMismatch", "Ký tự khôi phục tài khoản không khớp")
@@ -155,6 +157,7 @@ export default function useRegisterForm(t) {
   }
 
   const isFormValid = () => {
+    if (!formData.account_type) return false
     if (!formData.bank_name) return false
     if (!recoveryCharacterValidation.isValid && formData.recovery_character) return false
     if (formData.recovery_character && formData.repeat_recovery_character && formData.recovery_character !== formData.repeat_recovery_character) return false
