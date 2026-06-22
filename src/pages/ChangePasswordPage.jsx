@@ -3,11 +3,12 @@ import "../styles/Register.css";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { useDispatch, useSelector } from 'react-redux';
-import { changePasswordAction } from "../context/action/authActions";
-import { changePassword } from "../services/authService";
+import { loginAction } from "../context/action/authActions";
+import { changePassword, login } from "../services/authService";
 import { useTranslation } from 'react-i18next';
 import { Home as HomeIcon, KeyboardIcon as KeyboardIcon } from 'lucide-react';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
+import useRecaptcha from '../hooks/useRecaptcha';
 
 
 export default function ChangePasswordPage() {
@@ -17,6 +18,9 @@ export default function ChangePasswordPage() {
     const [color, setColor] = useState(localStorage.getItem("selectedColor"));
     const navigate = useNavigate();
     const location = useLocation();
+
+    // reCAPTCHA for the auto-login call made right after a successful password change
+    const { getToken: getLoginRecaptchaToken, reset: resetLoginCaptcha } = useRecaptcha('recaptcha-change-password');
 
     const [formData, setFormData] = useState({
         username: user?.username,
@@ -109,6 +113,14 @@ export default function ChangePasswordPage() {
             return;
         }
 
+        // Captcha for the auto-login call below — checked up front so we don't change
+        // the password and then strand the user on a captcha error.
+        const recaptchaToken = getLoginRecaptchaToken();
+        if (!recaptchaToken) {
+            setError(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+            return;
+        }
+
         try {
             const response = await changePassword(formData.cccd, formData.newPassword, formData.confirmPassword)
 
@@ -117,7 +129,19 @@ export default function ChangePasswordPage() {
                 return;
             }
 
-            navigate("/"); // Redirect to login as per spec
+            // Auto-login with the new password instead of landing on home logged out
+            try {
+                const loginResponse = await login(formData.cccd, formData.newPassword, recaptchaToken);
+                const authToken = loginResponse.data?.token || loginResponse.data?.jwt;
+                localStorage.setItem("authToken", authToken);
+                localStorage.setItem("user", JSON.stringify(loginResponse.data?.user));
+                dispatch(loginAction(loginResponse.data?.user));
+            } catch (autoLoginError) {
+                console.error('Auto-login after password change failed:', autoLoginError);
+                resetLoginCaptcha();
+            }
+
+            navigate("/");
         } catch (error) {
             console.error("Lỗi khi đăng ký:", error.response?.data || error.message);
             setError(error.response?.data?.message || t('auth.changePasswordError', 'Đổi mật khẩu thất bại. Vui lòng thử lại.'));
@@ -272,6 +296,9 @@ export default function ChangePasswordPage() {
                                 }`}>
                             {t('common.confirm')}
                         </button>
+                        <div className="flex justify-center my-2">
+                            <div id="recaptcha-change-password"></div>
+                        </div>
                     </div>
                 </div>
             </div>
