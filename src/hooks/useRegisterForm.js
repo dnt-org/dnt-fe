@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
-import { changePasswordAction } from "../context/action/authActions"
+import { loginAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
 import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
@@ -308,15 +308,11 @@ export default function useRegisterForm(t) {
       formData.cccd = formData.id
       const payload = { ...formData, password: randomPassword, signature: uploadToCloudinaryResp, recaptchaToken }
       const response = await axios.post(`${API_URL}/auth/register`, payload, { headers: { "Content-Type": "application/json" } })
-      dispatch(changePasswordAction(response.data?.user))
-      alert(t("auth.registerSuccess", "Đăng ký thành công!"))
-      if (response.status == 200) {
-        await localStorage.setItem("authToken", response.data.token)
-        await localStorage.setItem("user", JSON.stringify(response.data.user))
-        navigate("/change-password")
-      } else {
-        alert(t("auth.loginError", "THÔNG TIN NHẬP CHƯA CHÍNH XÁC, VUI LÒNG NHẬP LẠI"))
-      }
+      const authToken = response.data?.token || response.data?.jwt
+      localStorage.setItem("authToken", authToken)
+      localStorage.setItem("user", JSON.stringify(response.data?.user))
+      dispatch(loginAction(response.data?.user))
+      navigate("/")
     } catch (error) {
       console.error("Lỗi khi đăng ký:", error.response?.data || error.message)
       const errorMessage =
