@@ -34,7 +34,8 @@ import {
   Share2,
   Sun,
   Moon,
-  Megaphone
+  Megaphone,
+  Plus
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -701,6 +702,10 @@ export default function ContactAdminPage() {
   const [scannedFriend, setScannedFriend] = useState(null);
   const [scannedGroup, setScannedGroup] = useState(null);
 
+  // #C-08: create/edit group panel
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
+
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
     const newMessage = {
@@ -755,12 +760,31 @@ export default function ContactAdminPage() {
   };
 
   const handleRenameConversation = (id, type) => {
-    const list = type === 'friend' ? friends : groups;
-    const current = list.find(item => item.id === id);
+    if (type === 'group') {
+      // Groups get the full owner-only edit panel (#C-08), not a plain rename
+      const group = groups.find(g => g.id === id);
+      if (group) { setEditingGroup(group); setIsCreateGroupOpen(true); }
+      return;
+    }
+    const current = friends.find(item => item.id === id);
     const next = window.prompt('Nhập tên hiển thị mới:', current?.displayName || current?.name || '');
     if (!next || !next.trim()) return;
-    const setList = type === 'friend' ? setFriends : setGroups;
-    setList(prev => prev.map(item => item.id === id ? { ...item, displayName: next.trim() } : item));
+    setFriends(prev => prev.map(item => item.id === id ? { ...item, displayName: next.trim() } : item));
+  };
+
+  // #C-08: create or update a group — only the owner reaches this panel, and
+  // members can only be picked from the user's own friends list (enforced by
+  // CreateGroupPanel only being given the `friends` array to choose from).
+  const handleSaveGroup = ({ id, name, avatar, memberIds }) => {
+    if (id) {
+      setGroups(prev => prev.map(g => g.id === id ? { ...g, name, avatar, memberIds, updatedAt: new Date().toISOString() } : g));
+    } else {
+      setGroups(prev => [
+        ...prev,
+        { id: Date.now(), name, avatar, memberIds, ownerId: 'me', lastMessage: 'Nhóm đã được tạo.', updatedAt: new Date().toISOString(), unread: 0 },
+      ]);
+    }
+    setEditingGroup(null);
   };
 
   const handleLeaveGroup = (id) => {
@@ -946,6 +970,11 @@ export default function ContactAdminPage() {
           <button type="button" onClick={handleQrIconClick} title="Quét QR">
             <QrCode className="text-blue-800 cursor-pointer" size={20} />
           </button>
+          {activeTab === 'group' && (
+            <button type="button" onClick={() => { setEditingGroup(null); setIsCreateGroupOpen(true); }} title="Tạo nhóm mới">
+              <Plus className="text-blue-800 cursor-pointer" size={20} />
+            </button>
+          )}
         </div>
 
         {/* #C-01: Cá nhân / Nhóm tabs */}
@@ -1166,6 +1195,15 @@ export default function ContactAdminPage() {
         items={scannedGroup ? [scannedGroup] : []}
         onAccept={handleConfirmScannedGroup}
         acceptLabel="ĐỒNG Ý"
+      />
+
+      {/* #C-08: create/edit group — owner-only, members from own friends list only */}
+      <CreateGroupPanel
+        isOpen={isCreateGroupOpen}
+        onClose={() => { setIsCreateGroupOpen(false); setEditingGroup(null); }}
+        friends={friends}
+        existingGroup={editingGroup}
+        onSave={handleSaveGroup}
       />
     </div>
   );
