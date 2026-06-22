@@ -557,9 +557,20 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
 
 // ─── Normal Chat Panel (placeholder for regular contacts) ────────────────────
 // ─── Normal Chat Panel (Zalo-like Chat Interface) ────────────────────────────
+const BUBBLE_COLORS = ['#2563eb', '#16a34a', '#9333ea', '#db2777', '#ea580c'];
+
 function NormalChatPanel({ contact, t, messages, onSendMessage }) {
   const [inputText, setInputText] = useState('');
   const scrollRef = useRef(null);
+
+  // #C-11: own message bubble background color, default blue
+  const [bubbleColor, setBubbleColor] = useState(BUBBLE_COLORS[0]);
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // #C-12: dark/light mode toggle, persisted
+  const [theme, setTheme] = useState(() => localStorage.getItem('contactTheme') || 'light');
+  useEffect(() => { localStorage.setItem('contactTheme', theme); }, [theme]);
+  const isDark = theme === 'dark';
 
   // Auto-scroll to bottom on new messages
   useEffect(() => {
@@ -583,7 +594,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#F4F5F7]">
+    <div className={`flex-1 flex flex-col h-full ${isDark ? 'bg-gray-900' : 'bg-[#F4F5F7]'}`}>
       {/* Chat Area */}
       <div
         ref={scrollRef}
@@ -591,7 +602,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
       >
         {messages && messages.length > 0 ? (
           messages.map((msg, idx) => {
-            const isMe = msg.sender === 'me';
+            const isMe = msg.sender === 'me'; // #C-12: chủ tài khoản (me) = dark blue, khách hàng (them) = red
             return (
               <div
                 key={msg.id || idx}
@@ -608,14 +619,15 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
                 )}
                 <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
                   <div
+                    style={isMe ? { backgroundColor: bubbleColor } : undefined}
                     className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm relative ${isMe
-                      ? 'bg-[#E3F2FD] text-gray-800 rounded-br-none border border-[#BBDEFB]'
-                      : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+                      ? 'text-white rounded-br-none'
+                      : `${isDark ? 'bg-gray-700 border-gray-600 text-red-400' : 'bg-white border-gray-100 text-red-600'} rounded-bl-none border`
                       }`}
                   >
                     {msg.text}
                   </div>
-                  <span className="text-[10px] text-gray-400 mt-1 px-1">
+                  <span className={`text-[10px] mt-1 px-1 ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>
                     {msg.timestamp || "Vừa xong"}
                   </span>
                 </div>
@@ -633,13 +645,46 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
       </div>
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200">
-        <div className="flex items-center gap-4 px-4 py-2 border-b border-gray-50">
+      <div className={isDark ? 'bg-gray-800 border-t border-gray-700' : 'bg-white border-t border-gray-200'}>
+        <div className={`relative flex items-center gap-4 px-4 py-2 border-b ${isDark ? 'border-gray-700' : 'border-gray-50'}`}>
           <ImageIcon className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
           <Smile className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
           <Mic className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
+
+          {/* #C-11: bubble background color swatch, default blue */}
+          <button
+            type="button"
+            onClick={() => setShowColorPicker((v) => !v)}
+            title="Màu nền tin nhắn"
+            className="w-5 h-5 rounded-full border-2 border-gray-300"
+            style={{ backgroundColor: bubbleColor }}
+          />
+          {showColorPicker && (
+            <div className="absolute bottom-full left-12 mb-2 z-30 flex gap-1.5 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1.5">
+              {BUBBLE_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { setBubbleColor(c); setShowColorPicker(false); }}
+                  className={`w-5 h-5 rounded-full ${bubbleColor === c ? 'ring-2 ring-offset-1 ring-gray-400' : ''}`}
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          )}
+
           <div className="flex-1" />
-          <Settings className="text-gray-400 cursor-pointer hover:text-gray-600" size={18} />
+
+          {/* #C-12: dark/light mode toggle, persisted via localStorage */}
+          <button
+            type="button"
+            onClick={() => setTheme((cur) => (cur === 'dark' ? 'light' : 'dark'))}
+            title="Chế độ Đen - Trắng"
+            className={`flex items-center gap-1 ${isDark ? 'text-yellow-400' : 'text-gray-400'} hover:text-gray-600`}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <Settings size={14} />
+          </button>
         </div>
 
         <div className="flex items-end px-3 py-3 gap-2">
@@ -648,7 +693,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
             onChange={(e) => setInputText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('contact.typeMessage', `Nhập tin nhắn tới ${contact?.name || '...'}`)}
-            className="flex-1 max-h-32 min-h-[40px] resize-none border-none outline-none text-sm bg-transparent py-1.5"
+            className={`flex-1 max-h-32 min-h-[40px] resize-none border-none outline-none text-sm bg-transparent py-1.5 ${isDark ? 'text-white placeholder:text-gray-500' : ''}`}
             rows={1}
           />
           <button
