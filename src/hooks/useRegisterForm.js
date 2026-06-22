@@ -7,6 +7,7 @@ import { getCountries } from "../services/countries"
 import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
 import { getBanks } from "../services/systemService"
+import { getBankAccountName } from "../services/bankAccountService"
 import useRecaptcha from "./useRecaptcha"
 
 export default function useRegisterForm(t) {
@@ -33,6 +34,8 @@ export default function useRegisterForm(t) {
   const [contractActiveIndex, setContractActiveIndex] = useState(0)
   const [isContractLoading, setIsContractLoading] = useState(false)
   const [contractError, setContractError] = useState("")
+  const [isFetchingAccountName, setIsFetchingAccountName] = useState(false)
+  const [accountNameError, setAccountNameError] = useState("")
   const [recoveryCharacterValidation, setRecoveryCharacterValidation] = useState({
     hasUppercase: false,
     hasLowercase: false,
@@ -90,6 +93,32 @@ export default function useRegisterForm(t) {
       setBanks([])
     }
   }, [selectedCountry, allBanksByCountry])
+
+  useEffect(() => {
+    if (!formData.bank_number || !formData.bank_name) {
+      setAccountNameError("")
+      return
+    }
+    let cancelled = false
+    setIsFetchingAccountName(true)
+    setAccountNameError("")
+    getBankAccountName(formData.bank_name, formData.bank_number)
+      .then((name) => {
+        if (cancelled) return
+        setFormData((prev) => ({ ...prev, full_name: name }))
+      })
+      .catch(() => {
+        if (cancelled) return
+        setFormData((prev) => ({ ...prev, full_name: "" }))
+        setAccountNameError(t("auth.bankAccountNameNotFound", "Không tìm thấy tài khoản"))
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetchingAccountName(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [formData.bank_number, formData.bank_name, t])
 
   const validateRecoveryCharacter = (recoveryChar) => {
     const hasUppercase = /[A-Z]/.test(recoveryChar)
@@ -420,5 +449,7 @@ export default function useRegisterForm(t) {
     contractError,
     handleCloseContractModal,
     handleBankNumberBlur,
+    isFetchingAccountName,
+    accountNameError,
   }
 }

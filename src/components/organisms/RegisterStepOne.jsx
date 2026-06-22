@@ -19,6 +19,8 @@ export default function RegisterStepOne({
   isVerifying,
   handleNextClick,
   handleBankNumberBlur,
+  isFetchingAccountName,
+  accountNameError,
 }) {
   const [showRecovery, setShowRecovery] = useState(false)
   const [showRepeatRecovery, setShowRepeatRecovery] = useState(false)
@@ -82,6 +84,21 @@ export default function RegisterStepOne({
             <span className="text-red-500 ml-2">*</span>
           </div>
           {validationErrors.bank_name ? <p className="text-red-500 text-sm mt-1">{validationErrors.bank_name}</p> : null}
+        </div>
+        <div className="grid grid-cols-1 items-center gap-4">
+          <div className="relative w-full flex items-center">
+            <input
+              type="text"
+              readOnly
+              className="border p-2 rounded w-full bg-gray-100 text-gray-700"
+              placeholder={t("register.accountHolderNamePlaceholder", "Tên chủ tài khoản (tự động hiển thị)")}
+              name="full_name"
+              value={isFetchingAccountName ? t("common.loading", "Đang tải...") : formData.full_name}
+              disabled={isFetchingAccountName}
+              onChange={() => {}}
+            />
+          </div>
+          {accountNameError ? <p className="text-red-500 text-sm mt-1">{accountNameError}</p> : null}
         </div>
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
@@ -178,4 +195,6 @@ RegisterStepOne.propTypes = {
   isVerifying: PropTypes.bool.isRequired,
   handleNextClick: PropTypes.func.isRequired,
   handleBankNumberBlur: PropTypes.func.isRequired,
+  isFetchingAccountName: PropTypes.bool,
+  accountNameError: PropTypes.string,
 }

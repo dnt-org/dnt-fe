@@ -44,6 +44,8 @@ export default function RegisterPage() {
     contractError,
     handleCloseContractModal,
     handleBankNumberBlur,
+    isFetchingAccountName,
+    accountNameError,
   } = useRegisterForm(t);
   return (
     <div className="flex justify-center items-center min-h-screen">
@@ -64,6 +66,8 @@ export default function RegisterPage() {
             isVerifying={isVerifying}
             handleNextClick={handleNextClick}
             handleBankNumberBlur={handleBankNumberBlur}
+            isFetchingAccountName={isFetchingAccountName}
+            accountNameError={accountNameError}
           />
         )}
         {page === 2 && (
