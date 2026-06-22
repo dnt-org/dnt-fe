@@ -706,6 +706,9 @@ export default function ContactAdminPage() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
 
+  // #C-10: chat header "more actions" menu (Gửi vị trí / Chia sẻ trực tiếp)
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
     const newMessage = {
@@ -1102,7 +1105,7 @@ export default function ContactAdminPage() {
                   {chatTitle}
                 </div>
               </div>
-              <div className={`flex items-center gap-2 bg-blue-400 p-1 rounded ${isBotMode && !videoUnlocked ? 'opacity-40' : ''}`}>
+              <div className={`relative flex items-center gap-2 bg-blue-400 p-1 rounded ${isBotMode && !videoUnlocked ? 'opacity-40' : ''}`}>
                 <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <Phone size={18} />
                 </div>
@@ -1112,6 +1115,31 @@ export default function ContactAdminPage() {
                 <div className="w-8 h-8 rounded border border-blue-600 bg-purple-700 flex items-center justify-center cursor-pointer text-white">
                   <User size={18} />
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setIsHeaderMenuOpen((v) => !v)}
+                  className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500"
+                >
+                  <MoreVertical size={18} />
+                </button>
+                {isHeaderMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 z-30 bg-white border border-gray-200 rounded-lg shadow-lg w-48 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setIsHeaderMenuOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-900 hover:bg-blue-50 text-left"
+                    >
+                      <MapPin size={15} /> Gửi vị trí
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsHeaderMenuOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-900 hover:bg-blue-50 text-left"
+                    >
+                      <Share2 size={15} /> Chia sẻ trực tiếp
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (
