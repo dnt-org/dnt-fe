@@ -27,7 +27,14 @@ import {
   CreditCard,
   Wallet,
   ScanFace,
-  RefreshCw
+  RefreshCw,
+  UsersRound,
+  MoreVertical,
+  MapPin,
+  Share2,
+  Sun,
+  Moon,
+  Megaphone
 } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +46,11 @@ import {
   verifyRecoveryBalance,
   verifyRecoveryCccd
 } from '../services/authService';
+import { initialFriends, initialGroups, initialFriendRequests, initialGroupInvites } from '../data/contactMockData';
+import ConversationItemMenu from '../components/contact/ConversationItemMenu';
+import PendingListModal from '../components/contact/PendingListModal';
+import ContactQrModal from '../components/contact/ContactQrModal';
+import CreateGroupPanel from '../components/contact/CreateGroupPanel';
 
 // ─── Chat mode ────────────────────────────────────────────────────────────────
 // mode = null    → no chat selected
@@ -659,14 +671,25 @@ export default function ContactAdminPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  // 'none' | 'user:<id>' | 'bot'
+  // 'none' | 'user' | 'bot'
   const [chatMode, setChatMode] = useState('none');
   const [activeContactId, setActiveContactId] = useState(null);
+  const [activeContactType, setActiveContactType] = useState(null); // 'friend' | 'group'
   const [videoUnlocked, setVideoUnlocked] = useState(false);
   const [contactMessages, setContactMessages] = useState({
     1: [{ id: 1, text: 'Chào bạn, công ty có thể giúp gì cho bạn?', sender: 'them', timestamp: '10:00' }],
     2: [{ id: 1, text: 'Xin chào!', sender: 'them', timestamp: '09:30' }],
   });
+
+  // #C-01: Cá nhân vs Nhóm tabs
+  const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'group'
+  const [friends, setFriends] = useState(initialFriends);
+  const [groups, setGroups] = useState(initialGroups);
+  const [friendRequests, setFriendRequests] = useState(initialFriendRequests);
+  const [groupInvites, setGroupInvites] = useState(initialGroupInvites);
+
+  // #C-03: which item's right-tap quick-action menu is open
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
@@ -682,32 +705,68 @@ export default function ContactAdminPage() {
     }));
   };
 
-  const contacts = [
-    { id: 1, name: 'Nguyễn Văn A', lastActive: 'Chào công ty...', unread: 2 },
-    { id: 2, name: 'Trần Thị B', lastActive: 'Xin chào!', unread: 0 },
-    { id: 3, name: 'Lê Văn C', lastActive: 'Cảm ơn ạ', unread: 0 },
-    { id: 4, name: 'Phạm Thị D', lastActive: 'Hẹn gặp lại', unread: 0 },
-    { id: 5, name: 'Hoàng Văn E', lastActive: 'abc', unread: 0 },
-    { id: 6, name: 'Đặng Thị F', lastActive: '...', unread: 0 },
-  ];
-
   const isBotMode = chatMode === 'bot';
-  const activeContact = contacts.find(c => c.id === activeContactId);
+  const activeFriend = activeContactType === 'friend' ? friends.find(f => f.id === activeContactId) : null;
+  const activeGroup = activeContactType === 'group' ? groups.find(g => g.id === activeContactId) : null;
+  const activeContact = activeFriend || activeGroup;
 
-  const handleSelectContact = (id) => {
+  const handleSelectContact = (id, type) => {
     setActiveContactId(id);
+    setActiveContactType(type);
     setChatMode('user');
+    if (type === 'friend') {
+      setFriends(prev => prev.map(f => f.id === id ? { ...f, hasUnseenAiLive: false } : f));
+    }
   };
 
   const handleSelectCompany = () => {
     setChatMode('bot');
     setActiveContactId(null);
+    setActiveContactType(null);
   };
+
+  // #C-03: avatar tap -> the contact's Ai LIVE post (clears the unseen red dot)
+  const handleAvatarTap = (e, friend) => {
+    e.stopPropagation();
+    setFriends(prev => prev.map(f => f.id === friend.id ? { ...f, hasUnseenAiLive: false } : f));
+    navigate('/ai-live');
+  };
+
+  // #C-03: right-tap ("thả") quick-action menu
+  const handleDeleteConversation = (id, type) => {
+    if (type === 'friend') setFriends(prev => prev.filter(f => f.id !== id));
+    else setGroups(prev => prev.filter(g => g.id !== id));
+    if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+  };
+
+  const handleMuteConversation = (id, type) => {
+    const setList = type === 'friend' ? setFriends : setGroups;
+    setList(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+  };
+
+  const handleRenameConversation = (id, type) => {
+    const list = type === 'friend' ? friends : groups;
+    const current = list.find(item => item.id === id);
+    const next = window.prompt('Nhập tên hiển thị mới:', current?.displayName || current?.name || '');
+    if (!next || !next.trim()) return;
+    const setList = type === 'friend' ? setFriends : setGroups;
+    setList(prev => prev.map(item => item.id === id ? { ...item, displayName: next.trim() } : item));
+  };
+
+  const handleLeaveGroup = (id) => {
+    setGroups(prev => prev.filter(g => g.id !== id));
+    if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+  };
+
+  // Most recently updated conversation first
+  const sortedFriends = [...friends].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const sortedGroups = [...groups].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const listItems = activeTab === 'personal' ? sortedFriends : sortedGroups;
 
   // Chat header label
   const chatTitle = isBotMode
     ? 'CÔNG TY TNHH ĐẠI NGHĨA TÍN'
-    : activeContact ? activeContact.name : '';
+    : activeContact ? (activeContact.displayName || activeContact.name) : '';
 
   return (
     <div className="flex h-screen w-full bg-white overflow-hidden text-sm">
@@ -715,36 +774,31 @@ export default function ContactAdminPage() {
       {/* ── Left-most narrow icon bar (unchanged) ───────────────────────── */}
 
 
-      {/* ── Middle Contacts Column (unchanged) ──────────────────────────── */}
-      <div className="w-[320px] min-w-[320px] bg-white flex flex-col border-r border-gray-300">
+      {/* ── Middle Contacts Column ──────────────────────────────────────── */}
+      <div className="w-[320px] min-w-[320px] bg-white flex flex-col border-r border-gray-300 text-blue-900">
 
-        {/* Stats */}
+        {/* Stats — #C-02: badges in dark blue */}
         <div className="p-2 border-b border-gray-200">
           <div className="flex justify-between px-2 text-xs font-semibold mb-2">
             <div className="w-12 h-12 rounded-full border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
               <span className="text-xs">Avatar</span>
-              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
-              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">{friends.length}</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">5</div>
 
             </div>
               <div className="w-12 h-12 border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
                 <Building2 size={30} />
-              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1000</div>
-              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">10000</div>
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">1000</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">10000</div>
 
             </div>
               <div className="w-12 h-12 border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
               <Landmark size={30} />
-              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
-              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-red-500 ml-1 text-left">1</div>
+              <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">1</div>
+              <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">1</div>
 
             </div>
           </div>
-          {/* <div className="flex gap-4 text-xs font-semibold px-2">
-            <span>2 (Tin nhắn chưa đọc)</span>
-            <span>2 (Công việc)</span>
-            <span>3 (Công việc cần hoàn thành)</span>
-          </div> */}
         </div>
 
         {/* Search Bar */}
@@ -757,49 +811,100 @@ export default function ContactAdminPage() {
               className="bg-transparent border-none outline-none w-full ml-2 text-sm"
             />
           </div>
-          <UserPlus className="text-gray-600 cursor-pointer" size={20} />
-          <QrCode className="text-gray-600 cursor-pointer" size={20} />
+          <UserPlus className="text-blue-800 cursor-pointer" size={20} />
+          <QrCode className="text-blue-800 cursor-pointer" size={20} />
         </div>
 
-        {/* Filter/Tabs */}
-        <div className="flex border-b border-gray-200 text-sm font-semibold text-gray-600">
-          <div className="flex-1 py-2 text-center text-red-600 border-b-2 border-red-600 cursor-pointer uppercase">GỌI NHÓM</div>
-          <div className="flex-1 py-2 text-center cursor-pointer relative">
-            bài đăng Ai LIVE
-            <span className="absolute -top-1 right-2 text-red-600 text-xs">3 New</span>
-          </div>
+        {/* #C-01: Cá nhân / Nhóm tabs */}
+        <div className="flex border-b border-gray-200 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={() => setActiveTab('personal')}
+            className={`flex-1 py-2 flex items-center justify-center gap-1.5 ${activeTab === 'personal' ? 'bg-blue-800 text-white' : 'text-blue-900 hover:bg-blue-50'}`}
+          >
+            <User size={15} /> CÁ NHÂN
+            <span className={`text-[10px] rounded-full w-5 h-5 flex items-center justify-center ${activeTab === 'personal' ? 'bg-white text-blue-800' : 'bg-blue-800 text-white'}`}>
+              {friends.length}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('group')}
+            className={`flex-1 py-2 flex items-center justify-center gap-1.5 ${activeTab === 'group' ? 'bg-blue-800 text-white' : 'text-blue-900 hover:bg-blue-50'}`}
+          >
+            <UsersRound size={15} /> NHÓM
+            <span className={`text-[10px] rounded-full w-5 h-5 flex items-center justify-center ${activeTab === 'group' ? 'bg-white text-blue-800' : 'bg-blue-800 text-white'}`}>
+              {groups.length}
+            </span>
+          </button>
         </div>
 
-        {/* Contact List */}
+        {/* Conversation List — #C-03 */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
-          {contacts.map((contact, index) => (
-            <div
-              key={contact.id}
-              onClick={() => handleSelectContact(contact.id)}
-              className={`flex items-start p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 ${activeContactId === contact.id && chatMode === 'user' ? 'bg-blue-50' : index === 0 && chatMode === 'none' ? 'bg-blue-50' : ''}`}
-            >
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 flex-shrink-0">
-                  <img src="https://via.placeholder.com/48" alt="avatar" className="w-full h-full object-cover" />
-                </div>
-              </div>
-              <div className="ml-3 flex-1 overflow-hidden">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-gray-800 uppercase">{contact.name}</span>
-                  {contact.unread > 0 && (
-                    <div className="flex flex-col items-end">
-                      <span className="bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold">
-                        {contact.unread}
-                      </span>
-                    </div>
+          {listItems.map((item) => {
+            const isGroup = activeTab === 'group';
+            const isActive = activeContactId === item.id && activeContactType === (isGroup ? 'group' : 'friend');
+            return (
+              <div
+                key={item.id}
+                className={`relative flex items-start p-3 hover:bg-blue-50 border-b border-gray-100 ${isActive ? 'bg-blue-50' : ''}`}
+              >
+                {/* Avatar tap -> Ai LIVE post (friends only); red dot if unseen */}
+                <button
+                  type="button"
+                  onClick={isGroup ? () => handleSelectContact(item.id, 'group') : (e) => handleAvatarTap(e, item)}
+                  className="relative flex-shrink-0"
+                >
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
+                    <img src={item.avatar} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  {!isGroup && item.hasUnseenAiLive && (
+                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white" />
                   )}
-                </div>
-                <div className={`text-xs mt-1 truncate ${contact.id === 1 ? 'text-red-600 font-semibold whitespace-normal' : 'text-orange-600 whitespace-normal'}`}>
-                  {contact.lastActive}
-                </div>
+                </button>
+
+                {/* Name / middle area tap -> open chat */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectContact(item.id, isGroup ? 'group' : 'friend')}
+                  className="ml-3 flex-1 overflow-hidden text-left"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold uppercase truncate">{item.displayName || item.name}</span>
+                    {item.unread > 0 && (
+                      <span className="bg-blue-800 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold ml-1 flex-shrink-0">
+                        {item.unread}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs mt-1 truncate text-blue-700">
+                    {item.lastMessage}
+                    {item.otpPending && <span className="text-orange-600 font-semibold"> (OTP xác nhận)</span>}
+                  </div>
+                </button>
+
+                {/* Right side tap ("thả") -> quick-action dropdown */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === item.id ? null : item.id); }}
+                  className="ml-1 p-1 text-blue-400 hover:text-blue-800 flex-shrink-0"
+                >
+                  <MoreVertical size={16} />
+                </button>
+
+                {openMenuId === item.id && (
+                  <ConversationItemMenu
+                    isGroup={isGroup}
+                    onDelete={() => handleDeleteConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onMute={() => handleMuteConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onRename={() => handleRenameConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onLeaveGroup={isGroup ? () => handleLeaveGroup(item.id) : undefined}
+                    onCloseMenu={() => setOpenMenuId(null)}
+                  />
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Bottom Banner — click to open bot */}
@@ -807,8 +912,8 @@ export default function ContactAdminPage() {
           onClick={handleSelectCompany}
           className={`p-4 border-t border-gray-200 text-center cursor-pointer transition-colors ${isBotMode ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
         >
-          <div className={`font-bold uppercase text-sm flex items-center justify-center gap-2 ${isBotMode ? 'text-blue-700' : 'text-blue-700 hover:text-blue-800'}`}>
-            {isBotMode && <ShieldAlert size={14} className="text-blue-600" />}
+          <div className={`font-bold uppercase text-sm flex items-center justify-center gap-2 ${isBotMode ? 'text-blue-800' : 'text-blue-800 hover:text-blue-900'}`}>
+            {isBotMode && <ShieldAlert size={14} className="text-blue-800" />}
             CÔNG TY TNHH ĐẠI NGHĨA TÍN
           </div>
           {!isBotMode && (
@@ -828,7 +933,7 @@ export default function ContactAdminPage() {
                 <div className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100">
                   {isBotMode
                     ? <ShieldAlert size={20} className="text-blue-600" />
-                    : <img src="https://via.placeholder.com/40" alt="avatar" className="w-full h-full object-cover" />
+                    : <img src={activeContact?.avatar || "https://via.placeholder.com/40"} alt="avatar" className="w-full h-full object-cover" />
                   }
                 </div>
                 <div className={`font-bold uppercase ${isBotMode ? 'text-blue-700' : 'text-gray-800'}`}>
