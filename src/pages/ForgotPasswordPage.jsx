@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Login.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from 'react-redux';
 import { Eye, EyeOff, ArrowLeft, KeyRound, ShieldCheck, Lock, Smartphone } from "lucide-react";
-import { verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp } from "../services/authService";
+import { verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, login } from "../services/authService";
+import { loginAction } from "../context/action/authActions";
 import { useTranslation } from 'react-i18next';
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
 import useRecaptcha from '../hooks/useRecaptcha';
@@ -11,6 +13,7 @@ export default function ForgotPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const [color, setColor] = useState(localStorage.getItem("selectedColor"));
 
@@ -34,6 +37,7 @@ export default function ForgotPasswordPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [otpSkipped, setOtpSkipped] = useState(false); // Track if OTP step was skipped
+  const [newPasswordCrossError, setNewPasswordCrossError] = useState("");
 
   // Password validation
   const [passwordValidation, setPasswordValidation] = useState({
@@ -52,6 +56,8 @@ export default function ForgotPasswordPage() {
 
   // reCAPTCHA v2 Invisible — protects the recovery-string verify step
   const { getToken: getRecoveryToken, reset: resetRecoveryCaptcha } = useRecaptcha('recaptcha-forgot');
+  // Separate widget for the auto-login call made right after a successful password reset
+  const { getToken: getResetLoginToken, reset: resetResetLoginCaptcha } = useRecaptcha('recaptcha-forgot-reset');
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
@@ -82,11 +88,28 @@ export default function ForgotPasswordPage() {
     };
   };
 
+  // New password must differ from the recovery character and the OTP entered earlier in this flow
+  const getNewPasswordCrossError = (password) => {
+    if (!password) return "";
+    if (recoveryString && password === recoveryString) {
+      return t('forgotPassword.errors.passwordSameAsRecovery', 'Mật khẩu mới không được trùng với ký tự khôi phục tài khoản');
+    }
+    if (otp && password === otp) {
+      return t('forgotPassword.errors.passwordSameAsOtp', 'Mật khẩu mới không được trùng với mã OTP');
+    }
+    return "";
+  };
+
   // Handle password input change
   const handlePasswordChange = (e) => {
     const value = e.target.value;
     setNewPassword(value);
     setPasswordValidation(validatePassword(value));
+    setNewPasswordCrossError(getNewPasswordCrossError(value));
+  };
+
+  const handlePasswordBlur = () => {
+    setNewPasswordCrossError(getNewPasswordCrossError(newPassword));
   };
 
   // Handle verify recovery string
@@ -278,22 +301,45 @@ export default function ForgotPasswordPage() {
       return;
     }
 
+    const crossError = getNewPasswordCrossError(newPassword);
+    if (crossError) {
+      setNewPasswordCrossError(crossError);
+      setErrorMessage(crossError);
+      return;
+    }
+
+    // Captcha for the auto-login call below — checked up front so we don't change
+    // the password and then strand the user on a captcha error.
+    const loginRecaptchaToken = getResetLoginToken();
+    if (!loginRecaptchaToken) {
+      setErrorMessage(t('auth.captchaRequired', 'Vui lòng hoàn thành xác thực reCAPTCHA'));
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await resetPasswordWithToken(resetToken, newPassword);
 
       if (response.data?.success) {
-        setSuccessMessage(t('forgotPassword.resetSuccess', 'Đổi mật khẩu thành công! Đang chuyển đến trang đăng nhập...'));
-
-        // Redirect to login after 2 seconds
-        setTimeout(() => {
+        // Auto-login with the new password instead of bouncing back to /login
+        try {
+          const loginResponse = await login(bankAccountId, newPassword, loginRecaptchaToken);
+          const authToken = loginResponse.data?.token || loginResponse.data?.jwt;
+          localStorage.setItem("authToken", authToken);
+          localStorage.setItem("user", JSON.stringify(loginResponse.data?.user));
+          dispatch(loginAction(loginResponse.data?.user));
+          navigate('/');
+        } catch (autoLoginError) {
+          console.error('Auto-login after password reset failed:', autoLoginError);
+          resetResetLoginCaptcha();
+          // Password change itself succeeded — fall back to manual login instead of stranding the user
           navigate('/login', {
             state: {
               message: t('forgotPassword.redirectMessage', 'Mật khẩu đã được đổi thành công. Vui lòng đăng nhập.')
             }
           });
-        }, 2000);
+        }
       }
     } catch (error) {
       console.error('Reset password error:', error);
@@ -524,6 +570,7 @@ export default function ForgotPasswordPage() {
                     placeholder={t('forgotPassword.newPasswordPlaceholder', 'Mật khẩu mới (New Password)')}
                     value={newPassword}
                     onChange={handlePasswordChange}
+                    onBlur={handlePasswordBlur}
                     disabled={isLoading}
                   />
                   <button
@@ -534,6 +581,10 @@ export default function ForgotPasswordPage() {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+
+                {newPasswordCrossError && (
+                  <p className="text-red-500 text-sm">{newPasswordCrossError}</p>
+                )}
 
                 {/* Password requirements */}
                 {newPassword && (
@@ -596,17 +647,21 @@ export default function ForgotPasswordPage() {
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword || newPasswordCrossError
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
                     onClick={handleResetPassword}
-                    disabled={isLoading || !passwordValidation.isValid || newPassword !== confirmPassword}
+                    disabled={isLoading || !passwordValidation.isValid || newPassword !== confirmPassword || !!newPasswordCrossError}
                   >
                     {isLoading
                       ? t('common.loading', 'Đang xử lý...')
                       : t('forgotPassword.resetButton', 'ĐỔI MẬT KHẨU')}
                   </button>
+                  {/* reCAPTCHA for the auto-login call right after a successful reset */}
+                  <div className="flex justify-center my-2">
+                    <div id="recaptcha-forgot-reset"></div>
+                  </div>
                 </div>
 
                 
