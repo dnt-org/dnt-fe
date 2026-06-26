@@ -1,18 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Building2 } from 'lucide-react';
 import { getMe } from '../services/authService';
-import { uploadDocumentToStrapi } from '../services/businessService';
 import { downloadContract } from '../services/contractService';
+import planetImage from '../assets/planet.jpg';
 
 const DEFAULT_AVATAR = 'https://th.bing.com/th/id/OIP.aqzvZTh44zgk38UdpdE1KQHaHa?rs=1&pid=ImgDetMain';
-
-const fileToDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const { i18n } = useTranslation();
@@ -20,9 +13,20 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dlLoading, setDlLoading] = useState({ contract: false });
-  const [uploading, setUploading] = useState({ tax_code_certificate: false, business_registration: false });
-  const taxFileInputRef = useRef(null);
-  const licenseFileInputRef = useRef(null);
+
+  const countryData = {
+    vi: {
+      companyName: 'CÔNG TY TNHH ĐẠI NGHĨA TÍN',
+      mst: '3702678200',
+      soGphd: '',
+    },
+    en: {
+      companyName: 'US TECHNOLOGY CORPORATION',
+      mst: '9876543210',
+      soGphd: 'GP987654321',
+    },
+  };
+  const fallback = countryData[userCountry] || countryData.vi;
 
   const fetchUserData = async () => {
     setLoading(true);
@@ -48,33 +52,8 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     fetchUserData();
   }, []);
 
-  // Mock data for different countries as fallback when a real field is missing
-  const countryData = {
-    vi: {
-      companyName: 'CÔNG TY TNHH ĐẠI NGHĨA TÍN',
-      mst: '3702678200',
-      soGphd: '',
-    },
-    en: {
-      companyName: 'US TECHNOLOGY CORPORATION',
-      mst: '9876543210',
-      soGphd: 'GP987654321',
-    },
-  };
-  const fallback = countryData[userCountry] || countryData.vi;
-
-  const handleUploadDocument = async (file, type) => {
-    if (!file) return;
-    setUploading((prev) => ({ ...prev, [type]: true }));
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      await uploadDocumentToStrapi(dataUrl, type);
-      alert(currentLang === 'vi' ? 'Tải lên thành công' : 'Upload successful');
-    } catch (err) {
-      alert((currentLang === 'vi' ? 'Lỗi tải file: ' : 'Upload failed: ') + err.message);
-    } finally {
-      setUploading((prev) => ({ ...prev, [type]: false }));
-    }
+  const openDoc = (url) => {
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownloadContract = async () => {
@@ -106,142 +85,143 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     );
   }
 
+  const bankName = userData?.bank_name || '';
+  const bankLabel = currentLang === 'vi'
+    ? `TÀI KHOẢN ĐỊNH DANH TẠI NGÂN HÀNG${bankName ? ` ${bankName}` : ''}:`
+    : `IDENTITY ACCOUNT AT BANK${bankName ? ` ${bankName}` : ''}:`;
+
+  // Company logo = the globe/planet image (fallback to the bundled planet asset)
+  const companyLogo = userData?.company_logo?.url || planetImage;
+
   return (
     <div className="w-full h-full px-1">
-      {/* TODO(dev): remove this marker once the new top-left position is confirmed */}
-      <div className="text-center text-[9px] text-orange-500">(vị trí mới)</div>
+      {/* Two-column layout: left = company logo + personal avatar (stacked), right = name + table + status */}
+      <div className="flex flex-row gap-2 items-start">
 
-      {/* Avatar */}
-      <div className="flex flex-col items-center mb-1">
-        <img
-          src={userData?.avt?.url || DEFAULT_AVATAR}
-          alt="avatar"
-          className="w-12 h-12 rounded-full object-cover border-2 border-gray-800"
-        />
-        <button onClick={fetchUserData} className="text-[9px] text-blue-600 underline mt-0.5">
-          {currentLang === 'vi' ? 'Kiểm tra lại ảnh' : 'Recheck photo'}
-        </button>
-      </div>
+        {/* LEFT column: company logo (large) on top, personal avatar (small) directly below — same column */}
+        <div className="flex flex-col items-center flex-shrink-0 w-16 sm:w-20">
+          {/* Company logo — large, round */}
+          <img
+            src={companyLogo}
+            alt="Company Logo"
+            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-gray-800"
+          />
+          {/* Personal avatar — small, round, aligned in the same column below the company logo */}
+          <img
+            src={userData?.avt?.url || DEFAULT_AVATAR}
+            alt="avatar"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-800 mt-2"
+          />
+          <button onClick={fetchUserData} className="text-[9px] text-blue-600 underline mt-0.5">
+            {currentLang === 'vi' ? 'Kiểm tra lại ảnh' : 'Recheck photo'}
+          </button>
+          <div className="font-bold text-[10px] sm:text-xs text-center break-words leading-tight mt-0.5">
+            {userData?.full_name || 'NGUYEN VAN A'}
+          </div>
+        </div>
 
-      {/* Company Name Header */}
-      <div className="text-center mb-1 sm:mb-1 md:mb-1">
-        <h2 className="font-bold text-xs sm:text-sm md:text-lg break-words leading-tight">
-          {userData?.full_name || fallback.companyName}
-        </h2>
-      </div>
+        {/* RIGHT column: company name header + info table + status text */}
+        <div className="flex-1 min-w-0">
+          {/* Company name header — above the table */}
+          <div className="text-center mb-1">
+            <h2 className="font-bold text-xs sm:text-sm md:text-base break-words leading-tight">
+              {userData?.company_name || fallback.companyName}
+            </h2>
+          </div>
 
-      {/* Main Table */}
-      <div className="flex-1 overflow-auto">
-        <div className="border-2 border-black h-full min-h-0">
-          <div className="overflow-auto h-full">
-            <div className="w-full min-w-full company-info-table border-b border-black">
+          {/* Info table */}
+          <div className="border-2 border-black">
+            <div className="w-full min-w-full company-info-table">
               <div className="text-[10px] flex flex-col">
-                {/* Row: Mã số kinh doanh (MSKD) + upload */}
+
+                {/* Row 1: Số ĐKKD */}
                 <div className="border-b border-black grid grid-cols-6 gap-0">
-                  <div className="col-span-1 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
+                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
                     <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'MSKD:' : 'Tax code:'}
+                      {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
                     </div>
                   </div>
                   <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
                     <div className="break-all leading-tight">{userData?.cccd || fallback.mst}</div>
                   </div>
-                  <div className="col-span-2 sm:p-2 flex items-center justify-center">
-                    <input
-                      ref={taxFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleUploadDocument(e.target.files?.[0], 'tax_code_certificate')}
-                    />
+                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
                     <button
                       type="button"
-                      onClick={() => taxFileInputRef.current?.click()}
-                      disabled={uploading.tax_code_certificate}
-                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 leading-tight"
+                      onClick={() => openDoc(userData?.tax_code_certificate?.url)}
+                      disabled={!userData?.tax_code_certificate?.url}
+                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
                     >
-                      {uploading.tax_code_certificate ? '...' : (currentLang === 'vi' ? 'Upload' : 'Upload')}
+                      {currentLang === 'vi' ? 'Xem' : 'View'}
                     </button>
                   </div>
                 </div>
 
-                {/* Row: Giấy phép hoạt động (GPHĐ) + upload */}
+                {/* Row 2: Số GPHD */}
                 <div className="border-b border-black grid grid-cols-6 gap-0">
-                  <div className="col-span-1 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
+                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
                     <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'GPHĐ:' : 'License:'}
+                      {currentLang === 'vi' ? 'Số GPHD:' : 'License No.:'}
                     </div>
                   </div>
                   <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
                     <div className="break-all leading-tight">{fallback.soGphd || '-'}</div>
                   </div>
-                  <div className="col-span-2 sm:p-2 flex items-center justify-center">
-                    <input
-                      ref={licenseFileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleUploadDocument(e.target.files?.[0], 'business_registration')}
-                    />
+                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
                     <button
                       type="button"
-                      onClick={() => licenseFileInputRef.current?.click()}
-                      disabled={uploading.business_registration}
-                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 leading-tight"
+                      onClick={() => openDoc(userData?.business_registration?.url)}
+                      disabled={!userData?.business_registration?.url}
+                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
                     >
-                      {uploading.business_registration ? '...' : (currentLang === 'vi' ? 'Upload' : 'Upload')}
+                      {currentLang === 'vi' ? 'Xem' : 'View'}
                     </button>
                   </div>
                 </div>
 
-                {/* Row: Số tài khoản / Ngân hàng */}
-                <div className="border-b border-black grid grid-cols-6 gap-0">
-                  <div className="col-span-1 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
-                    <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'STK:' : 'ACCOUNT:'}
+                {/* Row 3: Tài khoản định danh tại ngân hàng */}
+                <div className="grid grid-cols-6 gap-0">
+                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
+                    <div className="break-words leading-tight pt-2 pb-2 uppercase">
+                      {bankLabel}
                     </div>
                   </div>
-                  <div className="col-span-2 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
+                  <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
                     <div className="break-all leading-tight">{userData?.bank_number || '-'}</div>
                   </div>
-                  <div className="col-span-1 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] flex items-center">
-                    <div className="leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'NGÂN HÀNG:' : 'Bank:'}
-                    </div>
-                  </div>
-                  <div className="col-span-2 sm:p-2 text-[10px] flex items-center justify-center text-center">
-                    <div className="break-words leading-tight">{userData?.bank_name || '-'}</div>
+                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={() => openDoc(userData?.bank_certificate?.url)}
+                      disabled={!userData?.bank_certificate?.url}
+                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
+                    >
+                      {currentLang === 'vi' ? 'Xem' : 'View'}
+                    </button>
                   </div>
                 </div>
 
-                {/* Row: Email hóa đơn điện tử */}
-                <div className="grid grid-cols-6 gap-0">
-                  <div className="col-span-1 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words align-top flex items-center">
-                    <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'EMAIL HĐ:' : 'INVOICE EMAIL:'}
-                    </div>
-                  </div>
-                  <div className="col-span-5 sm:p-2 text-[10px] align-top flex items-center justify-center text-center">
-                    <div className="break-words leading-tight">{userData?.email || '-'}</div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Signed member registration contract */}
-      <div className="flex gap-1 mt-1">
-        <button
-          onClick={handleDownloadContract}
-          disabled={dlLoading.contract}
-          className="flex-1 text-[10px] py-1 px-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 leading-tight"
-        >
-          {dlLoading.contract
-            ? '...'
-            : (currentLang === 'vi' ? 'HỢP ĐỒNG ĐĂNG KÝ TÀI KHOẢN THÀNH VIÊN (đã ký)' : 'Signed member registration contract')}
-        </button>
+          {/* Status text — registered for operation (in-panel text line, not a separate banner) */}
+          <button
+            onClick={handleDownloadContract}
+            disabled={dlLoading.contract}
+            className="mt-1 w-full flex items-center justify-center gap-1 text-[10px] font-bold text-orange-600 hover:text-orange-700 disabled:opacity-50 leading-tight"
+          >
+            {userData?.company_logo?.url ? (
+              <img src={userData.company_logo.url} alt="" className="w-3 h-3 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <Building2 size={10} className="flex-shrink-0" />
+            )}
+            {dlLoading.contract
+              ? '...'
+              : (currentLang === 'vi'
+                ? 'ĐÃ ĐĂNG KÝ HOẠT ĐỘNG (làm theo quy định pháp luật)'
+                : 'REGISTERED FOR OPERATION (in accordance with the law)')}
+          </button>
+        </div>
       </div>
     </div>
   );

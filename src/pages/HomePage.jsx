@@ -5,7 +5,6 @@ import { BookUserIcon } from "lucide-react";
 
 // Components
 import { HeroHeader, Body, SearchSection, DropdownAuth } from "../components/Body";
-import GlobalInfoComponent from '../components/GlobalInfoComponent';
 import CountrySpecificComponent from '../components/CountrySpecificComponent';
 import CompanyInfoTable from '../components/CompanyInfoTable';
 import EventFilterComponent from "../components/EventFilterComponent";
@@ -181,11 +180,7 @@ function HomePageLogin() {
                         <CompanyInfoTable userCountry={selectedLang}/>
                     </div>
                 )}
-                {isUserLoggedIn && (
-                    <div className="flex-1 avtblock !hidden md:!block w-full h-full flex flex-col avt"
-                         style={{maxWidth: "clamp(50px, 130px, 130px) ", margin: "0 2px"}}>
-                        <GlobalInfoComponent userCountry={selectedLang}/>
-                    </div>)}
+                {/* Globe/planet moved into CompanyInfoTable as the company logo, so the standalone column is removed when logged in */}
                 {!isUserLoggedIn && (
                     <div className="!hidden md:!block flex-2" style={{height: "100%", flex: 3}}>
                         <DataTableComponent/>

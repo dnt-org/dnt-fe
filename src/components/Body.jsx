@@ -336,63 +336,23 @@ const DropdownAuth = () => {
                 >
                     {t("navigation.login", "ĐĂNG NHẬP")}
                 </button>
-            ) : (
-                <div
-                    className="flex flex-col items-center justify-center"
-                    style={{
-                        fontSize: "clamp(10px, 1.2vw, 20px)",
-                        fontWeight: "bold",
-                        background: "none",
-                        cursor: "pointer",
-                        border: "1px solid black",
-                        padding: "0.4vw",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        display: "flex",
-                        marginBottom: "1vw",
-                    }}
-                >
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        style={{display: "none"}}
-                    />
-                    {/* Avartar */}
-                    {/* <div className='lowercase' style={{ fontSize: "clamp(10px, 1vw, 20px)", fontStyle: 'italic' }}>(LOGIN)</div> */}
-                    <button onClick={handleAvatarClick}>
-                        <img
-                            src={auth.user?.avt?.url || DEFAULT_AVT}
-                            alt="Avatar"
-                            style={{
-                                borderRadius: "50%",
-                                height: "clamp(20px, 3vw, 50px)",
-                                aspectRatio: 1,
-                            }}
-                        />
-                    </button>
-                </div>
-            )}
+            ) : null}
             {user ? (
                 <div
-                    className="flex items-center justify-center gap-2 h-[55px]"
+                    className="flex items-center justify-center"
                     style={{
-                        fontSize: "clamp(10px, 1.2vw, 20px)",
-                        fontWeight: "bold",
-                        background: "none",
                         cursor: "pointer",
                         border: "1px solid black",
-                        padding: "1vw",
-                        marginBottom: "1vw",
+                        padding: "3px",
+                        marginBottom: "0.4vw",
+                        width: "fit-content",
                     }}
                     onClick={() => navigate("/admin-control")}
                 >
-                    <button className="text-red-600 hover:text-red-800">
+                    <button className="text-red-600 hover:text-red-800 flex items-center justify-center">
                         <KeyboardIcon
-                            className="hover:text-red-800"
                             style={{cursor: "pointer"}}
-                            size={24}
+                            size={16}
                         />
                     </button>
                 </div>

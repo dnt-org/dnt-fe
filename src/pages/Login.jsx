@@ -537,10 +537,12 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-            {/* reCAPTCHA v2 Checkbox — user must tick before submitting */}
-            <div className="flex justify-center my-4">
-              <div id="recaptcha-login"></div>
-            </div>
+            {/* reCAPTCHA v2 Checkbox — hidden when success message is shown (post password-change redirect) */}
+            {!successMessage && (
+              <div className="flex justify-center my-4">
+                <div id="recaptcha-login"></div>
+              </div>
+            )}
 
             {step === 'LOGIN' && !isShowRecover && (
               <>
