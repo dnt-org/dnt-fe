@@ -9,10 +9,11 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
  * @returns {Promise<boolean>} - True if successful
  */
 const downloadContract = async (data) => {
+  const { returnBlob, ...payload } = data;
   try {
     const response = await axios.post(
       `${API_URL}/contract/generate`,
-      data,
+      payload,
       {
         responseType: 'blob',
         headers: {
@@ -22,15 +23,18 @@ const downloadContract = async (data) => {
     );
 
     const blob = new Blob([response.data], { type: 'application/pdf' });
+
+    if (returnBlob) return blob;
+
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `contract_${data.benAIdentityNumber}.pdf`;
+    a.download = `contract_${payload.benAIdentityNumber}.pdf`;
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
-    
+
     return true;
   } catch (error) {
     if (error.response) {

@@ -17,8 +17,12 @@ export const categories = [
         en: "FOR RENT",
     },
     {
-        vi: "DỊCH VỤ",
-        en: "SERVICES",
+        vi: "CUNG CẤP DỊCH VỤ",
+        en: "PROVIDE SERVICES",
+    },
+    {
+        vi: "SỬ DỤNG DỊCH VỤ",
+        en: "USE SERVICES",
     },
 ];
 

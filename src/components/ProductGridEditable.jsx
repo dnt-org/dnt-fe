@@ -172,7 +172,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {(category === "BUY" || category === "RENT") && (
               <div> (25) {t("productGrid.quantitymax")}{" "}<span className="text-red-500">*</span></div>
             )}
-            {(category === "SERVICES" || category === null) && (
+            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || category === null) && (
               <>
                 <select>
                   <option value="1">(25)  {t("productGrid.quantitymax")}</option>
@@ -203,7 +203,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {(category === "BUY" || category === "RENT") && (
               <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} />{" "}<span className="text-red-500">*</span></div>
             )}
-            {(category === "SERVICES" || category === null) && (
+            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || category === null) && (
               <>
                 <select>
                   <option value="1">(29)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} /></option>
@@ -219,7 +219,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {(category === "BUY" || category === "RENT") && (
               <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} />{" "}<span className="text-red-500">*</span></div>
             )}
-            {(category === "SERVICES" || category === null) && (
+            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || category === null) && (
               <>
                 <select>
                   <option value="1">(30)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></option>
@@ -240,7 +240,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {(category === "BUY" || category === "RENT") && (
               <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
             )}
-            {(category === "SERVICES" || category === null) && (
+            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || category === null) && (
               <>
                 <select>
                   <option value="1">(32)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} /></option>
@@ -257,7 +257,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {(category === "BUY" || category === "RENT") && (
               <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} />{" "}<span className="text-red-500">*</span></div>
             )}
-            {(category === "SERVICES" || category === null) && (
+            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || category === null) && (
               <>
                 <select>
                   <option value="1">(33)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} /></option>

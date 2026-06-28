@@ -56,19 +56,24 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleDownloadContract = async () => {
+  const handleViewContract = async () => {
     setDlLoading((prev) => ({ ...prev, contract: true }));
     try {
       const authToken = localStorage.getItem('authToken');
       const response = await getMe(authToken);
       const user = response.data;
-      await downloadContract({
+      const blob = await downloadContract({
         benAIdentityNumber: user?.identityNumber || user?.cccd || '',
         benAName: user?.full_name || user?.username || '',
         benAAddress: user?.address_no || '',
+        returnBlob: true,
       });
+      if (blob instanceof Blob) {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     } catch (err) {
-      alert('Lỗi tải hợp đồng: ' + err.message);
+      alert('Lỗi xem hợp đồng: ' + err.message);
     } finally {
       setDlLoading((prev) => ({ ...prev, contract: false }));
     }
@@ -98,8 +103,8 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
       {/* Two-column layout: left = company logo + personal avatar (stacked), right = name + table + status */}
       <div className="flex flex-row gap-2 items-start">
 
-        {/* LEFT column: company logo (large) on top, personal avatar (small) directly below — same column */}
-        <div className="flex flex-col items-center flex-shrink-0 w-16 sm:w-20">
+        {/* LEFT column: company logo aligned with the info table (offset by company name heading height) */}
+        <div className="flex flex-col items-center flex-shrink-0 w-16 sm:w-20 pt-6">
           {/* Company logo — large, round */}
           <img
             src={companyLogo}
@@ -206,7 +211,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
 
           {/* Status text — registered for operation (in-panel text line, not a separate banner) */}
           <button
-            onClick={handleDownloadContract}
+            onClick={handleViewContract}
             disabled={dlLoading.contract}
             className="mt-1 w-full flex items-center justify-center gap-1 text-[10px] font-bold text-orange-600 hover:text-orange-700 disabled:opacity-50 leading-tight"
           >

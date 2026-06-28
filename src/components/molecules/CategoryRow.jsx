@@ -20,7 +20,7 @@ export default function CategoryRow({ selectedType,
   const { t, i18n } = useTranslation()
   const isVi = (i18n.language || "vi").toLowerCase().startsWith("vi")
 
-  const categoryKeyMap = { SALE: "sale", BUY: "buy", RENT: "rent", "FOR RENT": "for_rent", SERVICES: "service" }
+  const categoryKeyMap = { SALE: "sale", BUY: "buy", RENT: "rent", "FOR RENT": "for_rent", "PROVIDE SERVICES": "provide_services", "USE SERVICES": "use_services" }
   const subcategoryKeyMap = { GOODS: "goods", "LAND AND HOUSE": "landhouse", VEHICLE: "vehicle", MANPOWER: "manpower", "IMPORT - EXPORT": "import_export" }
   const conditionKeyMap = { SCRAP: "scrap", NEW: "new", OLD: "old", UNUSED: "unused" }
 
