@@ -36,6 +36,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       size: "",
       color: "",
       image: null,
+      videoFile: null,
       qualityInfoFile: null,
       warrantyChangeDays: "",
       warrantyRepairDays: "",
@@ -91,46 +92,49 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
           </div>
           {/* New columns */}
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (7) <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />{" "}
+            <div> (7) {t("productGrid.recordingVideo", "QUAY PHIM")} <span className="text-red-500">*</span></div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div> (8) <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (8) {t("productGrid.poster_info", "THÔNG TIN NGƯỜI ĐĂNG BÀI")}</div>
+            <div> (9) {t("productGrid.poster_info", "THÔNG TIN NGƯỜI ĐĂNG BÀI")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (9) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />{" "}
+            <div> (10) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (10) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyPolicy") }} />{" "}
+            <div> (11) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyPolicy") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (11) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />{" "}
+            <div> (12) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (12) <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />{" "}
+            <div> (13) <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (13) <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />{" "}
+            <div> (14) <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (14) {t("productGrid.handoverLocation")}{" "}
+            <div> (15) {t("productGrid.handoverLocation")}{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
           {/* THỜI LƯỢNG THỰC HIỆN split into 2 columns */}
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (15) <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />{" "}
+            <div> (16) <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />{" "}
               <span className="text-red-500">*</span>
             </div>
           </div>
@@ -138,41 +142,41 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             <div> (16) {t("productGrid.timeUnit")}</div>
           </div> */}
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (17) {t("productGrid.directPayment")}</div>
+            <div> (18) {t("productGrid.directPayment")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (18) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
+            <div> (19) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (19) <span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
+            <div> (20) <span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (20) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
+            <div> (21) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (21) <span dangerouslySetInnerHTML={{ __html: t("productGrid.vat") }} />
+            <div> (22) <span dangerouslySetInnerHTML={{ __html: t("productGrid.vat") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (22) <span dangerouslySetInnerHTML={{ __html: t("productGrid.payOnWeb") }} />
+            <div> (23) <span dangerouslySetInnerHTML={{ __html: t("productGrid.payOnWeb") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (23) <span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} />
+            <div> (24) <span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             {(category === "SALE" || category === "FOR RENT") && (
-              <div> (24) {t("productGrid.quantityMinimum")}{" "}<span className="text-red-500">*</span></div>
+              <div> (25) {t("productGrid.quantityMinimum")}{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "BUY" || category === "RENT") && (
-              <div> (24) {t("productGrid.quantitymax")}{" "}<span className="text-red-500">*</span></div>
+              <div> (25) {t("productGrid.quantitymax")}{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "SERVICES" || category === null) && (
               <>
                 <select>
-                  <option value="1">(24)  {t("productGrid.quantitymax")}</option>
-                  <option value="2">(24)  {t("productGrid.quantityMinimum")}</option>
+                  <option value="1">(25)  {t("productGrid.quantitymax")}</option>
+                  <option value="2">(25)  {t("productGrid.quantityMinimum")}</option>
                 </select>
               </>
             )}
@@ -180,7 +184,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
 
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (25) <span dangerouslySetInnerHTML={{ __html: t("productGrid.quantityMinRequire") }} />
+            <div> (26) <span dangerouslySetInnerHTML={{ __html: t("productGrid.quantityMinRequire") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
@@ -189,58 +193,58 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (27) <span dangerouslySetInnerHTML={{ __html: t("productGrid.unitMarketPrice") }} />
+            <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.unitMarketPrice") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             {(category === "SALE" || category === "FOR RENT") && (
-              <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "BUY" || category === "RENT") && (
-              <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "SERVICES" || category === null) && (
               <>
                 <select>
-                  <option value="1">(28)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} /></option>
-                  <option value="2">(28)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} /></option>
+                  <option value="1">(29)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} /></option>
+                  <option value="2">(29)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} /></option>
                 </select>
               </>
             )}
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
           {(category === "SALE" || category === "FOR RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "BUY" || category === "RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "SERVICES" || category === null) && (
               <>
                 <select>
-                  <option value="1">(29)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></option>
-                  <option value="2">(29)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} /></option>
+                  <option value="1">(30)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></option>
+                  <option value="2">(30)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} /></option>
                 </select>
               </>
             )}
           </div>
 
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-            <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.totalAmountandvat") }} /></div>
+            <div> (31) <span dangerouslySetInnerHTML={{ __html: t("productGrid.totalAmountandvat") }} /></div>
           </div>
 
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
           {(category === "SALE" || category === "FOR RENT") && (
-              <div> (31) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "BUY" || category === "RENT") && (
-              <div> (31) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "SERVICES" || category === null) && (
               <>
                 <select>
-                  <option value="1">(31)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} /></option>
-                  <option value="2">(31)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} /></option>
+                  <option value="1">(32)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} /></option>
+                  <option value="2">(32)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} /></option>
                 </select>
               </>
             )}
@@ -248,16 +252,16 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
           </div>
          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
           {(category === "SALE" || category === "FOR RENT") && (
-              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "BUY" || category === "RENT") && (
-              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} />{" "}<span className="text-red-500">*</span></div>
+              <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} />{" "}<span className="text-red-500">*</span></div>
             )}
             {(category === "SERVICES" || category === null) && (
               <>
                 <select>
-                  <option value="1">(32)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} /></option>
-                  <option value="2">(32)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} /></option>
+                  <option value="1">(33)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} /></option>
+                  <option value="2">(33)  <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} /></option>
                 </select>
               </>
             )}
@@ -337,6 +341,30 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               </div>
             </div>
             {/* New cells */}
+            {/* Col 7: QUAY PHIM */}
+            <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
+              <div className="flex items-center justify-center gap-2">
+                <input
+                  type="file"
+                  accept="video/*"
+                  id={`videoFile-${item.id}`}
+                  onChange={(e) =>
+                    handleItemChange(item.id, "videoFile", e.target.files?.[0] || null)
+                  }
+                  className="sr-only"
+                />
+                <label
+                  htmlFor={`videoFile-${item.id}`}
+                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap"
+                >
+                  {t("productGrid.uploadFile")}
+                </label>
+                {item.videoFile && (
+                  <div className="text-xs truncate max-w-[150px]" title={item.videoFile.name}>{item.videoFile.name}</div>
+                )}
+              </div>
+            </div>
+            {/* Col 8: CHẤT LƯỢNG THÔNG TIN */}
             <div className="border-r border-t border-b border-gray-300 p-2 text-center">
               <button
                 type="button"

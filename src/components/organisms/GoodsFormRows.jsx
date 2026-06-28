@@ -167,9 +167,20 @@ export default function GoodsFormRows({
         </div>
       </div>
 
-      <div id="row7" className="grid grid-cols-30 border-b border-gray-300">
+      <div className="grid grid-cols-30 border-b border-gray-300">
+        <RowNumberCell number={8} className="col-span-1 p-2" />
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
+          <div>{t("goods.taxVatAndPit", "NỘP HỖ THUẾ VAT + TNCN")}</div>
+        </div>
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center justify-end">
+          <span className="font-medium">0</span>
+          <span className="ml-1 text-gray-700">%</span>
+        </div>
+      </div>
+
+      <div id="row9" className="grid grid-cols-30 border-b border-gray-300">
         <div className="col-span-1 border-r border-t border-gray-300 p-2 text-center flex items-center justify-center">
-          <span className="font-bold">7</span>
+          <span className="font-bold">9</span>
         </div>
         <div className="col-span-29">
           <div className="grid grid-cols-16 border-gray-300">
