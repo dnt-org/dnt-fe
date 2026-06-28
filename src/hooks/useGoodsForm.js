@@ -51,8 +51,12 @@ export default function useGoodsForm() {
   }
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setGoodsInfo((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }))
+    const { name, value, type, checked, files } = e.target
+    let newVal
+    if (type === "checkbox") newVal = checked
+    else if (type === "file") newVal = files?.[0] ?? null
+    else newVal = value
+    setGoodsInfo((prev) => ({ ...prev, [name]: newVal }))
   }
 
   // Hàm kết hợp giờ và phút thành định dạng 24h (HH:mm)
