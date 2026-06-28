@@ -1,46 +1,24 @@
 import React from "react"
 import PropTypes from "prop-types"
 import { useNavigate } from "react-router-dom"
-import { renderAsync } from "docx-preview"
 
 export default function RegisterStepTwo({
   t,
   handleContractDownload,
   isReadContract,
   handleRegister,
-  isContractModalOpen,
-  contractFiles,
-  contractActiveIndex,
-  setContractActiveIndex,
-  isContractLoading,
-  contractError,
-  handleCloseContractModal,
 }) {
   const navigate = useNavigate()
   const [isTick, setIsTick] = React.useState(false)
-  const docxContainerRef = React.useRef(null)
-  const activeFile = contractFiles?.[contractActiveIndex]
 
-  React.useEffect(() => {
-    if (!isContractModalOpen || isContractLoading) return
-    if (!activeFile || activeFile.kind !== "docx" || !activeFile.blob) return
-    const container = docxContainerRef.current
-    if (!container) return
-    container.innerHTML = ""
-    renderAsync(activeFile.blob, container, null, { inWrapper: true }).catch((err) => {
-      console.error("docx-preview render error:", err)
-    })
-  }, [isContractModalOpen, isContractLoading, activeFile])
   const handleCheckboxChange = (e) => {
-    console.log(e.target.checked)
     setIsTick(e.target.checked)
   }
   const handleSubmited = () => {
     if (isTick) {
-        handleRegister()
-    }
-    else {
-        alert("Vui lòng đồng ý điều khoản")
+      handleRegister()
+    } else {
+      alert("Vui lòng đồng ý điều khoản")
     }
   }
   return (
@@ -60,11 +38,9 @@ export default function RegisterStepTwo({
         </div>
         <div className="text-left">
           {t("register.contractConfirmation1", "Tôi xác nhận đã đọc, hiểu rõ và đồng ý, chấp nhận ký hợp đồng cũng như tuân thủ mọi điều khoản và điều kiện do website - app yêu cầu bao gồm thêm các nội dung sau:")} <br />
-          
         </div>
       </div>
       <div className="flex items-start gap-2">
-        
         <div className="flex flex-col items-center">
           <input type="checkbox" className="w-5 h-5" />
         </div>
@@ -92,90 +68,6 @@ export default function RegisterStepTwo({
           {t("register.registerTitle", "Đăng ký")}
         </button>
       </div>
-      {isContractModalOpen ? (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60">
-          <div className="bg-white w-screen h-screen flex flex-col">
-            <div className="flex items-center justify-between px-4 py-2 border-b">
-              <h2 className="font-semibold text-lg">{t("register.contractPreviewTitle", "Xem hợp đồng và tài liệu liên quan")}</h2>
-              <button className="text-gray-600 hover:text-black" onClick={handleCloseContractModal}>
-                ✕
-              </button>
-            </div>
-            <div className="flex-1 flex flex-col">
-              {isContractLoading ? (
-                <div className="flex-1 flex items-center justify-center">
-                  <span>{t("common.loading", "Đang tải...")}</span>
-                </div>
-              ) : contractFiles && contractFiles.length > 0 ? (
-                <>
-                  <div className="flex-1 overflow-auto bg-gray-100">
-                    {activeFile?.kind === "docx" ? (
-                      <div
-                        ref={docxContainerRef}
-                        className="w-full h-full overflow-auto p-4"
-                      />
-                    ) : (
-                      <iframe
-                        key={activeFile?.url}
-                        src={activeFile?.url}
-                        className="w-full h-full"
-                        title={activeFile?.label || "contract-file"}
-                      />
-                    )}
-                  </div>
-                  <div className="border-t px-4 py-2 flex items-center justify-between">
-                    <button
-                      type="button"
-                      className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                      disabled={contractFiles.length <= 1}
-                      onClick={() => {
-                        if (!contractFiles.length) return
-                        const nextIndex = (contractActiveIndex - 1 + contractFiles.length) % contractFiles.length
-                        setContractActiveIndex(nextIndex)
-                      }}
-                    >
-                      {t("common.previous", "Trước")}
-                    </button>
-                    <div className="text-sm">
-                      {contractFiles[contractActiveIndex]?.label || ""} ({contractActiveIndex + 1}/{contractFiles.length})
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={contractFiles[contractActiveIndex]?.url}
-                        download={contractFiles[contractActiveIndex]?.downloadName || true}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-3 py-1 rounded border bg-blue-600 text-white text-sm hover:bg-blue-700"
-                      >
-                        {t("detailOfGoods.downloadFile", "DOWNLOAD FILE")}
-                      </a>
-                      <button
-                        type="button"
-                        className="px-3 py-1 rounded border text-sm disabled:opacity-50"
-                        disabled={contractFiles.length <= 1}
-                        onClick={() => {
-                          if (!contractFiles.length) return
-                          const nextIndex = (contractActiveIndex + 1) % contractFiles.length
-                          setContractActiveIndex(nextIndex)
-                        }}
-                      >
-                        {t("common.next", "Sau")}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="flex-1 flex items-center justify-center">
-                  <span>{t("register.noContractFiles", "Không có file để hiển thị")}</span>
-                </div>
-              )}
-              {contractError ? (
-                <div className="px-4 py-2 text-red-600 text-sm border-t">{contractError}</div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -185,11 +77,4 @@ RegisterStepTwo.propTypes = {
   handleContractDownload: PropTypes.func.isRequired,
   isReadContract: PropTypes.bool.isRequired,
   handleRegister: PropTypes.func.isRequired,
-  isContractModalOpen: PropTypes.bool,
-  contractFiles: PropTypes.array,
-  contractActiveIndex: PropTypes.number,
-  setContractActiveIndex: PropTypes.func,
-  isContractLoading: PropTypes.bool,
-  contractError: PropTypes.string,
-  handleCloseContractModal: PropTypes.func,
 }

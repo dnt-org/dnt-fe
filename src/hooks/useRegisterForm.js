@@ -125,21 +125,31 @@ export default function useRegisterForm(t) {
     }
   }, [formData.bank_number, formData.bank_name, t])
 
-  const validateRecoveryCharacter = (recoveryChar) => {
-    const hasUppercase = /[A-Z]/.test(recoveryChar)
-    const hasLowercase = /[a-z]/.test(recoveryChar)
-    const hasNumber = /\d/.test(recoveryChar)
-    const hasSpecialChar = /[~!@#$%^&*()_]/.test(recoveryChar)
-    const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && recoveryChar.length >= 6
+  const validatePasswordComplexity = (value) => {
+    const hasUppercase = /[A-Z]/.test(value)
+    const hasLowercase = /[a-z]/.test(value)
+    const hasNumber = /\d/.test(value)
+    const hasSpecialChar = /[~!@#$%^&*_.]/.test(value)
+    const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && value.length >= 6
     return { hasUppercase, hasLowercase, hasNumber, hasSpecialChar, isValid }
   }
+
+  // Keep existing name as alias so handleInputChange stays working
+  const validateRecoveryCharacter = validatePasswordComplexity
 
   // Validates the 3 security pairs (password, otp, recovery character): each pair
   // must match itself, and the 3 values must all be different from one another.
   const getSecurityFieldErrors = (data) => {
     const errors = {}
 
-    if (!data.password) errors.password = t("auth.passwordRequired", "Vui lòng nhập mật khẩu")
+    if (!data.password) {
+      errors.password = t("auth.passwordRequired", "Vui lòng nhập mật khẩu")
+    } else if (!validatePasswordComplexity(data.password).isValid) {
+      errors.password = t(
+        "auth.invalidPassword",
+        "Mật khẩu phải chứa ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_.)."
+      )
+    }
     if (!data.repeat_password) errors.repeat_password = t("auth.repeatPasswordRequired", "Vui lòng nhập lại mật khẩu")
     if (data.password && data.repeat_password && data.password !== data.repeat_password) {
       errors.repeat_password = t("auth.passwordMismatch", "Mật khẩu không khớp")
@@ -190,7 +200,12 @@ export default function useRegisterForm(t) {
       setValidationErrors((prev) => {
         const next = { ...prev }
         SECURITY_FIELDS.forEach((field) => {
-          next[field] = securityErrors[field] || ""
+          // Only surface an error for a field if the user has typed into it
+          // or it's the field currently being changed — this prevents pre-emptive
+          // errors appearing on confirm fields before the user has touched them
+          if (updated[field] || field === name) {
+            next[field] = securityErrors[field] || ""
+          }
         })
         return next
       })

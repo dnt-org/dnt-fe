@@ -64,6 +64,7 @@ export default function RegisterStepOne({
   handleBankNumberBlur,
   isFetchingAccountName,
   accountNameError,
+  handleContractDownload,
 }) {
   const [visibleFields, setVisibleFields] = useState({})
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
@@ -78,8 +79,23 @@ export default function RegisterStepOne({
     setIsQrModalOpen(false)
   }
 
+  const PASSWORD_COMPLEXITY_HINT = t(
+    "auth.passwordComplexityHint",
+    "Yêu cầu: ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_.)."
+  )
+
   return (
     <div className="mt-3">
+      {/* Fix H: "Xem hợp đồng" button at top-right of the form */}
+      <div className="flex justify-end mb-2">
+        <button
+          type="button"
+          onClick={handleContractDownload}
+          className="text-[13px] border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50"
+        >
+          {t("register.viewContract", "Xem hợp đồng")}
+        </button>
+      </div>
       {/* {error ? <p className="text-red-500">{error}</p> : null} */}
       <div className="grid grid-cols-2 gap-2 mt-2">
         <RegisterCountrySelect
@@ -151,6 +167,9 @@ export default function RegisterStepOne({
           visible={!!visibleFields.password}
           onToggleVisible={() => toggleFieldVisible("password")}
         />
+        {!validationErrors.password && (
+          <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
+        )}
         <SecureField
           name="repeat_password"
           value={formData.repeat_password}
@@ -187,6 +206,8 @@ export default function RegisterStepOne({
           visible={!!visibleFields.recovery_character}
           onToggleVisible={() => toggleFieldVisible("recovery_character")}
         />
+        {/* Fix G: helper text showing complexity requirements */}
+        <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
         <SecureField
           name="repeat_recovery_character"
           value={formData.repeat_recovery_character}
@@ -239,4 +260,5 @@ RegisterStepOne.propTypes = {
   handleBankNumberBlur: PropTypes.func.isRequired,
   isFetchingAccountName: PropTypes.bool,
   accountNameError: PropTypes.string,
+  handleContractDownload: PropTypes.func,
 }
