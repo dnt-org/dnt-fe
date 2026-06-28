@@ -847,16 +847,18 @@ export default function ContactAdminPage() {
 
   const handleSendMessage = (text) => {
     if (!activeContactId) return;
+    const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     const newMessage = {
-      id: Date.now(),
+      id: msgId,
       text,
       sender: 'me',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    setContactMessages(prev => ({
-      ...prev,
-      [activeContactId]: [...(prev[activeContactId] || []), newMessage]
-    }));
+    setContactMessages(prev => {
+      const current = prev[activeContactId] || [];
+      if (current.some(m => m.id === msgId)) return prev; // idempotent guard
+      return { ...prev, [activeContactId]: [...current, newMessage] };
+    });
   };
 
   const isBotMode = chatMode === 'bot';
