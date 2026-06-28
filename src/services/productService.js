@@ -9,29 +9,56 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
  * @param {Object} productData - The product data to be sent
  * @returns {Promise<Object>} - The response from the API
  */
+// File field names that are sent as binary uploads
+const PRODUCT_FILE_FIELDS = [
+  'videoFile', 'livestreamVideoFile', 'livestreamCertFile',
+  'advertisingVideoFile', 'advertisingCertFile',
+  'regLivestreamProductProfile', 'regLivestreamCertFile',
+  'regProductAdCompanyProfile', 'regProductAdCertFile',
+  'regPersonalBrandProductProfile', 'regPersonalBrandCertFile',
+];
+
+/**
+ * Build FormData from a plain object, hoisting File values to multipart slots.
+ * Non-file fields are appended as strings. Arrays/objects are JSON-stringified.
+ */
+function buildFormData(data) {
+  const fd = new FormData();
+  for (const [key, val] of Object.entries(data)) {
+    if (val === undefined || val === null) continue;
+    if (PRODUCT_FILE_FIELDS.includes(key) && val instanceof File) {
+      fd.append(`files.${key}`, val, val.name);
+    } else if (Array.isArray(val) || (typeof val === 'object' && !(val instanceof File))) {
+      fd.append(key, JSON.stringify(val));
+    } else {
+      fd.append(key, String(val));
+    }
+  }
+  return fd;
+}
+
 const createProduct = async (authToken, productData) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/products/create`,
-      productData,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      }
-    );
+    const hasFiles = PRODUCT_FILE_FIELDS.some(f => productData[f] instanceof File);
+    let body;
+    let headers = { 'Authorization': `Bearer ${authToken}` };
+
+    if (hasFiles) {
+      body = buildFormData(productData);
+      // Let axios set Content-Type with boundary automatically for multipart
+    } else {
+      body = productData;
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const response = await axios.post(`${API_URL}/products`, body, { headers });
     return response;
   } catch (error) {
     if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       throw new Error(error.response.data?.error?.message || "Product creation failed");
     } else if (error.request) {
-      // The request was made but no response was received
       throw new Error("No response from server");
     } else {
-      // Something happened in setting up the request that triggered an Error
       throw new Error("Error setting up product creation request");
     }
   }

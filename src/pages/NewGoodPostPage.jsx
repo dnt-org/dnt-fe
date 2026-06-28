@@ -29,41 +29,43 @@ export default function NewGoodPostPage() {
     handleInputChange(e)
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const formattedData = {
-      ...goodsInfo,
-      priceReviewTime: formatPriceReviewTime(),
-      price: goodsInfo.price ? parseFloat(goodsInfo.price) : 0,
-      askingPrice: goodsInfo.askingPrice ? parseFloat(goodsInfo.askingPrice) : 0,
-      estimatedValue: goodsInfo.estimatedValue ? parseFloat(goodsInfo.estimatedValue) : 0,
-      autoAcceptPrice: goodsInfo.autoAcceptPrice ? parseFloat(goodsInfo.autoAcceptPrice) : 0,
-      marketPrice: goodsInfo.marketPrice ? parseFloat(goodsInfo.marketPrice) : 0,
-      lowestUnitAskingPrice: goodsInfo.lowestUnitAskingPrice ? parseFloat(goodsInfo.lowestUnitAskingPrice) : 0,
-      highestUnitAskingPrice: goodsInfo.highestUnitAskingPrice ? parseFloat(goodsInfo.highestUnitAskingPrice) : 0,
-      deliveryDays: goodsInfo.deliveryDays ? parseInt(goodsInfo.deliveryDays) : 0,
-      lowestAmount: goodsInfo.lowestAmount ? parseInt(goodsInfo.lowestAmount) : 0,
-      highestAmount: goodsInfo.highestAmount ? parseInt(goodsInfo.highestAmount) : 0,
-      lowestAutoAcceptPrice: goodsInfo.lowestAutoAcceptPrice ? parseFloat(goodsInfo.lowestAutoAcceptPrice) : 0,
-      highestAutoAcceptPrice: goodsInfo.highestAutoAcceptPrice ? parseFloat(goodsInfo.highestAutoAcceptPrice) : 0,
-      contractDuration: goodsInfo.contractDuration ? parseInt(goodsInfo.contractDuration) : 0,
-      eventFeePercentage: goodsInfo.eventFeePercentage ? parseFloat(goodsInfo.eventFeePercentage) : 0,
-      livestreamFee: goodsInfo.livestreamFee ? parseFloat(goodsInfo.livestreamFee) : 0,
-      advertisingAmount: goodsInfo.advertisingAmount ? parseFloat(goodsInfo.advertisingAmount) : 0,
-      successFee: goodsInfo.successFee ? parseFloat(goodsInfo.successFee) : 0,
-      totalFees: goodsInfo.totalFees ? parseFloat(goodsInfo.totalFees) : 0,
-      image: "https://example.com/image.jpg",
-      qualityFiles: ["https://example.com/doc1.pdf", "https://example.com/doc2.pdf"],
-      advertisingUrl: "https://example.com/advertising",
+  const buildPayload = (status) => ({
+    ...goodsInfo,
+    status,
+    listingType: selectedType,
+    categoryType: selectedCategory,
+    conditionType: selectedCondition,
+    nation: selectedCountry,
+    province: selectedProvince,
+    address: selectedDistrict,
+    priceReviewTime: formatPriceReviewTime(),
+    items: goodsItems,
+  })
+
+  const submitForm = async (status) => {
+    const token = localStorage.getItem("token") || localStorage.getItem("jwt")
+    if (!token) {
+      setErrorMessage("Bạn cần đăng nhập để đăng hàng hóa.")
+      return
     }
-    createProduct("token", formattedData)
-      .then((res) => {
-        console.log(res.data)
-        alert("Create success " + goodsInfo.name)
-      })
-      .catch((e) => {
-        console.log(e)
-      })
+    try {
+      const res = await createProduct(token, buildPayload(status))
+      console.log("Created product:", res.data)
+      navigate("/")
+    } catch (err) {
+      console.error(err)
+      setErrorMessage(err.message || "Tạo hàng hóa thất bại")
+    }
+  }
+
+  const handleSaveDraft = (e) => {
+    e.preventDefault()
+    submitForm("draft")
+  }
+
+  const handleSendRequest = (e) => {
+    e.preventDefault()
+    submitForm("pending")
   }
 
   return (
@@ -77,7 +79,7 @@ export default function NewGoodPostPage() {
         title={t("goods.newPost")}
       />
       <div className="mt-1">
-        <form onSubmit={handleSubmit} className=" border-gray-300">
+        <form className="border-gray-300">
           <PostTypeMenu activeType="goods" />
           <GoodsAccount title={t("goods.accountOfGoods")} country={selectedCountry} onTransfer={() => { }} />
           <GoodsFormRows
@@ -115,9 +117,10 @@ export default function NewGoodPostPage() {
               </div>
             </div>
           </div>
+          {errorMessage && <div className="text-red-500 text-sm text-center px-4 pb-2">{errorMessage}</div>}
           <div className="flex justify-center gap-4 p-4 border-t border-gray-300">
-            <button type="submit" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.saveDraff")}</button>
-            <button type="submit" className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.sendRequirement")}</button>
+            <button type="button" onClick={handleSaveDraft} className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.saveDraff")}</button>
+            <button type="button" onClick={handleSendRequest} className="bg-gray-300 hover:bg-gray-100 text-black font-bold py-2 px-6 border border-gray-200">{t("goods.sendRequirement")}</button>
           </div>
         </form>
       </div>
