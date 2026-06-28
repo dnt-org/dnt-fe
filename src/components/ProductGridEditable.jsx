@@ -38,8 +38,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       image: null,
       videoFile: null,
       qualityInfoFile: null,
-      warrantyPolicyFile: null,
+      posterInfo: "",
       warrantyChangeDays: "",
+      warrantyPolicyFile: null,
       warrantyRepairDays: "",
       repairWarrantyRetentionPercent: "",
       maxDeliveryDaysAfterAcceptance: "",
@@ -51,12 +52,15 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       paymentViaWallet: "",
       depositRequirementWallet: "",
       vat: "",
+      paymentOnPlatform: "",
       timeUserMustPayAfterDelivery: "",
       quantityMinimum: "",
+      quantityMinRequire: "",
       unit: "",
       unitMarketPrice: "",
       unitAskingPrice: "",
       amountDesired: "",
+      totalAmountAndVat: "",
       autoAcceptPrice: "",
       autoRejectPrice: "",
     };
@@ -367,14 +371,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               </div>
             </div>
             {/* Col 8: CHẤT LƯỢNG THÔNG TIN */}
-            <div className="border-r border-t border-b border-gray-300 p-2 text-center">
-              <button
-                type="button"
-                className="mt-1 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-              >
-                {t("productGrid.uploadFile")}
-              </button>
-            </div>
             <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
               <div className="flex items-center justify-center gap-2">
                 {/* Hide native file input to remove default "No file chosen" text */}
@@ -397,6 +393,16 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 )}
               </div>
             </div>
+            {/* Col 9: THÔNG TIN NGƯỜI ĐĂNG BÀI */}
+            <input
+              type="text"
+              value={item.posterInfo}
+              onChange={(e) =>
+                handleItemChange(item.id, "posterInfo", e.target.value)
+              }
+              className="w-full border-r border-b border-gray-300"
+              placeholder={t("goods.enter")}
+            />
             {/* <input
               type="number"
               min="0"
@@ -611,8 +617,16 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               <option value="yes">{t("productGrid.yes")}</option>
               <option value="no">{t("productGrid.no")}</option>
             </select>
-            <div className="w-full border-t border-b border-r border-gray-300 text-center flex items-center">
-              <span dangerouslySetInnerHTML={{ __html: t("productGrid.payOnWebInfo") }} />
+            <div className="w-full border-t border-b border-r border-gray-300 text-center flex items-center p-2">
+              <input
+                type="text"
+                value={item.paymentOnPlatform}
+                onChange={(e) =>
+                  handleItemChange(item.id, "paymentOnPlatform", e.target.value)
+                }
+                className="w-full border border-gray-300 p-1"
+                placeholder={t("goods.enter")}
+              />
             </div>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
@@ -636,6 +650,15 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 name="quantityMinimum"
                 value={item.quantityMinimum}
                 onChange={(e) => handleItemChange(item.id, "quantityMinimum", e.target.value)}
+                className="w-full p-3 border-gray-300 text-right"
+              />
+            </div>
+            {/* New cell for (26) quantityMinRequire */}
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                name="quantityMinRequire"
+                value={item.quantityMinRequire}
+                onChange={(e) => handleItemChange(item.id, "quantityMinRequire", e.target.value)}
                 className="w-full p-3 border-gray-300 text-right"
               />
             </div>
@@ -689,11 +712,14 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               />
             </div>
 
-            {/* Col 31: totalAmountAndVat — auto-calc, read-only */}
+            {/* Col 31: totalAmountAndVat */}
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
+                name="totalAmountAndVat"
                 type="number"
-                value=""
+                value={item.totalAmountAndVat}
+                onChange={(e) => handleItemChange(item.id, "totalAmountAndVat", e.target.value)}
+                placeholder={t("goods.enter")}
                 country={getUserCountry()}
               />
             </div>

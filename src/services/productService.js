@@ -18,34 +18,66 @@ const PRODUCT_FILE_FIELDS = [
   'regPersonalBrandProductProfile', 'regPersonalBrandCertFile',
 ];
 
+const ITEM_FILE_FIELDS = [
+  'image', 'videoFile', 'qualityInfoFile', 'warrantyPolicyFile'
+];
+
 /**
  * Build FormData from a plain object, hoisting File values to multipart slots.
  * Non-file fields are appended as strings. Arrays/objects are JSON-stringified.
  */
 function buildFormData(data) {
   const fd = new FormData();
-  for (const [key, val] of Object.entries(data)) {
+  const dataToSerialize = { ...data };
+
+  // 1. Handle root-level files
+  for (const field of PRODUCT_FILE_FIELDS) {
+    if (data[field] instanceof File) {
+      fd.append(`files.${field}`, data[field], data[field].name);
+      delete dataToSerialize[field];
+    }
+  }
+
+  // 2. Handle item-level files
+  if (Array.isArray(data.items)) {
+    dataToSerialize.items = data.items.map((item, index) => {
+      const itemCopy = { ...item };
+      for (const field of ITEM_FILE_FIELDS) {
+        if (item[field] instanceof File) {
+          fd.append(`files.items[${index}].${field}`, item[field], item[field].name);
+          // Replace File object with a placeholder or remove it from JSON serialization
+          itemCopy[field] = null;
+        }
+      }
+      return itemCopy;
+    });
+  }
+
+  // 3. Append everything else
+  for (const [key, val] of Object.entries(dataToSerialize)) {
     if (val === undefined || val === null) continue;
-    if (PRODUCT_FILE_FIELDS.includes(key) && val instanceof File) {
-      fd.append(`files.${key}`, val, val.name);
-    } else if (Array.isArray(val) || (typeof val === 'object' && !(val instanceof File))) {
+    if (Array.isArray(val) || (typeof val === 'object')) {
       fd.append(key, JSON.stringify(val));
     } else {
       fd.append(key, String(val));
     }
   }
+
   return fd;
 }
 
 const createProduct = async (authToken, productData) => {
   try {
-    const hasFiles = PRODUCT_FILE_FIELDS.some(f => productData[f] instanceof File);
+    const hasRootFiles = PRODUCT_FILE_FIELDS.some(f => productData[f] instanceof File);
+    const hasItemFiles = Array.isArray(productData.items) && 
+      productData.items.some(item => ITEM_FILE_FIELDS.some(f => item[f] instanceof File));
+    
+    const hasFiles = hasRootFiles || hasItemFiles;
     let body;
     let headers = { 'Authorization': `Bearer ${authToken}` };
 
     if (hasFiles) {
       body = buildFormData(productData);
-      // Let axios set Content-Type with boundary automatically for multipart
     } else {
       body = productData;
       headers['Content-Type'] = 'application/json';
