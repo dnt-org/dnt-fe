@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home as HomeIcon, Keyboard as KeyboardIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { Home as HomeIcon, Keyboard as KeyboardIcon, ChevronDown, ChevronUp, RefreshCw, X } from "lucide-react";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
 import { useTranslation } from 'react-i18next';
 import { getSessions, toggleSessionStatus } from "../services/authService";
 import { createOrUpdateBusiness, getMyBusiness, uploadDocumentToStrapi, getMyDocuments, verifyMyBusiness } from "../services/businessService";
 import TwoLineUnitInput from "../components/atoms/TwoLineUnitInput";
 import useLocationSelection from "../hooks/useLocationSelection";
+import useBlinkIdScanner from '../components/MicrolinkIDScanner';
 
 const MOCK_VERIFICATION = String(import.meta.env.VITE_MOCK_VERIFICATION || "false").toLowerCase() === "true";
 
@@ -122,11 +123,58 @@ export default function AdminControlPage() {
 
   const navigate = useNavigate();
 
+  // Microblink scanning logic
+  const onScanResult = useCallback(async (result) => {
+    if (result.state === 1 /* RecognizerResultState.Empty */) return;
+
+    // Result extraction based on BlinkIDCombinedRecognizer structure
+    const fullName = result.fullName || "";
+    const idNumber = result.personalNumber || result.documentNumber || "";
+    const frontImage = result.fullDocumentFrontImage?.rawImage;
+    const backImage = result.fullDocumentBackImage?.rawImage;
+
+    // Convert raw images to data URLs if available
+    const frontDataUrl = frontImage ? `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(frontImage)))}` : null;
+    const backDataUrl = backImage ? `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(backImage)))}` : null;
+
+    if (cameraMode === 'business_reg') {
+      if (frontDataUrl) {
+        setBusinessRegDataUrl(frontDataUrl);
+        uploadCapturedPhoto(frontDataUrl, 'business_reg');
+        setHasBusinessVideo(true);
+      }
+    } else {
+      if (frontDataUrl) {
+        setCccdFrontDataUrl(frontDataUrl);
+        uploadCapturedPhoto(frontDataUrl, 'cccd_front');
+      }
+      if (backDataUrl) {
+        setCccdBackDataUrl(backDataUrl);
+        uploadCapturedPhoto(backDataUrl, 'cccd_back');
+        setHasIdCaptured(true);
+      } else if (frontDataUrl) {
+        // If it's a single sided scan or just front
+        setHasIdCaptured(true);
+      }
+    }
+
+    closeCamera();
+  }, []);
+
+  const onScanError = useCallback((error) => {
+    console.error("Scanning Error:", error);
+    closeCamera();
+    alert("Lỗi quét ID. Vui lòng thử lại.");
+  }, []);
+
+  const { containerRef, initialize, destroy, isReady } = useBlinkIdScanner({
+    onResult: onScanResult,
+    onError: onScanError,
+    scanningMode: "BlinkIdCombined",
+  });
+
   // Camera state
-  const videoRef = useRef(null);
   const [showCamera, setShowCamera] = useState(false);
-  const [cameraStream, setCameraStream] = useState(null);
-  const [previewBlocked, setPreviewBlocked] = useState(false);
   const [cameraMode, setCameraMode] = useState(null); // 'cccd_front' | 'cccd_back' | 'business_reg'
 
   // CCCD document state
@@ -159,61 +207,30 @@ export default function AdminControlPage() {
   const [businessLoading, setBusinessLoading] = useState(false);
   const [businessSaving, setBusinessSaving] = useState(false);
 
-  // Set video srcObject after camera modal mounts
-  useEffect(() => {
-    if (showCamera && cameraStream && videoRef.current) {
-      videoRef.current.srcObject = cameraStream;
-      videoRef.current.play().catch(() => setPreviewBlocked(true));
-    }
-  }, [showCamera, cameraStream]);
-
-  const mockIdCapture = () => {
-    const mockDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-    setCccdFrontDataUrl(mockDataUrl);
-    setCccdBackDataUrl(mockDataUrl);
-    setCccdFrontFileId(1);
-    setCccdBackFileId(2);
-    setHasIdCaptured(true);
-  };
-
-  const mockBusinessRegCapture = () => {
-    const mockDataUrl = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-    setBusinessRegDataUrl(mockDataUrl);
-    setBusinessRegFileId(3);
-    setHasBusinessVideo(true);
-  };
-
   const openCamera = async (mode) => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      setCameraStream(stream);
-      setCameraMode(mode);
-      setPreviewBlocked(false);
+    if (mode === 'cccd_front' || mode === 'cccd_back') {
       setShowCamera(true);
-    } catch (error) {
-      console.error("Error accessing camera:", error);
-      alert(t("camera.error", "Lỗi truy cập máy ảnh"));
+      setCameraMode(mode);
+      // Use setTimeout to ensure the container is rendered before initialization
+      setTimeout(() => {
+        initialize();
+      }, 100);
+    } else {
+      // Keep old camera for business_reg or other modes if needed, 
+      // or implement Microblink for them too. For now, let's just use Microblink for CCCD.
+      // Actually, Microblink can scan many types.
+      setShowCamera(true);
+      setCameraMode(mode);
+      setTimeout(() => {
+        initialize();
+      }, 100);
     }
   };
 
   const closeCamera = () => {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach((track) => track.stop());
-    }
-    setCameraStream(null);
+    destroy();
     setShowCamera(false);
     setCameraMode(null);
-  };
-
-  const tryStartPreview = async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    try {
-      await video.play();
-      setPreviewBlocked(false);
-    } catch (_) {
-      setPreviewBlocked(true);
-    }
   };
 
   const uploadCapturedPhoto = async (dataUrl, type) => {
@@ -227,42 +244,6 @@ export default function AdminControlPage() {
       console.error(`Upload ${type} error:`, error);
     }
   };
-
-  const capturePhoto = () => {
-    if (!videoRef.current) return;
-    const video = videoRef.current;
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth || 640;
-    canvas.height = video.videoHeight || 480;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL("image/png");
-
-    if (cameraMode === 'cccd_front') {
-      setCccdFrontDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'cccd_front');
-      closeCamera();
-    } else if (cameraMode === 'cccd_back') {
-      setCccdBackDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'cccd_back');
-      setHasIdCaptured(true);
-      closeCamera();
-    } else if (cameraMode === 'business_reg') {
-      setBusinessRegDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'business_reg');
-      setHasBusinessVideo(true);
-      closeCamera();
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [cameraStream]);
 
   useEffect(() => {
     document.getElementById("root").style.backgroundColor = color;
@@ -469,19 +450,13 @@ export default function AdminControlPage() {
 
   const getCameraTitle = () => {
     switch (cameraMode) {
-      case 'cccd_front': return 'Chụp CCCD - Mặt trước';
-      case 'cccd_back': return 'Chụp CCCD - Mặt sau';
-      case 'business_reg': return 'Chụp giấy đăng ký kinh doanh';
-      default: return t("camera.title", "Xác minh");
-    }
-  };
-
-  const getCameraInstruction = () => {
-    switch (cameraMode) {
-      case 'cccd_front': return 'Đặt mặt trước CCCD vào khung hình, đảm bảo rõ nét và đủ ánh sáng';
-      case 'cccd_back': return 'Đặt mặt sau CCCD vào khung hình, đảm bảo rõ nét và đủ ánh sáng';
-      case 'business_reg': return 'Đặt giấy đăng ký kinh doanh vào khung hình, đảm bảo toàn bộ nội dung hiển thị rõ';
-      default: return '';
+      case 'cccd_front':
+      case 'cccd_back':
+        return 'Quét CCCD tự động';
+      case 'business_reg':
+        return 'Quét giấy đăng ký kinh doanh';
+      default:
+        return t("camera.title", "Xác minh");
     }
   };
 
@@ -810,56 +785,40 @@ export default function AdminControlPage() {
       </div>
     )}
 
-    {/* Camera Modal */}
+    {/* Camera Modal using Microblink/Microlink scanner */}
     {showCamera && (
-      <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-        <div className="bg-white p-4 rounded-lg max-w-2xl w-full">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-xl font-bold">{getCameraTitle()}</h2>
-            <button
-              className="text-gray-700 hover:text-gray-900"
-              onClick={closeCamera}
-            >
-              ✕
-            </button>
-          </div>
-          {getCameraInstruction() && (
-            <p className="text-sm text-gray-600 mb-3">{getCameraInstruction()}</p>
-          )}
-          <div className="relative">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-auto border border-gray-300 rounded"
-            />
-            {previewBlocked && (
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <button
-                  className="bg-white text-black px-3 py-2 rounded"
-                  onClick={tryStartPreview}
-                >
-                  {t("camera.clickToPreview", "Nhấp để xem trước")}
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 flex justify-center gap-2">
-            <button
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-              onClick={capturePhoto}
-            >
-              {t("camera.capture", "Chụp ảnh")}
-            </button>
-            <button
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-              onClick={closeCamera}
-            >
-              {t("camera.cancel", "Hủy bỏ")}
-            </button>
-          </div>
+      <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-[9999]">
+        <div className="absolute top-4 right-4 z-[10000]">
+          <button
+            onClick={closeCamera}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X size={32} className="text-white" />
+          </button>
         </div>
+        
+        <div className="text-white mb-6 text-center px-4">
+          <h2 className="text-xl font-bold mb-2">{getCameraTitle()}</h2>
+          <p className="text-sm text-gray-400">
+            {cameraMode === 'business_reg' 
+              ? t("camera.businessRegInstruction", "Vui lòng đưa Giấy ĐKKD vào khung hình để hệ thống tự động xử lý")
+              : t("camera.cccdInstruction", "Vui lòng đưa thẻ CCCD vào khung hình để hệ thống tự động xử lý")
+            }
+          </p>
+        </div>
+
+        {/* THE TARGET CONTAINER FOR MICROBLINK UI */}
+        <div
+          ref={containerRef}
+          className="w-full max-w-2xl px-4 flex flex-col items-center"
+        />
+
+        {!isReady && (
+          <div className="flex flex-col items-center gap-4 mt-8">
+            <RefreshCw className="text-blue-500 animate-spin" size={40} />
+            <p className="text-white text-sm">Đang khởi động Camera...</p>
+          </div>
+        )}
       </div>
     )}
   </>
