@@ -43,7 +43,7 @@ export default function NewGoodPostPage() {
   })
 
   const submitForm = async (status) => {
-    const token = localStorage.getItem("token") || localStorage.getItem("jwt")
+    const token = localStorage.getItem("authToken")
     if (!token) {
       setErrorMessage("Bạn cần đăng nhập để đăng hàng hóa.")
       return
