@@ -38,6 +38,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       image: null,
       videoFile: null,
       qualityInfoFile: null,
+      warrantyPolicyFile: null,
       warrantyChangeDays: "",
       warrantyRepairDays: "",
       repairWarrantyRetentionPercent: "",
@@ -50,6 +51,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       paymentViaWallet: "",
       depositRequirementWallet: "",
       vat: "",
+      timeUserMustPayAfterDelivery: "",
       quantityMinimum: "",
       unit: "",
       unitMarketPrice: "",
@@ -449,15 +451,11 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             </div>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
-                name="repairDaysAfterAcceptance"
+                name="warrantyRepairDays"
                 type="number"
-                value={item.repairDaysAfterAcceptance}
+                value={item.warrantyRepairDays}
                 onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairDaysAfterAcceptance",
-                    e.target.value
-                  )
+                  handleItemChange(item.id, "warrantyRepairDays", e.target.value)
                 }
                 placeholder={t("goods.enter")}
                 unit="ngày"
@@ -561,14 +559,11 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
 
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
+                name="depositRequirementDirect"
                 type="number"
-                value={item.repairWarrantyRetentionPercent}
+                value={item.depositRequirementDirect}
                 onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value)
+                  handleItemChange(item.id, "depositRequirementDirect", e.target.value)
                 }
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
@@ -638,7 +633,10 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             </div>
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <NumberInput
-                className="w-full p-3  border-gray-300 text-right"
+                name="quantityMinimum"
+                value={item.quantityMinimum}
+                onChange={(e) => handleItemChange(item.id, "quantityMinimum", e.target.value)}
+                className="w-full p-3 border-gray-300 text-right"
               />
             </div>
             <input
@@ -667,100 +665,58 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               />
             </div>
 
+            {/* Col 29: unitAskingPrice */}
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
+                name="unitAskingPrice"
                 type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
+                value={item.unitAskingPrice}
+                onChange={(e) => handleItemChange(item.id, "unitAskingPrice", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
               />
             </div>
 
+            {/* Col 30: amountDesired */}
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="amountDesired"
+                type="number"
+                value={item.amountDesired}
+                onChange={(e) => handleItemChange(item.id, "amountDesired", e.target.value)}
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
 
+            {/* Col 31: totalAmountAndVat — auto-calc, read-only */}
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
                 type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
+                value=""
+                country={getUserCountry()}
+              />
+            </div>
+
+            {/* Col 32: autoAcceptPrice */}
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="autoAcceptPrice"
+                type="number"
+                value={item.autoAcceptPrice}
+                onChange={(e) => handleItemChange(item.id, "autoAcceptPrice", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
               />
             </div>
+
+            {/* Col 33: autoRejectPrice */}
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
               <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
+                name="autoRejectPrice"
                 type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
-                placeholder={t("goods.enter")}
-                country={getUserCountry()}
-              />
-            </div>
-            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
-                type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
-                placeholder={t("goods.enter")}
-                country={getUserCountry()}
-              />
-            </div>
-            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
-                type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
-                placeholder={t("goods.enter")}
-                country={getUserCountry()}
-              />
-            </div>
-            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <TwoLineUnitInput
-                name="repairWarrantyRetentionPercent"
-                type="number"
-                value={item.repairWarrantyRetentionPercent}
-                onChange={(e) =>
-                  handleItemChange(
-                    item.id,
-                    "repairWarrantyRetentionPercent",
-                    e.target.value
-                  )
-                }
+                value={item.autoRejectPrice}
+                onChange={(e) => handleItemChange(item.id, "autoRejectPrice", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
               />

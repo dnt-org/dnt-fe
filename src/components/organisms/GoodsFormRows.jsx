@@ -32,6 +32,7 @@ export default function GoodsFormRows({
   goodsInfo,
   onGoodsInfoChange,
   goodsItems,
+  onItemsChange,
 }) {
   const { t } = useTranslation()
 
@@ -64,7 +65,7 @@ export default function GoodsFormRows({
       <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={2} required className="col-span-1" />
         <div className="col-span-29">
-          <ProductGrid products={goodsItems} category={selectedType} />
+          <ProductGrid products={goodsItems} category={selectedType} onItemsChange={onItemsChange} />
         </div>
       </div>
 

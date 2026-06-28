@@ -1,35 +1,40 @@
 import { useState } from "react"
 
 export default function useGoodsForm() {
-  const [goodsItems, setGoodsItems] = useState([
-    {
-      id: 1,
-      name: "",
-      model: "",
-      size: "",
-      color: "",
-      image: null,
-      qualityInfoFile: null,
-      warrantyChangeDays: "",
-      warrantyRepairDays: "",
-      repairWarrantyRetentionPercent: "",
-      maxDeliveryDaysAfterAcceptance: "",
-      handoverLocation: "",
-      contractDurationMultiplicity: "",
-      contractDurationUnit: "",
-      directPayment: "",
-      depositRequirementDirect: "",
-      paymentViaWallet: "",
-      depositRequirementWallet: "",
-      vat: "",
-      quantityMinimum: "",
-      unit: "",
-      unitMarketPrice: "",
-      unitAskingPrice: "",
-      amountDesired: "",
-      autoAcceptPrice: "",
-    },
-  ])
+  const emptyItem = (id) => ({
+    id,
+    name: "",
+    model: "",
+    shape: "",
+    size: "",
+    color: "",
+    image: null,
+    videoFile: null,
+    qualityInfoFile: null,
+    warrantyPolicyFile: null,
+    warrantyChangeDays: "",
+    warrantyRepairDays: "",
+    repairWarrantyRetentionPercent: "",
+    maxDeliveryDaysAfterAcceptance: "",
+    handoverLocation: "",
+    contractDurationMultiplicity: "",
+    contractDurationUnit: "",
+    directPayment: "",
+    depositRequirementDirect: "",
+    paymentViaWallet: "",
+    depositRequirementWallet: "",
+    vat: "",
+    timeUserMustPayAfterDelivery: "",
+    quantityMinimum: "",
+    unit: "",
+    unitMarketPrice: "",
+    unitAskingPrice: "",
+    amountDesired: "",
+    autoAcceptPrice: "",
+    autoRejectPrice: "",
+  })
+
+  const [goodsItems, setGoodsItems] = useState([emptyItem(1)])
 
   const [goodsInfo, setGoodsInfo] = useState({})
 
@@ -38,36 +43,11 @@ export default function useGoodsForm() {
   }
 
   const handleAddGoodsItem = () => {
-    setGoodsItems((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1,
-        name: "",
-        model: "",
-        size: "",
-        color: "",
-        image: null,
-        qualityInfoFile: null,
-        warrantyChangeDays: "",
-        warrantyRepairDays: "",
-        repairWarrantyRetentionPercent: "",
-        maxDeliveryDaysAfterAcceptance: "",
-        handoverLocation: "",
-        contractDurationMultiplicity: "",
-        contractDurationUnit: "",
-        directPayment: "",
-        depositRequirementDirect: "",
-        paymentViaWallet: "",
-        depositRequirementWallet: "",
-        vat: "",
-        quantityMinimum: "",
-        unit: "",
-        unitMarketPrice: "",
-        unitAskingPrice: "",
-        amountDesired: "",
-        autoAcceptPrice: "",
-      },
-    ])
+    setGoodsItems((prev) => [...prev, emptyItem(prev.length + 1)])
+  }
+
+  const handleItemsChange = (newItems) => {
+    setGoodsItems(newItems)
   }
 
   const handleInputChange = (e) => {
@@ -82,5 +62,5 @@ export default function useGoodsForm() {
     return `${hour}:${minute}`
   }
 
-  return { goodsItems, goodsInfo, setGoodsInfo, handleGoodsItemChange, handleAddGoodsItem, handleInputChange, formatPriceReviewTime }
+  return { goodsItems, goodsInfo, setGoodsInfo, handleGoodsItemChange, handleAddGoodsItem, handleItemsChange, handleInputChange, formatPriceReviewTime }
 }

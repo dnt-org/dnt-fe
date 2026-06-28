@@ -22,7 +22,7 @@ export default function NewGoodPostPage() {
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedCondition, setSelectedCondition] = useState("")
   const { countries, provinces, districts, selectedCountry, selectedProvince, selectedDistrict, handleCountryChange, handleProvinceChange, handleDistrictChange } = useLocationSelection()
-  const { goodsItems, goodsInfo, setGoodsInfo, handleInputChange, formatPriceReviewTime } = useGoodsForm()
+  const { goodsItems, goodsInfo, setGoodsInfo, handleInputChange, formatPriceReviewTime, handleItemsChange } = useGoodsForm()
   const [errorMessage, setErrorMessage] = useState("")
 
   const onGoodsInfoChange = (e) => {
@@ -107,6 +107,7 @@ export default function NewGoodPostPage() {
             goodsInfo={goodsInfo}
             onGoodsInfoChange={onGoodsInfoChange}
             goodsItems={goodsItems}
+            onItemsChange={handleItemsChange}
           />
           {/* <AdvertisingSection goodsInfo={goodsInfo} onGoodsInfoChange={onGoodsInfoChange} /> */}
           <div className="border-t border-gray-300 p-4">
