@@ -33,7 +33,7 @@ function buildFormData(data) {
   // 1. Handle root-level files
   for (const field of PRODUCT_FILE_FIELDS) {
     if (data[field] instanceof File) {
-      fd.append(`files.${field}`, data[field], data[field].name);
+      fd.append(field, data[field], data[field].name);
       delete dataToSerialize[field];
     }
   }
@@ -44,7 +44,7 @@ function buildFormData(data) {
       const itemCopy = { ...item };
       for (const field of ITEM_FILE_FIELDS) {
         if (item[field] instanceof File) {
-          fd.append(`files.items[${index}].${field}`, item[field], item[field].name);
+          fd.append(`items[${index}][${field}]`, item[field], item[field].name);
           // Replace File object with a placeholder or remove it from JSON serialization
           itemCopy[field] = null;
         }
