@@ -438,6 +438,175 @@ export default function DetailOfGoodsPage() {
         </div>
 
 
+        {/* Fee and Advertising Sections */}
+        <div className="w-full border border-gray-300 mt-4 rounded-md overflow-hidden bg-white">
+          {/* PHÍ THÀNH CÔNG */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300">
+              {t("goods.successFee")}
+            </div>
+            <div className="col-span-8 p-2">
+              {product.successFee}% <span className="text-red-500 ml-2">* &gt;= 2%</span>
+            </div>
+          </div>
+
+          {/* THUẾ + PHÍ KHÁC */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300">
+              {t("goods.vatOtherFees", "THUẾ + PHÍ KHÁC")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">0%</div>
+            <div className="col-span-6 p-2 text-[10px] text-gray-500 italic">
+              (Nếu có VAT = 0%; Ko VAT = 2% Mua-Bán, 10% Thuê/Dịch vụ)
+            </div>
+          </div>
+
+          {/* PHÍ HIỂN THỊ TRÊN TRANG CHỦ */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300 text-xs">
+              {t("goods.eventFee", "PHÍ HIỂN THỊ TRÊN TRANG CHỦ")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.eventPercentFee}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.eventFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+              <div>{product.mainPageViewCount} D / GIẤY / LƯỢT XEM</div>
+              <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+            </div>
+          </div>
+
+          {/* PHÍ LIVESTREAM HÀNG HÓA */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300">
+              {t("goods.livestreamFee")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.livestreamPercentFee}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.livestreamFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+              <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+              {product.livestreamVideoFile && (
+                <button className="bg-blue-100 text-blue-600 px-1 rounded mt-1">Video Livestream</button>
+              )}
+            </div>
+          </div>
+
+          {/* PHÍ QUẢNG CÁO */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300">
+              {t("goods.advertisingFee", "PHÍ QUẢNG CÁO")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.advertisingPercent}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.advertisingFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+              <div>{product.advertisingAmount} D / GIẤY / LƯỢT XEM</div>
+              <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+            </div>
+          </div>
+
+          {/* ĐĂNG KÝ LÀM VIDEO Section */}
+          <div className="bg-gray-50 p-2 font-bold text-center border-b border-gray-300">
+            {t("goods.registerMakeVideo", "ĐĂNG KÝ LÀM VIDEO")}
+          </div>
+
+          {/* Row 1: LIVESTREAM HÀNG HÓA */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-medium border-r border-gray-300 text-[10px] flex items-center gap-1">
+              <input type="checkbox" checked={product.regLivestreamGoods} disabled />
+              {t("goods.registerLivestreamGoodsVideo", "LIVESTREAM HÀNG HÓA")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regLivestreamGoodsPercent}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regLivestreamGoodsFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+               <div className="flex gap-1">
+                  <span className={product.regLivestreamGoodsAI ? "font-bold text-black" : ""}>AI</span> / 
+                  <span className={product.regLivestreamGoodsPerson ? "font-bold text-black" : ""}>Người thực</span>
+               </div>
+               <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+            </div>
+          </div>
+
+          {/* Row 2: QUẢNG CÁO SẢN PHẨM */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-medium border-r border-gray-300 text-[10px] flex items-center gap-1">
+              <input type="checkbox" checked={product.regProductAdVideo} disabled />
+              {t("goods.registerProductAdVideo", "QUẢNG CÁO SẢN PHẨM")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regProductAdPercent}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regProductAdFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+               <div className="flex gap-1">
+                  <span className={product.regProductAdAI ? "font-bold text-black" : ""}>AI</span> / 
+                  <span className={product.regProductAdPerson ? "font-bold text-black" : ""}>Người thực</span>
+               </div>
+               <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+            </div>
+          </div>
+
+          {/* Row 3: THƯƠNG HIỆU BẢN THÂN */}
+          <div className="grid grid-cols-12 border-b border-gray-300">
+            <div className="col-span-4 p-2 font-medium border-r border-gray-300 text-[10px] flex items-center gap-1">
+              <input type="checkbox" checked={product.regPersonalBrandVideo} disabled />
+              {t("goods.registerPersonalBrandVideo", "THƯƠNG HIỆU BẢN THÂN")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regPersonalBrandPercent}%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold">
+              {product.regPersonalBrandFee?.toLocaleString()}
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-gray-500 flex flex-col justify-center">
+               <div className="flex gap-1">
+                  <span className={product.regPersonalBrandAI ? "font-bold text-black" : ""}>AI</span> / 
+                  <span className={product.regPersonalBrandPerson ? "font-bold text-black" : ""}>Người thực</span>
+               </div>
+               <div className="font-bold text-blue-600">{t("goods.prepay")}</div>
+            </div>
+          </div>
+
+          {/* TỔNG PHÍ NỀN TẢNG */}
+          <div className="grid grid-cols-12 bg-red-50">
+            <div className="col-span-4 p-2 font-bold border-r border-gray-300 text-red-600 uppercase">
+              {t("goods.totalFeeVat", "TỔNG PHÍ NỀN TẢNG")}
+            </div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold text-red-600">
+              {/* Calculate total % if needed, or just display 0 if not pre-calculated */}
+              0%
+            </div>
+            <div className="col-span-1 p-2 border-r border-gray-300 text-center font-bold text-red-600">+</div>
+            <div className="col-span-2 p-2 border-r border-gray-300 text-center font-bold text-red-600">
+              0
+            </div>
+            <div className="col-span-3 p-2 text-[10px] text-red-600 font-bold flex items-center justify-center">
+              {t("goods.prepay")}
+            </div>
+          </div>
+        </div>
+
         {/* Accept Section - Temp Hidden */}
         {/* <div className="w-full  mt-4">
           <table className="w-full border-collapse">
