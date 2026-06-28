@@ -651,14 +651,18 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
           <Smile className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
           <Mic className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
 
-          {/* #C-11: bubble background color swatch, default blue */}
-          <button
-            type="button"
-            onClick={() => setShowColorPicker((v) => !v)}
-            title="Màu nền tin nhắn"
-            className="w-5 h-5 rounded-full border-2 border-gray-300"
-            style={{ backgroundColor: bubbleColor }}
-          />
+          {/* #C-11: bubble background color swatch with visible "Color / nền" labels */}
+          <div className="flex flex-col items-center gap-0.5">
+            <span className="text-[10px] text-gray-500 leading-none">Color</span>
+            <button
+              type="button"
+              onClick={() => setShowColorPicker((v) => !v)}
+              title="Màu nền tin nhắn"
+              className="w-5 h-5 rounded-full border-2 border-gray-300"
+              style={{ backgroundColor: bubbleColor }}
+            />
+            <span className="text-[10px] text-gray-400 leading-none">nền</span>
+          </div>
           {showColorPicker && (
             <div className="absolute bottom-full left-12 mb-2 z-30 flex gap-1.5 bg-white border border-gray-200 rounded-full shadow-lg px-2 py-1.5">
               {BUBBLE_COLORS.map((c) => (
@@ -712,6 +716,73 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
   );
 }
 
+// ─── Inline invite / scan-result panel (replaces modal popup) ────────────────
+function InlineInvitePanel({ title, items, onAccept, onReject, onRename, onClose, acceptLabel = 'ĐỒNG Ý' }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+
+  const commitRename = (id) => {
+    if (editName.trim()) onRename?.(id, editName.trim());
+    setEditingId(null);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col bg-white overflow-hidden">
+      <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+        <span className="font-bold text-blue-900 text-sm">{title}</span>
+        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+      </div>
+      <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+        {items.length === 0 && (
+          <div className="flex items-center justify-center h-32 text-gray-400 text-sm">Không có mục nào đang chờ.</div>
+        )}
+        {items.map(item => (
+          <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-blue-50">
+            <img src={item.avatar || `https://i.pravatar.cc/40?u=${item.id}`} alt={item.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              {editingId === item.id ? (
+                <input
+                  autoFocus
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  onBlur={() => commitRename(item.id)}
+                  onKeyDown={e => { if (e.key === 'Enter') commitRename(item.id); if (e.key === 'Escape') setEditingId(null); }}
+                  className="border px-2 py-1 rounded w-full text-sm text-blue-900"
+                />
+              ) : (
+                <button
+                  type="button"
+                  className="text-left w-full"
+                  onClick={() => { if (onRename) { setEditingId(item.id); setEditName(item.displayName || item.name || ''); } }}
+                >
+                  <span className="font-bold text-blue-900 uppercase text-sm">{item.displayName || item.name}</span>
+                  {onRename && <span className="text-[10px] text-yellow-600 ml-1">(mở, ấn vào để nhập tên mới)</span>}
+                </button>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => onAccept(item.id)}
+              className="px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded flex-shrink-0"
+            >
+              {acceptLabel}
+            </button>
+            {onReject && (
+              <button
+                type="button"
+                onClick={() => onReject(item.id)}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded flex-shrink-0"
+              >
+                TỪ CHỐI
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function ContactAdminPage() {
   const { t } = useTranslation();
@@ -753,6 +824,11 @@ export default function ContactAdminPage() {
 
   // #C-10: chat header "more actions" menu (Gửi vị trí / Chia sẻ trực tiếp)
   const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+
+  // inline panel: replaces popup modals for invite/scan-result lists
+  const [inlinePanelType, setInlinePanelType] = useState(null); // 'friendRequests' | 'groupInvites' | 'scannedFriend' | 'scannedGroup'
+
+  const currentUserName = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}')?.full_name || 'NGUYỄN VĂN A'; } catch { return 'NGUYỄN VĂN A'; } })();
 
   // #C-13: ad banner — covered for 5s, then closable, hidden for the rest of the session
   const [showAdBanner, setShowAdBanner] = useState(() => sessionStorage.getItem('contactAdBannerClosed') !== 'true');
@@ -917,6 +993,10 @@ export default function ContactAdminPage() {
       name = parsed.name || parsed.fullName || resultText;
     } catch { /* raw text QR, use as-is */ }
     setScannedFriend({ id: `scan-friend-${Date.now()}`, name, avatar: `https://i.pravatar.cc/150?u=${Date.now()}` });
+    setChatMode('none');
+    setActiveContactId(null);
+    setActiveContactType(null);
+    setInlinePanelType('scannedFriend');
   };
 
   const handleConfirmScannedFriend = () => {
@@ -934,6 +1014,7 @@ export default function ContactAdminPage() {
       },
     ]);
     setScannedFriend(null);
+    setInlinePanelType(null);
   };
 
   // #C-09: QR join-group — after a successful scan, show a single confirm row
@@ -945,6 +1026,10 @@ export default function ContactAdminPage() {
       name = parsed.name || parsed.groupName || resultText;
     } catch { /* raw text QR, use as-is */ }
     setScannedGroup({ id: `scan-group-${Date.now()}`, name, avatar: `https://i.pravatar.cc/150?u=g${Date.now()}` });
+    setChatMode('none');
+    setActiveContactId(null);
+    setActiveContactType(null);
+    setInlinePanelType('scannedGroup');
   };
 
   const handleConfirmScannedGroup = () => {
@@ -961,12 +1046,15 @@ export default function ContactAdminPage() {
       },
     ]);
     setScannedGroup(null);
+    setInlinePanelType(null);
   };
 
   // The Search bar's "thêm bạn/thêm nhóm" and QR icons switch meaning with the active tab
   const handleAddIconClick = () => {
-    if (activeTab === 'personal') setIsFriendRequestsOpen(true);
-    else setIsGroupInvitesOpen(true);
+    setChatMode('none');
+    setActiveContactId(null);
+    setActiveContactType(null);
+    setInlinePanelType(activeTab === 'personal' ? 'friendRequests' : 'groupInvites');
   };
 
   const handleQrIconClick = () => {
@@ -1167,9 +1255,22 @@ export default function ContactAdminPage() {
       {/* ── Main Chat Area ───────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col bg-[#F4F5F7]">
 
-        {/* Header — unchanged structure */}
+        {/* Header */}
         <div className="h-[60px] bg-white border-b border-gray-300 flex items-center justify-between px-4 flex-shrink-0">
-          {chatMode !== 'none' ? (
+          {inlinePanelType ? (
+            <>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                  <User size={20} className="text-gray-500" />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-800 uppercase">{currentUserName}</div>
+                  <div className="text-[10px] text-yellow-500">tên người dùng nhắn tin với mình</div>
+                </div>
+              </div>
+              <button type="button" onClick={() => setInlinePanelType(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none px-2">✕</button>
+            </>
+          ) : chatMode !== 'none' ? (
             <>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100">
@@ -1189,7 +1290,7 @@ export default function ContactAdminPage() {
                 <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <Video size={18} />
                 </div>
-                <div className="w-8 h-8 rounded border border-blue-600 bg-purple-700 flex items-center justify-center cursor-pointer text-white">
+                <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <User size={18} />
                 </div>
                 <button
@@ -1232,7 +1333,41 @@ export default function ContactAdminPage() {
         </div>
 
         {/* ── Conditional chat body ─────────────────────────────────────── */}
-        {isBotMode ? (
+        {inlinePanelType === 'friendRequests' ? (
+          <InlineInvitePanel
+            title="Lời mời kết bạn"
+            items={friendRequests}
+            onAccept={handleAcceptFriendRequest}
+            onReject={handleRejectFriendRequest}
+            onRename={handleRenameFriendRequest}
+            onClose={() => setInlinePanelType(null)}
+          />
+        ) : inlinePanelType === 'groupInvites' ? (
+          <InlineInvitePanel
+            title="Lời mời vào nhóm"
+            items={groupInvites}
+            onAccept={handleAcceptGroupInvite}
+            onReject={handleRejectGroupInvite}
+            onClose={() => setInlinePanelType(null)}
+          />
+        ) : inlinePanelType === 'scannedFriend' && scannedFriend ? (
+          <InlineInvitePanel
+            title="Kết bạn qua QR"
+            items={[scannedFriend]}
+            onAccept={handleConfirmScannedFriend}
+            onRename={(id, name) => setScannedFriend(prev => prev ? { ...prev, displayName: name } : prev)}
+            onClose={() => { setScannedFriend(null); setInlinePanelType(null); }}
+            acceptLabel="KẾT BẠN"
+          />
+        ) : inlinePanelType === 'scannedGroup' && scannedGroup ? (
+          <InlineInvitePanel
+            title="Tham gia nhóm qua QR"
+            items={[scannedGroup]}
+            onAccept={handleConfirmScannedGroup}
+            onClose={() => { setScannedGroup(null); setInlinePanelType(null); }}
+            acceptLabel="ĐỒNG Ý"
+          />
+        ) : isBotMode ? (
           <BotChatPanel onVideoCalls={() => setVideoUnlocked(true)} onGoLogin={() => navigate('/login')} />
         ) : (
           <NormalChatPanel
@@ -1244,62 +1379,20 @@ export default function ContactAdminPage() {
         )}
       </div>
 
-      {/* #C-05: pending friend requests */}
-      <PendingListModal
-        isOpen={isFriendRequestsOpen}
-        onClose={() => setIsFriendRequestsOpen(false)}
-        title="Lời mời kết bạn"
-        items={friendRequests}
-        onAccept={handleAcceptFriendRequest}
-        onReject={handleRejectFriendRequest}
-        allowRename
-        onRename={handleRenameFriendRequest}
-        emptyText="Không có lời mời kết bạn nào đang chờ."
-      />
-
-      {/* #C-07: pending group invites */}
-      <PendingListModal
-        isOpen={isGroupInvitesOpen}
-        onClose={() => setIsGroupInvitesOpen(false)}
-        title="Lời mời vào nhóm"
-        items={groupInvites}
-        onAccept={handleAcceptGroupInvite}
-        onReject={handleRejectGroupInvite}
-        emptyText="Không có lời mời vào nhóm nào đang chờ."
-      />
-
-      {/* #C-06: scan a friend's QR to add them */}
+      {/* #C-06: scan a friend's QR to add them — result shown inline */}
       <ContactQrModal
         isOpen={isAddFriendQrOpen}
         onClose={() => setIsAddFriendQrOpen(false)}
         onScanResult={handleAddFriendScanResult}
         myQrLabel="Mã QR của bạn — cho người khác quét để kết bạn"
       />
-      <PendingListModal
-        isOpen={!!scannedFriend}
-        onClose={() => setScannedFriend(null)}
-        title="Kết bạn"
-        items={scannedFriend ? [scannedFriend] : []}
-        onAccept={handleConfirmScannedFriend}
-        acceptLabel="KẾT BẠN"
-        allowRename
-        onRename={(id, name) => setScannedFriend(prev => prev ? { ...prev, displayName: name } : prev)}
-      />
 
-      {/* #C-09: scan a group's QR to join it */}
+      {/* #C-09: scan a group's QR to join it — result shown inline */}
       <ContactQrModal
         isOpen={isJoinGroupQrOpen}
         onClose={() => setIsJoinGroupQrOpen(false)}
         onScanResult={handleJoinGroupScanResult}
         myQrLabel="Mã QR nhóm của bạn — cho người khác quét để tham gia"
-      />
-      <PendingListModal
-        isOpen={!!scannedGroup}
-        onClose={() => setScannedGroup(null)}
-        title="Tham gia nhóm"
-        items={scannedGroup ? [scannedGroup] : []}
-        onAccept={handleConfirmScannedGroup}
-        acceptLabel="ĐỒNG Ý"
       />
 
       {/* #C-08: create/edit group — owner-only, members from own friends list only */}
