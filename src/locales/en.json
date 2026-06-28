@@ -313,7 +313,8 @@
       "buy": "BUY",
       "rent": "RENT",
       "for_rent": "FOR RENT",
-      "service": "SERVICE"
+      "provide_services": "PROVIDE SERVICES",
+      "use_services": "USE SERVICES"
     },
     "subcategory": {
       "goods": "GOODS",

@@ -315,7 +315,8 @@
       "buy": "CẦN MUA",
       "rent": "HÀNG THUÊ",
       "for_rent": "CHO THUÊ",
-      "service": "DỊCH VỤ"
+      "provide_services": "CUNG CẤP DỊCH VỤ",
+      "use_services": "SỬ DỤNG DỊCH VỤ"
     },
     "subcategory": {
       "goods": "HÀNG HÓA",
