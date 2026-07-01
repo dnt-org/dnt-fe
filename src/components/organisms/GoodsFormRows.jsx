@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useEffect } from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 import RowNumberCell from "../atoms/RowNumberCell"
@@ -35,6 +35,39 @@ export default function GoodsFormRows({
   onItemsChange,
 }) {
   const { t } = useTranslation()
+
+  // Reverse-geocode toạ độ -> địa chỉ dạng chữ bằng Nominatim (OpenStreetMap, free, ko cần key)
+  const reverseGeocode = async (latitude, longitude) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=vi`,
+        { headers: { Accept: "application/json" } }
+      )
+      const data = await res.json()
+      return data?.display_name || `Vĩ độ: ${latitude}, Kinh độ: ${longitude}`
+    } catch {
+      return `Vĩ độ: ${latitude}, Kinh độ: ${longitude}`
+    }
+  }
+
+  const fillCurrentLocation = () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      const { latitude, longitude } = position.coords
+      // Lưu toạ độ để pin lên Google Maps
+      onGoodsInfoChange({ target: { name: "goodsLat", value: latitude, type: "text" } })
+      onGoodsInfoChange({ target: { name: "goodsLng", value: longitude, type: "text" } })
+      const address = await reverseGeocode(latitude, longitude)
+      onGoodsInfoChange({ target: { name: "goodsAddress", value: address, type: "text" } })
+    })
+  }
+
+  // Tự động điền vị trí hiện tại của user vào ô địa chỉ khi mở form (nếu còn trống)
+  useEffect(() => {
+    if (goodsInfo.goodsAddress) return
+    fillCurrentLocation()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const countryOptions = (countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }))
   const provinceOptions = (provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }))
@@ -152,7 +185,37 @@ export default function GoodsFormRows({
         <div className="col-span-10 border-r border-gray-300 p-2">
           <TextArea value={goodsInfo.goodsAddress} onChange={(e) => onGoodsInfoChange({ target: { name: "goodsAddress", value: e.target.value, type: "text" } })} className="w-full border-gray-300 p-1 text-left" />
         </div>
-        <div className="col-span-2 border-r border-gray-300 p-2 text-center flex items-center justify-center">(MAP)</div>
+        <div className="col-span-2 border-r border-gray-300 p-2 text-center flex flex-col items-center justify-center gap-1">
+          {goodsInfo.goodsLat && goodsInfo.goodsLng ? (
+            <>
+              <iframe
+                title="Google Maps"
+                width="100%"
+                height="110"
+                loading="lazy"
+                style={{ border: 0 }}
+                src={`https://maps.google.com/maps?q=${goodsInfo.goodsLat},${goodsInfo.goodsLng}&z=16&output=embed`}
+              />
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${goodsInfo.goodsLat},${goodsInfo.goodsLng}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 text-[10px] underline"
+              >
+                Mở Google Maps
+              </a>
+            </>
+          ) : (
+            <span>(MAP)</span>
+          )}
+          <button
+            type="button"
+            onClick={fillCurrentLocation}
+            className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-xs"
+          >
+            📍 {t("goods.locate", "Định vị")}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-30 border-b border-gray-300">
@@ -162,8 +225,8 @@ export default function GoodsFormRows({
         </div>
         <div className="col-span-12 border-r border-gray-300 p-2">
            <div className="flex items-center gap-2">
-              <Select value={selectedCountry} onChange={onCountryChange} options={countryOptions} className="w-full border border-gray-300 p-1 mb-2" />
-              <Select value={selectedProvince} onChange={onProvinceChange} options={provinceOptions} className="w-full border border-gray-300 p-1 mb-2" disabled={!selectedCountry} />
+              <Select value={selectedCountry} onChange={onCountryChange} options={[{ label: "Tất cả", value: "" }, ...countryOptions]} className="w-full border border-gray-300 p-1 mb-2" />
+              <Select value={selectedProvince} onChange={onProvinceChange} options={[{ label: "Tất cả", value: "" }, ...provinceOptions]} className="w-full border border-gray-300 p-1 mb-2" />
             </div>
         </div>
       </div>
@@ -179,49 +242,40 @@ export default function GoodsFormRows({
         </div>
       </div>
 
-      <div id="row9" className="grid grid-cols-30 border-b border-gray-300">
+      <div className="grid grid-cols-30 border-b border-gray-300">
+        <RowNumberCell number={9} className="col-span-1 p-2" />
+        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
+          <div>{t("goods.marketingLinkingFee", "PHÍ TIẾP THỊ LIÊN KẾT")}</div>
+        </div>
+        <div className="col-span-12 border-r border-gray-300 p-2 flex items-center">
+          <NumberInput name="marketingLinkingFee" value={goodsInfo.marketingLinkingFee || ""} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
+          <span className="ml-1 text-gray-700">%</span>
+        </div>
+      </div>
+
+      <div id="row10" className="grid grid-cols-30 border-b border-gray-300">
         <div className="col-span-1 border-r border-t border-gray-300 p-2 text-center flex items-center justify-center">
-          <span className="font-bold">9</span>
+          <span className="font-bold">10</span>
         </div>
         <div className="col-span-29">
 
           {/* PHÍ THÀNH CÔNG */}
           <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
-              <div>{t("goods.successFee")}</div>
+              <div>{t("goods.successFee", "PHÍ THÀNH CÔNG")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="successFee" value={goodsInfo.successFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
+              <span className="text-red-500 font-bold ml-1">*</span>
             </div>
-            <div className="col-span-10 p-2 flex items-center gap-1">
-              <span className="text-red-500 font-bold">*</span>
-              <span className="text-red-500 text-xs">&gt;= 2%</span>
-            </div>
-          </div>
-
-          {/* THUẾ + PHÍ KHÁC — auto-filled based on VAT */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
-              <div>{t("goods.vatOtherFees", "THUẾ + PHÍ KHÁC")}</div>
-            </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-end">
-              <span className="font-medium">0</span>
-              <span className="ml-1 text-gray-700">%</span>
-            </div>
-            <div className="col-span-10 p-2 flex items-start">
-              <div className="text-[10px] text-gray-600 leading-tight border border-orange-300 bg-orange-50 rounded p-1">
-                <div>Nếu có <span className="font-bold">VAT</span> thì = 0% <span className="text-gray-400">(người cung cấp/nhân liên chịu thuế này)</span></div>
-                <div>Nếu ko VAT = <span className="font-bold">2%</span> cho đăng Mua-Bán</div>
-                <div>= <span className="font-bold">10%</span> cho đăng thuê, cho thuê, dịch vụ</div>
-              </div>
-            </div>
+            <div className="col-span-10 p-2 flex items-center" />
           </div>
 
           {/* PHÍ HIỂN THỊ TRÊN TRANG CHỦ */}
           <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
-              <div className="text-xs leading-tight">{t("goods.eventFee", "PHÍ HIỂN THỊ TRÊN TRANG CHỦ")}</div>
+              <div>{t("goods.eventFee", "PHÍ HIỂN THỊ TRÊN TRANG CHỦ")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="eventPercentFee" value={goodsInfo.eventPercentFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -319,7 +373,7 @@ export default function GoodsFormRows({
           <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regLivestreamGoods" checked={goodsInfo.regLivestreamGoods} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div className="text-xs leading-tight font-medium">{t("goods.registerLivestreamGoodsVideo", "ĐĂNG KÝ LÀM VIDEO LIVESTREAM HÀNG HÓA")}</div>
+              <div className="leading-tight font-medium">{t("goods.registerLivestreamGoodsVideo", "ĐĂNG KÝ LÀM VIDEO LIVESTREAM HÀNG HÓA")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regLivestreamGoodsPercent" value={goodsInfo.regLivestreamGoodsPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -360,7 +414,7 @@ export default function GoodsFormRows({
           <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regProductAdVideo" checked={goodsInfo.regProductAdVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div className="text-xs leading-tight font-medium">{t("goods.registerProductAdVideo", "ĐĂNG KÝ LÀM VIDEO QUẢNG CÁO SẢN PHẨM")}</div>
+              <div className="leading-tight font-medium">{t("goods.registerProductAdVideo", "ĐĂNG KÝ LÀM VIDEO QUẢNG CÁO SẢN PHẨM")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regProductAdPercent" value={goodsInfo.regProductAdPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -385,9 +439,9 @@ export default function GoodsFormRows({
                 <span>Người thực</span>
               </label>
             </div>
-            {/* HỒ SƠ ĐẦY ĐỦ CỦA CÔNG TY */}
+            {/* HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI */}
             <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <div className="text-[10px] leading-tight text-gray-600">HỒ SƠ ĐẦY ĐỦ CỦA CÔNG TY</div>
+              <div className="text-[10px] leading-tight text-gray-600">HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI</div>
               <FileInput name="regProductAdCompanyProfile" label={t("goods.uploadFile", "Tải file")} onChange={onGoodsInfoChange} />
             </div>
             {/* Giấy xác nhận + Nền tảng hỗ trợ */}
@@ -405,7 +459,7 @@ export default function GoodsFormRows({
           <div className="grid grid-cols-16 border-b border-gray-300">
             <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regPersonalBrandVideo" checked={goodsInfo.regPersonalBrandVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div className="text-xs leading-tight font-medium">{t("goods.registerPersonalBrandVideo", "ĐĂNG KÝ LÀM VIDEO THƯƠNG HIỆU BẢN THÂN")}</div>
+              <div className="leading-tight font-medium">{t("goods.registerPersonalBrandVideo", "ĐĂNG KÝ LÀM VIDEO THƯƠNG HIỆU BẢN THÂN")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandPercent" value={goodsInfo.regPersonalBrandPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />

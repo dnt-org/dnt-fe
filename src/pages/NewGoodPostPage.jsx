@@ -2,11 +2,9 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import "../styles/Login.css"
 import { useNavigate } from "react-router-dom"
-import { Home as HomeIcon, KeyboardIcon as KeyboardIcon } from "lucide-react"
 import { createProduct } from "../services/productService"
 import PostTypeMenu from "../components/PostTypeMenu"
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx"
-import GoodsAccount from "../components/GoodsAccount.jsx"
 import AppPageLayout from "../components/layouts/AppPageLayout.jsx"
 import GoodsFormRows from "../components/organisms/GoodsFormRows.jsx"
 import AdvertisingSection from "../components/organisms/AdvertisingSection.jsx"
@@ -74,14 +72,11 @@ export default function NewGoodPostPage() {
         color={color}
         onColorChange={onColorChange}
         titlePrefix="4"
-        leftButton={<button className="text-red-600 hover:text-red-800 relative" onClick={() => navigate("/")}><HomeIcon size={28} /></button>}
-        rightButton={<button className="text-red-600 hover:text-red-800" onClick={() => navigate("/admin-control")}><KeyboardIcon size={28} /></button>}
         title={t("goods.newPost")}
       />
       <div className="mt-1">
         <form className="border-gray-300">
           <PostTypeMenu activeType="goods" />
-          <GoodsAccount title={t("goods.accountOfGoods")} country={selectedCountry} onTransfer={() => { }} />
           <GoodsFormRows
             selectedType={selectedType}
             selectedCategory={selectedCategory}
