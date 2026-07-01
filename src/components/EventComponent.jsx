@@ -1,121 +1,131 @@
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { filterProducts } from "../services/productService";
 
 export default function EventComponent() {
   const { t } = useTranslation();
 
-  // Trang hiện tại cho desktop và mobile (mỗi swipe -> sang trang mới)
-  const [pageDesktop, setPageDesktop] = useState(0);
-  const [pageMobile, setPageMobile] = useState(0);
+  const navigate = useNavigate();
+
+  const columnsDesktop = 6;
+  const columnsMobile = 2;
+  const perPageDesktop = columnsDesktop * 2;
+  const perPageMobile = columnsMobile * 2;
+
+  const [filters, setFilters] = useState(() => ({
+    listingType: localStorage.getItem("category") || "",
+    categoryType: localStorage.getItem("subcategory") || "",
+    conditionType: localStorage.getItem("condition") || "",
+    nation: localStorage.getItem("nation") || "",
+    province: localStorage.getItem("province") || "",
+    name: "",
+  }));
+
+  const normalizedFilters = useMemo(() => {
+    const trimOrEmpty = (v) => (typeof v === "string" ? v.trim() : "");
+    const province = trimOrEmpty(filters.province);
+    const nation = trimOrEmpty(filters.nation);
+    return {
+      listingType: trimOrEmpty(filters.listingType),
+      categoryType: trimOrEmpty(filters.categoryType),
+      conditionType: trimOrEmpty(filters.conditionType),
+      nation: nation && nation.toLowerCase() !== "all" ? nation : "",
+      province: province && province.toLowerCase() !== "all" ? province : "",
+      name: trimOrEmpty(filters.name),
+    };
+  }, [filters]);
+
+  const [pageDesktop, setPageDesktop] = useState(1);
+  const [pageMobile, setPageMobile] = useState(1);
+  const [totalPagesDesktop, setTotalPagesDesktop] = useState(1);
+  const [totalPagesMobile, setTotalPagesMobile] = useState(1);
+  const [productsDesktop, setProductsDesktop] = useState([]);
+  const [productsMobile, setProductsMobile] = useState([]);
+  const [loadingDesktop, setLoadingDesktop] = useState(false);
+  const [loadingMobile, setLoadingMobile] = useState(false);
+  const [errorDesktop, setErrorDesktop] = useState("");
+  const [errorMobile, setErrorMobile] = useState("");
+
+  const fetchDesktop = useCallback(async () => {
+    try {
+      setLoadingDesktop(true);
+      setErrorDesktop("");
+      const response = await filterProducts(normalizedFilters, pageDesktop, perPageDesktop, null, false);
+      setProductsDesktop(response.data?.data || []);
+      const pageCount = response.data?.meta?.pagination?.pageCount || 1;
+      setTotalPagesDesktop(pageCount);
+    } catch (err) {
+      setErrorDesktop(err?.message || "Failed to fetch products");
+      setProductsDesktop([]);
+      setTotalPagesDesktop(1);
+    } finally {
+      setLoadingDesktop(false);
+    }
+  }, [normalizedFilters, pageDesktop, perPageDesktop]);
+
+  const fetchMobile = useCallback(async () => {
+    try {
+      setLoadingMobile(true);
+      setErrorMobile("");
+      const response = await filterProducts(normalizedFilters, pageMobile, perPageMobile, null, false);
+      setProductsMobile(response.data?.data || []);
+      const pageCount = response.data?.meta?.pagination?.pageCount || 1;
+      setTotalPagesMobile(pageCount);
+    } catch (err) {
+      setErrorMobile(err?.message || "Failed to fetch products");
+      setProductsMobile([]);
+      setTotalPagesMobile(1);
+    } finally {
+      setLoadingMobile(false);
+    }
+  }, [normalizedFilters, pageMobile, perPageMobile]);
+
+  useEffect(() => {
+    fetchDesktop();
+  }, [fetchDesktop]);
+
+  useEffect(() => {
+    fetchMobile();
+  }, [fetchMobile]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      const detail = e?.detail || {};
+      setFilters((prev) => ({
+        ...prev,
+        listingType: detail.listingType || prev.listingType,
+        categoryType: detail.categoryType || prev.categoryType,
+        conditionType: detail.conditionType || prev.conditionType,
+        nation: detail.nation || prev.nation,
+        province: detail.province || prev.province,
+      }));
+      setPageDesktop(1);
+      setPageMobile(1);
+    };
+    window.addEventListener("dnt:home-filters", handler);
+    return () => window.removeEventListener("dnt:home-filters", handler);
+  }, []);
+
+  const canGoPreviousDesktop = pageDesktop > 1;
+  const canGoNextDesktop = pageDesktop < totalPagesDesktop;
+  const canGoPreviousMobile = pageMobile > 1;
+  const canGoNextMobile = pageMobile < totalPagesMobile;
+
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(null);
   const [dragLastX, setDragLastX] = useState(null);
-  const navigate = useNavigate();
-
-  // Desktop: hiển thị 6 cột x 2 dòng = 12 events
-  // Mobile: hiển thị 2 cột x 2 dòng = 4 events
-  // Thứ tự: dòng 1 (1,2,3,4,5,6), dòng 2 (7,8,9,10,11,12)
-  const columnsDesktop = 6;
-  const columnsMobile = 2;
-
-  // Mock data cho events với translation keys
-  const mockEvents = [
-    { id: 1, titleKey: "events.event1", descriptionKey: "events.description1" },
-    { id: 2, titleKey: "events.event2", descriptionKey: "events.description2" },
-    { id: 3, titleKey: "events.event3", descriptionKey: "events.description3" },
-    { id: 4, titleKey: "events.event4", descriptionKey: "events.description4" },
-    { id: 5, titleKey: "events.event5", descriptionKey: "events.description5" },
-    { id: 6, titleKey: "events.event6", descriptionKey: "events.description6" },
-    { id: 7, titleKey: "events.event7", descriptionKey: "events.description7" },
-    { id: 8, titleKey: "events.event8", descriptionKey: "events.description8" },
-    { id: 9, titleKey: "events.event9", descriptionKey: "events.description9" },
-    {
-      id: 10,
-      titleKey: "events.event10",
-      descriptionKey: "events.description10",
-    },
-    {
-      id: 11,
-      titleKey: "events.event11",
-      descriptionKey: "events.description11",
-    },
-    {
-      id: 12,
-      titleKey: "events.event12",
-      descriptionKey: "events.description12",
-    },
-    {
-      id: 13,
-      titleKey: "events.event13",
-      descriptionKey: "events.description13",
-    },
-    {
-      id: 14,
-      titleKey: "events.event14",
-      descriptionKey: "events.description14",
-    },
-    {
-      id: 15,
-      titleKey: "events.event15",
-      descriptionKey: "events.description15",
-    },
-    {
-      id: 16,
-      titleKey: "events.event16",
-      descriptionKey: "events.description16",
-    },
-    {
-      id: 17,
-      titleKey: "events.event17",
-      descriptionKey: "events.description17",
-    },
-    {
-      id: 18,
-      titleKey: "events.event18",
-      descriptionKey: "events.description18",
-    },
-  ];
-
-  const getCurrentEvents = (isMobile = false) => {
-    const columns = isMobile ? columnsMobile : columnsDesktop;
-    const page = isMobile ? pageMobile : pageDesktop;
-    const eventsPerPage = columns * 2; // 2 rows per page
-
-    // Sequential row-major order: row 1 = 1..columns, row 2 = columns+1..columns*2
-    const startIndex = page * eventsPerPage;
-    return mockEvents.slice(startIndex, startIndex + eventsPerPage);
-  };
-
-  const getMaxPages = (isMobile = false) => {
-    const columns = isMobile ? columnsMobile : columnsDesktop;
-    const eventsPerPage = columns * 2;
-    return Math.max(1, Math.ceil(mockEvents.length / eventsPerPage));
-  };
+  const swipeThreshold = 50;
 
   const handlePrevious = (isMobile = false) => {
-    if (isMobile) {
-      setPageMobile((prev) => Math.max(0, prev - 1));
-    } else {
-      setPageDesktop((prev) => Math.max(0, prev - 1));
-    }
+    if (isMobile) setPageMobile((prev) => Math.max(1, prev - 1));
+    else setPageDesktop((prev) => Math.max(1, prev - 1));
   };
 
   const handleNext = (isMobile = false) => {
-    const maxPages = getMaxPages(isMobile);
-    if (isMobile) {
-      setPageMobile((prev) => Math.min(maxPages - 1, prev + 1));
-    } else {
-      setPageDesktop((prev) => Math.min(maxPages - 1, prev + 1));
-    }
+    if (isMobile) setPageMobile((prev) => Math.min(totalPagesMobile, prev + 1));
+    else setPageDesktop((prev) => Math.min(totalPagesDesktop, prev + 1));
   };
-
-  const canGoPreviousDesktop = pageDesktop > 0;
-  const canGoNextDesktop = pageDesktop < getMaxPages(false) - 1;
-  const canGoPreviousMobile = pageMobile > 0;
-  const canGoNextMobile = pageMobile < getMaxPages(true) - 1;
-
-  const swipeThreshold = 50; // px
 
   const onPointerDown = (clientX) => {
     setIsDragging(true);
@@ -141,9 +151,7 @@ export default function EventComponent() {
         const canGoNext = isMobile ? canGoNextMobile : canGoNextDesktop;
         if (canGoNext) handleNext(isMobile);
       } else if (deltaX > 0) {
-        const canGoPrevious = isMobile
-          ? canGoPreviousMobile
-          : canGoPreviousDesktop;
+        const canGoPrevious = isMobile ? canGoPreviousMobile : canGoPreviousDesktop;
         if (canGoPrevious) handlePrevious(isMobile);
       }
     }
@@ -152,36 +160,74 @@ export default function EventComponent() {
     setDragLastX(null);
   };
 
-  const EventCard = ({ event }) => (
-    <div
-      onClick={() => navigate(`/list-of-goods/${event.id}`)}
-      style={{
-        backgroundColor: "white",
-        aspectRatio: 3 / 4,
-        padding: "10px",
-        borderRadius: "8px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "center",
-        textAlign: "center",
-        border: "1px solid black",
-        cursor: "pointer",
-      }}
-    >
-      <h3 style={{ margin: "10px 0 0 0", fontSize: "14px", fontWeight: "bold" }}>
-        {t("events.displayOnHome")} <br /> {event.id}
-      </h3>
-      <div style={{ alignSelf: "flex-start", textAlign: "left", fontSize: "12px", fontWeight: "bold", paddingLeft: "5px", paddingBottom: "10px" }}>
-        <p style={{ margin: "2px 0" }}>- {t("events.category")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.classification")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.status")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.goodsAddress")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.quantity")}</p>
+  const getItemFromProduct = (product) => {
+    const items = product?.productItems || product?.items || [];
+    return Array.isArray(items) && items.length ? items[0] : null;
+  };
+
+  const getImageUrl = (product) => {
+    const item = getItemFromProduct(product);
+    const img = item?.image;
+    if (!img) return null;
+    if (typeof img === "string") return img;
+    if (img.url) return img.url;
+    if (img.data?.attributes?.url) return img.data.attributes.url;
+    return null;
+  };
+
+  const ProductCard = ({ product }) => {
+    const item = getItemFromProduct(product);
+    const title = item?.name || t("goods.name", "Hàng hóa");
+    const address = product?.province || product?.address || product?.goodsAddress || "";
+    const thumb = getImageUrl(product);
+    const detailId = product?.custom_id || product?.id;
+
+    return (
+      <div
+        onClick={() => navigate(`/list-of-goods/${detailId}`)}
+        style={{
+          backgroundColor: "white",
+          aspectRatio: 3 / 4,
+          padding: "10px",
+          borderRadius: "8px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "center",
+          textAlign: "center",
+          border: "1px solid black",
+          cursor: "pointer",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {thumb && (
+          <img
+            src={thumb}
+            alt={title}
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              opacity: 0.18,
+              pointerEvents: "none",
+            }}
+          />
+        )}
+        
+        <div style={{ width: "100%", zIndex: 1, textAlign: "left", fontSize: "12px", fontWeight: "bold", paddingLeft: "5px", paddingBottom: "10px" }}>
+          <p style={{ margin: "2px 0" }}>- {title}</p>
+          <p style={{ margin: "2px 0" }}>- {product?.listingType || ""}</p>
+          <p style={{ margin: "2px 0" }}>- {product?.categoryType || ""}</p>
+          <p style={{ margin: "2px 0" }}>- {product?.conditionType || ""}</p>
+          <p style={{ margin: "2px 0" }}>- {address}</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const NavigationButton = ({
     direction,
@@ -246,8 +292,23 @@ export default function EventComponent() {
           onTouchMove={(e) => onPointerMove(e.touches[0].clientX)}
           onTouchEnd={() => onPointerUp(false)}
         >
-          {getCurrentEvents(false).map((event, index) => (
-            <EventCard key={`${event.id}-${index}`} event={event} />
+          {loadingDesktop && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px" }}>
+              {t("common.loading", "Đang tải...")}
+            </div>
+          )}
+          {!loadingDesktop && errorDesktop && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px", color: "red" }}>
+              {errorDesktop}
+            </div>
+          )}
+          {!loadingDesktop && !errorDesktop && productsDesktop.length === 0 && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px" }}>
+              {t("common.noData", "Không có dữ liệu")}
+            </div>
+          )}
+          {!loadingDesktop && !errorDesktop && productsDesktop.map((product, index) => (
+            <ProductCard key={`${product?.id || "p"}-${index}`} product={product} />
           ))}
         </div>
 
@@ -289,8 +350,23 @@ export default function EventComponent() {
           onTouchMove={(e) => onPointerMove(e.touches[0].clientX)}
           onTouchEnd={() => onPointerUp(true)}
         >
-          {getCurrentEvents(true).map((event, index) => (
-            <EventCard key={`${event.id}-${index}`} event={event} />
+          {loadingMobile && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px" }}>
+              {t("common.loading", "Đang tải...")}
+            </div>
+          )}
+          {!loadingMobile && errorMobile && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px", color: "red" }}>
+              {errorMobile}
+            </div>
+          )}
+          {!loadingMobile && !errorMobile && productsMobile.length === 0 && (
+            <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "20px" }}>
+              {t("common.noData", "Không có dữ liệu")}
+            </div>
+          )}
+          {!loadingMobile && !errorMobile && productsMobile.map((product, index) => (
+            <ProductCard key={`${product?.id || "p"}-${index}`} product={product} />
           ))}
         </div>
 

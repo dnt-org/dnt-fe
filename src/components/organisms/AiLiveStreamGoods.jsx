@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import {
@@ -7,7 +7,6 @@ import {
     ChevronRight,
     Bookmark,
     Flag,
-    FileWarning,
     Trash2,
     Play,
     SearchIcon,
@@ -17,6 +16,7 @@ import {
     Package
 } from "lucide-react"
 import AiLiveVideoList from "../AiLiveVideoList.jsx";
+import { filterProducts } from "../../services/productService";
 
 
 
@@ -24,6 +24,78 @@ import AiLiveVideoList from "../AiLiveVideoList.jsx";
 export default function AiLiveStreamGoods() {
     const { t } = useTranslation()
     const navigate = useNavigate()
+
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
+    const FILE_BASE_URL = API_URL.replace(/\/api\/?$/, "")
+
+    const normalizeFileUrl = useCallback((url) => {
+        if (!url) return null
+        if (typeof url !== "string") return null
+        if (/^https?:\/\//i.test(url)) return url
+        if (url.startsWith("/")) return `${FILE_BASE_URL}${url}`
+        return url
+    }, [FILE_BASE_URL])
+
+    const getLivestreamVideoUrl = useCallback((product) => {
+        const fromFileLinks = product?.fileLinks?.product?.livestreamVideoFile
+        if (typeof fromFileLinks === "string") return normalizeFileUrl(fromFileLinks)
+        if (Array.isArray(fromFileLinks) && typeof fromFileLinks[0] === "string") return normalizeFileUrl(fromFileLinks[0])
+
+        const m = product?.livestreamVideoFile
+        if (typeof m === "string") return normalizeFileUrl(m)
+        if (m?.url) return normalizeFileUrl(m.url)
+        if (m?.data?.attributes?.url) return normalizeFileUrl(m.data.attributes.url)
+        return null
+    }, [normalizeFileUrl])
+
+    const getFirstItemName = useCallback((product) => {
+        const items = product?.productItems || product?.items
+        const first = Array.isArray(items) ? items[0] : null
+        return first?.name || ""
+    }, [])
+
+    const getProductRouteId = useCallback((product) => {
+        return product?.custom_id || product?.documentId || product?.id
+    }, [])
+
+    const [liveVideoProducts, setLiveVideoProducts] = useState([])
+    const [liveVideoLoading, setLiveVideoLoading] = useState(false)
+    const [liveVideoError, setLiveVideoError] = useState("")
+    const [liveVideoPage, setLiveVideoPage] = useState(1)
+    const [liveVideoTotalPages, setLiveVideoTotalPages] = useState(1)
+    const [videoPlaybackErrors, setVideoPlaybackErrors] = useState({})
+
+    const fetchLiveVideos = useCallback(async () => {
+        try {
+            setLiveVideoLoading(true)
+            setLiveVideoError("")
+            const filters = {
+                listingType: localStorage.getItem("category") || "",
+                categoryType: localStorage.getItem("subcategory") || "",
+                conditionType: localStorage.getItem("condition") || "",
+                nation: localStorage.getItem("nation") || "",
+                province: localStorage.getItem("province") || "",
+                name: "",
+            }
+            if (filters.nation?.toLowerCase() === "all") filters.nation = ""
+            if (filters.province?.toLowerCase() === "all") filters.province = ""
+
+            const response = await filterProducts(filters, liveVideoPage, 12, null, false)
+            const products = response.data?.data || []
+            setLiveVideoProducts(products.filter((p) => Boolean(getLivestreamVideoUrl(p))))
+            setLiveVideoTotalPages(response.data?.meta?.pagination?.pageCount || 1)
+        } catch (err) {
+            setLiveVideoProducts([])
+            setLiveVideoTotalPages(1)
+            setLiveVideoError(err?.message || "Failed to load livestream videos")
+        } finally {
+            setLiveVideoLoading(false)
+        }
+    }, [getLivestreamVideoUrl, liveVideoPage])
+
+    useEffect(() => {
+        fetchLiveVideos()
+    }, [fetchLiveVideos])
 
     const [followedByCount] = useState(123456)
     const [followedUsers, setFollowedUsers] = useState([])
@@ -171,6 +243,97 @@ export default function AiLiveStreamGoods() {
 
     return (
         <div className="space-y-1 ">
+            <div className="border border-gray-300 bg-white rounded-md p-2">
+                <div className="flex items-center justify-between gap-2">
+                    <div className="font-bold text-sm">{t("aiLive.livestreamVideos", "VIDEO LIVESTREAM")}</div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            className="border px-2 py-1 text-xs disabled:opacity-50"
+                            disabled={liveVideoPage <= 1 || liveVideoLoading}
+                            onClick={() => setLiveVideoPage((p) => Math.max(1, p - 1))}
+                        >
+                            {t("common.prev", "Trước")}
+                        </button>
+                        <div className="text-xs text-gray-600">
+                            {liveVideoPage}/{liveVideoTotalPages}
+                        </div>
+                        <button
+                            type="button"
+                            className="border px-2 py-1 text-xs disabled:opacity-50"
+                            disabled={liveVideoPage >= liveVideoTotalPages || liveVideoLoading}
+                            onClick={() => setLiveVideoPage((p) => Math.min(liveVideoTotalPages, p + 1))}
+                        >
+                            {t("common.next", "Sau")}
+                        </button>
+                    </div>
+                </div>
+
+                {liveVideoLoading && (
+                    <div className="text-center text-sm text-gray-600 py-4">{t("common.loading", "Đang tải...")}</div>
+                )}
+
+                {!liveVideoLoading && liveVideoError && (
+                    <div className="text-center text-sm text-red-600 py-4">{liveVideoError}</div>
+                )}
+
+                {!liveVideoLoading && !liveVideoError && liveVideoProducts.length === 0 && (
+                    <div className="text-center text-sm text-gray-600 py-4">{t("common.noData", "Không có dữ liệu")}</div>
+                )}
+
+                {!liveVideoLoading && !liveVideoError && liveVideoProducts.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                        {liveVideoProducts.map((p) => {
+                            const url = getLivestreamVideoUrl(p)
+                            const pid = getProductRouteId(p)
+                            const title = getFirstItemName(p) || pid
+                            const hasError = Boolean(videoPlaybackErrors[pid])
+                            const type = (() => {
+                                if (!url) return undefined
+                                const clean = url.split("?")[0]
+                                if (clean.endsWith(".mp4")) return "video/mp4"
+                                if (clean.endsWith(".webm")) return "video/webm"
+                                if (clean.endsWith(".mov")) return "video/quicktime"
+                                return "video/mp4"
+                            })()
+                            return (
+                                <div key={pid} className="border border-gray-300 rounded p-2">
+                                    <div className="flex items-center justify-between gap-2 mb-2">
+                                        <div className="text-xs font-bold truncate">{title}</div>
+                                        <button
+                                            type="button"
+                                            className="text-xs underline"
+                                            onClick={() => pid && navigate(`/list-of-goods/${pid}`)}
+                                        >
+                                            {t("common.detail", "Chi tiết")}
+                                        </button>
+                                    </div>
+                                    <video
+                                        controls
+                                        playsInline
+                                        preload="metadata"
+                                        className="w-full aspect-video bg-black rounded"
+                                        onError={() => {
+                                            if (!pid) return
+                                            setVideoPlaybackErrors((prev) => ({ ...prev, [pid]: true }))
+                                        }}
+                                    >
+                                        {url && <source src={url} type={type} />}
+                                    </video>
+                                    {hasError && url && (
+                                        <div className="mt-2 text-xs text-red-600">
+                                            <div>Video không phát được trên trình duyệt.</div>
+                                            <a className="underline" href={url} target="_blank" rel="noreferrer">
+                                                Mở video
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                )}
+            </div>
             <div className="mt-1 border-1 border-gray-300">
                 <div className="flex items-center">
                     <SearchIcon size={24} className="text-gray-400" />

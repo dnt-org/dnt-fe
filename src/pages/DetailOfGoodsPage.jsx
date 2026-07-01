@@ -159,6 +159,19 @@ export default function DetailOfGoodsPage() {
     }
   };
 
+  const openAiLiveGoodsVideo = () => {
+    const targetId = product?.documentId || product?.custom_id || product?.id || id;
+    if (!targetId) return;
+    const fromFileLinks = product?.fileLinks?.product?.livestreamVideoFile;
+    const videoUrl = typeof fromFileLinks === "string"
+      ? fromFileLinks
+      : Array.isArray(fromFileLinks) && typeof fromFileLinks[0] === "string"
+        ? fromFileLinks[0]
+        : product?.livestreamVideoFile?.url || product?.livestreamVideoFile?.data?.attributes?.url || "";
+
+    navigate(`/ai-live/video-goods/${targetId}`, { state: { videoUrl } });
+  };
+
   const mapSubcategoryToKey = (value) => {
     if (!value) return "";
     const v = value.toString().toUpperCase().replace(/_/g, " ").trim();
@@ -416,21 +429,30 @@ export default function DetailOfGoodsPage() {
             {/* Column 1: XÁC MINH HÀNG HÓA */}
             <div className="p-2 text-center flex flex-col items-center justify-center">
               <div className="font-bold">{t('detailOfGoods.goodsVerify')}</div>
-              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1"
+                onClick={openAiLiveGoodsVideo}
+              >
                 {t('detailOfGoods.clickToOpen')}
               </button>
             </div>
             {/* Column 2: THƯƠNG HIỆU NGƯỜI ĐĂNG BÀI */}
             <div className="p-2 text-center flex flex-col items-center justify-center border-l border-gray-300">
               <div className="font-bold">{t('detailOfGoods.posterBrand')}</div>
-              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1"
+                onClick={openAiLiveGoodsVideo}
+              >
                 {t('detailOfGoods.clickToOpen')}
               </button>
             </div>
             {/* Column 3: LIVESTREAM HÀNG HÓA */}
             <div className="p-2 text-center flex flex-col items-center justify-center border-l border-gray-300">
               <div className="font-bold">{t('detailOfGoods.goodsLivestream')}</div>
-              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+              <button
+                className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1"
+                onClick={openAiLiveGoodsVideo}
+              >
                 {t('detailOfGoods.clickToOpen')}
               </button>
             </div>
