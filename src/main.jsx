@@ -42,7 +42,7 @@ function PasswordGate({ children }) {
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 if (input === pwd || input === "1") {
-                  setVerified(true);
+                  setVerified(true);  
                   setError('');
                 } else {
                   setError('Incorrect password');
