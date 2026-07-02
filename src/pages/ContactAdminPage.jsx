@@ -48,6 +48,14 @@ import {
   verifyRecoveryCccd
 } from '../services/authService';
 import { initialFriends, initialGroups, initialFriendRequests, initialGroupInvites } from '../data/contactMockData';
+import {
+  getConversations,
+  getOrCreateConversation,
+  getMessages,
+  sendMessage,
+  markAsRead,
+  getUnreadCount
+} from '../services/messageService';
 import ConversationItemMenu from '../components/contact/ConversationItemMenu';
 import ContactAvatarMenu from '../components/contact/ContactAvatarMenu';
 import PendingListModal from '../components/contact/PendingListModal';
@@ -801,10 +809,102 @@ export default function ContactAdminPage() {
 
   // #C-01: Cá nhân vs Nhóm tabs
   const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'group'
-  const [friends, setFriends] = useState(initialFriends);
+  const [friends, setFriends] = useState([]);
   const [groups, setGroups] = useState(initialGroups);
   const [friendRequests, setFriendRequests] = useState(initialFriendRequests);
   const [groupInvites, setGroupInvites] = useState(initialGroupInvites);
+
+  const currentUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch {
+      return null;
+    }
+  })();
+  const currentUserId = currentUser?.id;
+
+  const [chatMessages, setChatMessages] = useState([]);
+  const chatMessagesRef = useRef([]);
+  chatMessagesRef.current = chatMessages;
+
+  // Poll conversations every 5 seconds
+  useEffect(() => {
+    const fetchConvos = async () => {
+      try {
+        const data = await getConversations();
+        const mapped = data.map(convo => ({
+          id: convo.id,
+          otherUserId: convo.other_user?.id,
+          name: convo.other_user?.full_name || 'Người dùng',
+          displayName: convo.other_user?.full_name || 'Người dùng',
+          avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
+          lastMessage: convo.last_message || 'Chưa có tin nhắn',
+          updatedAt: convo.last_message_at || new Date().toISOString(),
+          unread: convo.unread_count || 0,
+          hasUnseenAiLive: false,
+          otpPending: false
+        }));
+        setFriends(mapped);
+      } catch (err) {
+        console.error('Error fetching conversations:', err);
+      }
+    };
+
+    fetchConvos();
+    const interval = setInterval(fetchConvos, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Poll active chat messages every 3 seconds
+  useEffect(() => {
+    if (!activeContactId || activeContactType !== 'friend') {
+      setChatMessages([]);
+      return;
+    }
+
+    const fetchInitial = async () => {
+      try {
+        const data = await getMessages(activeContactId, '', 50);
+        const mapped = data.map(msg => ({
+          id: msg.id,
+          text: msg.content,
+          sender: msg.sender?.id === currentUserId ? 'me' : 'them',
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }));
+        setChatMessages(mapped);
+        
+        await markAsRead(activeContactId);
+      } catch (err) {
+        console.error('Error fetching initial messages:', err);
+      }
+    };
+
+    fetchInitial();
+
+    const interval = setInterval(async () => {
+      const msgs = chatMessagesRef.current;
+      const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : '';
+      
+      try {
+        const data = await getMessages(activeContactId, lastMsgId, 50);
+        if (data && data.length > 0) {
+          const mapped = data.map(msg => ({
+            id: msg.id,
+            text: msg.content,
+            sender: msg.sender?.id === currentUserId ? 'me' : 'them',
+            timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+          setChatMessages(prev => [...prev, ...mapped]);
+        }
+        
+        await markAsRead(activeContactId);
+      } catch (err) {
+        console.error('Error polling messages:', err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeContactId, activeContactType, currentUserId]);
 
   // #C-03: which item's right-tap quick-action menu is open
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -848,20 +948,51 @@ export default function ContactAdminPage() {
     sessionStorage.setItem('contactAdBannerClosed', 'true');
   };
 
-  const handleSendMessage = (text) => {
+  const handleSendMessage = async (text, type = 'text') => {
     if (!activeContactId) return;
-    const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    const newMessage = {
-      id: msgId,
-      text,
-      sender: 'me',
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setContactMessages(prev => {
-      const current = prev[activeContactId] || [];
-      if (current.some(m => m.id === msgId)) return prev; // idempotent guard
-      return { ...prev, [activeContactId]: [...current, newMessage] };
-    });
+
+    if (activeContactType === 'friend') {
+      try {
+        const msg = await sendMessage(activeContactId, text, type);
+        const mapped = {
+          id: msg.id,
+          text: msg.content,
+          sender: 'me',
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setChatMessages(prev => [...prev, mapped]);
+
+        const data = await getConversations();
+        const mappedConvos = data.map(convo => ({
+          id: convo.id,
+          otherUserId: convo.other_user?.id,
+          name: convo.other_user?.full_name || 'Người dùng',
+          displayName: convo.other_user?.full_name || 'Người dùng',
+          avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
+          lastMessage: convo.last_message || 'Chưa có tin nhắn',
+          updatedAt: convo.last_message_at || new Date().toISOString(),
+          unread: convo.unread_count || 0,
+          hasUnseenAiLive: false,
+          otpPending: false
+        }));
+        setFriends(mappedConvos);
+      } catch (err) {
+        console.error('Error sending message:', err);
+      }
+    } else {
+      const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const newMessage = {
+        id: msgId,
+        text,
+        sender: 'me',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setContactMessages(prev => {
+        const current = prev[activeContactId] || [];
+        if (current.some(m => m.id === msgId)) return prev; // idempotent guard
+        return { ...prev, [activeContactId]: [...current, newMessage] };
+      });
+    }
   };
 
   const isBotMode = chatMode === 'bot';
@@ -921,7 +1052,7 @@ export default function ContactAdminPage() {
   const handleSendLocation = () => {
     if (!activeContactId) return;
     const sendLoc = (lat, lng) =>
-      handleSendMessage(`📍 Vị trí của tôi: https://maps.google.com/?q=${lat},${lng}`);
+      handleSendMessage(`📍 Vị trí của tôi: https://maps.google.com/?q=${lat},${lng}`, 'location');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => sendLoc(pos.coords.latitude.toFixed(6), pos.coords.longitude.toFixed(6)),
@@ -1023,31 +1154,57 @@ export default function ContactAdminPage() {
   const handleAddFriendScanResult = (resultText) => {
     setIsAddFriendQrOpen(false);
     let name = resultText;
+    let qrUserId = null;
     try {
       const parsed = JSON.parse(resultText);
       name = parsed.name || parsed.fullName || resultText;
-    } catch { /* raw text QR, use as-is */ }
-    setScannedFriend({ id: `scan-friend-${Date.now()}`, name, avatar: `https://i.pravatar.cc/150?u=${Date.now()}` });
+      qrUserId = parsed.userId || parsed.id || null;
+    } catch {
+      if (!isNaN(resultText)) {
+        qrUserId = parseInt(resultText, 10);
+      }
+    }
+    setScannedFriend({
+      id: qrUserId || `scan-friend-${Date.now()}`,
+      userId: qrUserId,
+      name,
+      avatar: `https://i.pravatar.cc/150?u=${Date.now()}`
+    });
     setChatMode('none');
     setActiveContactId(null);
     setActiveContactType(null);
     setInlinePanelType('scannedFriend');
   };
 
-  const handleConfirmScannedFriend = () => {
+  const handleConfirmScannedFriend = async () => {
     if (!scannedFriend) return;
-    setFriends(prev => [
-      ...prev,
-      {
-        ...scannedFriend,
-        displayName: scannedFriend.displayName || scannedFriend.name,
-        lastMessage: 'Các bạn đã trở thành bạn bè.',
-        updatedAt: new Date().toISOString(),
-        unread: 0,
-        hasUnseenAiLive: false,
-        otpPending: false,
-      },
-    ]);
+    try {
+      const actualUserId = scannedFriend.userId || parseInt(scannedFriend.id, 10);
+      if (!isNaN(actualUserId)) {
+        const convo = await getOrCreateConversation(actualUserId);
+        
+        const data = await getConversations();
+        const mapped = data.map(c => ({
+          id: c.id,
+          otherUserId: c.other_user?.id,
+          name: c.other_user?.full_name || 'Người dùng',
+          displayName: c.other_user?.full_name || 'Người dùng',
+          avatar: c.other_user?.avt || 'https://via.placeholder.com/150',
+          lastMessage: c.last_message || 'Chưa có tin nhắn',
+          updatedAt: c.last_message_at || new Date().toISOString(),
+          unread: c.unread_count || 0,
+          hasUnseenAiLive: false,
+          otpPending: false
+        }));
+        setFriends(mapped);
+        
+        setActiveContactId(convo.id);
+        setActiveContactType('friend');
+        setChatMode('user');
+      }
+    } catch (err) {
+      console.error('Error confirming scanned friend:', err);
+    }
     setScannedFriend(null);
     setInlinePanelType(null);
   };
@@ -1428,7 +1585,7 @@ export default function ContactAdminPage() {
           <NormalChatPanel
             contact={activeContact}
             t={t}
-            messages={contactMessages[activeContactId] || []}
+            messages={activeContactType === 'friend' ? chatMessages : (contactMessages[activeContactId] || [])}
             onSendMessage={handleSendMessage}
           />
         )}
