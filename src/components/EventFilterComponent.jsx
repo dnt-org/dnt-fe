@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getMetric } from '../services/metricService';
 import { CHANGE_USER_COUNTRY } from '../context/action/filterAction';
-import { getCountries, getCountryByCode } from '../services/countries';
+import { getCountries, getCountryByCode, getDistrictByCode } from '../services/countries';
+import { useTranslation } from 'react-i18next';
+import {
+    KeyboardIcon as KeyboardIcon,
+} from "lucide-react";
 import { SearchSection } from './Body';
 import CategorySelect from './CategorySelect';
-import { categories, subCategories, conditions } from '../constants/filterConstants';
+import { categories, subCategories, conditions, regions } from '../constants/filterConstants';
 
 function EventFilterComponent() {
     const [category, setCategory] = useState({
@@ -41,16 +47,6 @@ function EventFilterComponent() {
         localStorage.setItem("province", province?.en);
         localStorage.setItem("district", district?.en);
         dispatch({ type: CHANGE_USER_COUNTRY, payload: nation?.en });
-        window.dispatchEvent(new CustomEvent('dnt:home-filters', {
-            detail: {
-                listingType: category?.en,
-                categoryType: subcategory?.en,
-                conditionType: condition?.en,
-                nation: nation?.en,
-                province: province?.en,
-                district: district?.en,
-            }
-        }));
     }, [category, subcategory, condition, nation, province, district]);
 
     const handleCategoryChange = (title, item) => {

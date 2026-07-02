@@ -4,14 +4,62 @@ import { useTranslation } from "react-i18next";
 import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
 import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 
-export default function ProductGridReadOnly({ products = [], category }) {
+export default function ProductGridReadOnly({ products = [], onItemsChange }) {
   const { t } = useTranslation();
   const [items, setItems] = useState(products || []);
+  const [isManpower, setIsManpower] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const { containerRef, trackRef, thumbRef } = useHorizontalScrollbar();
+  const [lowestHighestAskingPrice, setLowestHighestAskingPrice] = useState(true);
 
   useEffect(() => {
     setItems(products || []);
+    setIsManpower(products.some((item) => item?.categoryType?.includes("manpower")));
   }, [products]);
+
+
+  const handleItemChange = (id, field, value) => {
+    const updated = items.map((item) =>
+      item.id === id ? { ...item, [field]: value } : item
+    );
+    setItems(updated);
+    if (onItemsChange) onItemsChange(updated);
+  };
+
+  const handleAddItem = () => {
+    const newItem = {
+      id: items.length + 1,
+      name: "",
+      model: "",
+      size: "",
+      color: "",
+      image: null,
+      qualityInfoFile: null,
+      warrantyChangeDays: "",
+      warrantyRepairDays: "",
+      repairWarrantyRetentionPercent: "",
+      maxDeliveryDaysAfterAcceptance: "",
+      handoverLocation: "",
+      contractDurationMultiplicity: "",
+      contractDurationUnit: "",
+      directPayment: "",
+      depositRequirementDirect: "",
+      paymentViaWallet: "",
+      depositRequirementWallet: "",
+      vat: "",
+      quantityMinimum: "",
+      unit: "",
+      unitMarketPrice: "",
+      unitAskingPrice: "",
+      amountDesired: "",
+      autoAcceptPrice: "",
+      autoRejectPrice: "",
+    };
+    const updated = [...items, newItem];
+    setItems(updated);
+    if (onItemsChange) onItemsChange(updated);
+  };
+
 
   return (
     <>
@@ -22,232 +70,476 @@ export default function ProductGridReadOnly({ products = [], category }) {
             {t("productGrid.sequenceNumber")}
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (1) {t("productGrid.nameOfGoods")}</div>
+            <div>{t("productGrid.nameOfGoods")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (2) {t("productGrid.model")}</div>
+            <div>{t("productGrid.model")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (3) {t("productGrid.shape", "HÌNH DẠNG")}</div>
+            <div>{t("productGrid.size")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (4) {t("productGrid.size")}</div>
+            <div>{t("productGrid.color")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (5) {t("productGrid.color")}</div>
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} /> <span className="text-red-500">*</span>
+            </div>
           </div>
+          {/* New columns */}
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (6) <span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} />
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />{" "}
+              <span className="text-red-500">*</span>
+            </div>
+          </div>  
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (7) {t("productGrid.recordingVideo", "QUAY PHIM")}</div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (8) <span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} />
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (9) {t("productGrid.poster_info", "THÔNG TIN NGƯỜI ĐĂNG BÀI")}</div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (10) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} />
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (11) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyPolicy") }} />
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (12) <span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} />
+            <div>
+              {t("productGrid.handoverLocation")}{" "}
+              <span className="text-red-500">*</span>
+            </div>
+          </div>
+          {/* THỜI LƯỢNG THỰC HIỆN split into 2 columns */}
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (13) <span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} />
+            <div>{t("productGrid.timeUnit")}</div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div>{t("productGrid.directPayment")}</div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div>
+              {t("productGrid.vat")} <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (14) <span dangerouslySetInnerHTML={{ __html: t("productGrid.maxDeliveryDays") }} />
+            <div>
+              {t("productGrid.quantityMinimum")}{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (15) {t("productGrid.handoverLocation")}</div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (16) <span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} />
+            <div>
+              {t("productGrid.unit")} <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (17) {t("productGrid.timeUnit")}</div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (18) {t("productGrid.directPayment")}</div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (19) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (20) <span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (21) <span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (22) <span dangerouslySetInnerHTML={{ __html: t("productGrid.vat") }} />
+            <div>
+              {t("productGrid.unitMarketPrice")}{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (23) <span dangerouslySetInnerHTML={{ __html: t("productGrid.payOnWeb") }} />
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAskingPrice") }} />{" "}
+              <span className="text-red-500">*</span>
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (24) <span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} />
-            </div>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></div>
           </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            {(category === "SALE" || category === "FOR RENT") && (
-              <div> (25) {t("productGrid.quantityMinimum")}</div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (25) {t("productGrid.quantitymax")}</div>
-            )}
-            {(!category || (category !== "SALE" && category !== "FOR RENT" && category !== "BUY" && category !== "RENT")) && (
-              <div> (25) {t("productGrid.quantity")}</div>
-            )}
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (26) <span dangerouslySetInnerHTML={{ __html: t("productGrid.quantityMinRequire") }} />
-            </div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (26)
-              <span>{t("productGrid.unit")}</span>
-            </div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.unitMarketPrice") }} />
-            </div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            {(category === "SALE" || category === "FOR RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceLow") }} /></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.desiredUnitPriceHigh") }} /></div>
-            )}
-            {(!category || (category !== "SALE" && category !== "FOR RENT" && category !== "BUY" && category !== "RENT")) && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.unitAskingPrice") }} /></div>
-            )}
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-          {(category === "SALE" || category === "FOR RENT") && (
-              <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestAmount") }} /></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.highestAmount") }} /></div>
-            )}
-            {(!category || (category !== "SALE" && category !== "FOR RENT" && category !== "BUY" && category !== "RENT")) && (
-              <div> (30) <span dangerouslySetInnerHTML={{ __html: t("productGrid.amountDesired") }} /></div>
-            )}
-          </div>
-
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-            <div> (31) <span dangerouslySetInnerHTML={{ __html: t("productGrid.totalAmountandvat") }} /></div>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.setQuantity") }} /></div>
           </div>
-
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-          {(category === "SALE" || category === "FOR RENT") && (
-              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} /></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} /></div>
-            )}
-            {(!category || (category !== "SALE" && category !== "FOR RENT" && category !== "BUY" && category !== "RENT")) && (
-              <div> (32) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoAcceptPrice") }} /></div>
-            )}
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.setUnitPrice") }} /></div>
           </div>
-         <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-          {(category === "SALE" || category === "FOR RENT") && (
-              <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} /></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} /></div>
-            )}
-            {(!category || (category !== "SALE" && category !== "FOR RENT" && category !== "BUY" && category !== "RENT")) && (
-              <div> (33) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPrice") }} /></div>
-            )}
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div>{t("productGrid.totalAmount")}</div>
+          </div>
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div>{t("detailOfGoods.confirm")}</div>
           </div>
         </div>
 
         {/* Rows */}
-        {items.map((item, idx) => (
+        {items.map((item) => (
           <div
-            key={item.id || idx}
+            key={item.id}
             className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}
           >
             <div className="border-r border-b border-gray-300 text-center flex items-center justify-center">
-              <div>{item.id || idx + 1}</div>
+              <div>{item.id}</div>
             </div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.name}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.model}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.shape}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.size}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.color}</div>
-            
-            <div className="border-r border-b border-gray-300 p-2 flex items-center justify-center">
-              {item.image ? (
-                <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs">{t("productGrid.viewFile")}</button>
+            <input
+              type="text"
+              value={item.name}
+              onChange={(e) =>
+                handleItemChange(item.id, "name", e.target.value)
+              }
+              className="w-full border-r border-b border-gray-300"
+              disabled
+            />
+              <input
+                type="text"
+                value={item.model}
+                onChange={(e) =>
+                  handleItemChange(item.id, "model", e.target.value)
+                }
+                className="w-full border-r border-b border-gray-300"
+                disabled
+              />
+              <input
+                type="text"
+                value={item.size}
+                onChange={(e) =>
+                  handleItemChange(item.id, "size", e.target.value)
+                }
+                className="w-full border-r border-b border-gray-300"
+                disabled
+              />
+              <input
+                type="text"
+                value={item.color}
+                onChange={(e) =>
+                  handleItemChange(item.id, "color", e.target.value)
+                }
+                className="w-full border-r border-b border-gray-300"  
+                disabled
+              />
+            <div className="border-r border-t border-b border-gray-300 p-2 text-center">
+              <input
+                type="file"
+                onChange={(e) =>
+                  handleItemChange(item.id, "image", e.target.files[0])
+                }
+                className="w-full p-1 mt-1 text-xs border"
+                disabled
+              />
+            </div>
+            {/* New cells */}
+            <div className="border-r border-t border-b border-gray-300 p-2 text-center">
+              <button
+                type="button"
+                className="mt-1 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+              >
+                {t("productGrid.uploadFile")}
+              </button>
+            </div>
+              <input
+                type="number"
+                min="0"
+                value={item.warrantyChangeDays}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "warrantyChangeDays",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+              <input
+                type="number"
+                min="0"
+                value={item.warrantyRepairDays}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "warrantyRepairDays",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+              <TwoLineUnitInput
+                name="repairWarrantyRetentionPercent"
+                type="text"
+                value={item.repairWarrantyRetentionPercent}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "repairWarrantyRetentionPercent",
+                    e.target.value
+                  )
+                }
+                placeholder={t("goods.enter")}
+                disabled
+              />
+              <input
+                type="number"
+                min="0"
+                value={item.maxDeliveryDaysAfterAcceptance}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "maxDeliveryDaysAfterAcceptance",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+            <div className="border-r border-t border-b border-gray-300 p-2 text-center">
+              <select
+                value={item.handoverLocation}
+                onChange={(e) =>
+                  handleItemChange(item.id, "handoverLocation", e.target.value)
+                }
+                className="w-full border-gray-300 p-1 mt-1 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="Kho bên bán">
+                  {t("productGrid.sellerWarehouse")}
+                </option>
+                <option value="Kho bên mua">
+                  {t("productGrid.buyerWarehouse")}
+                </option>
+              </select>
+            </div>
+              <select
+                value={item.contractDurationMultiplicity}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "contractDurationMultiplicity",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="one">{t("productGrid.one")}</option>
+                <option value="many">{t("productGrid.many")}</option>
+              </select>
+              <select
+                value={item.contractDurationUnit}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "contractDurationUnit",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="time">{t("productGrid.time")}</option>
+                <option value="year">{t("productGrid.year")}</option>
+              </select>
+
+              <select
+                value={item.directPayment}
+                onChange={(e) =>
+                  handleItemChange(item.id, "directPayment", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="yes">{t("productGrid.yes")}</option>
+                <option value="no">{t("productGrid.no")}</option>
+              </select>
+
+              <input
+                type="text"
+                value={item.depositRequirementDirect}
+                onChange={(e) =>
+                  handleItemChange(
+                    item.id,
+                    "depositRequirementDirect",
+                    e.target.value
+                  )
+                }
+                className="w-full border-t border-b border-r border-gray-300"
+                placeholder=""
+                disabled
+              />
+
+              <select
+                value={item.paymentViaWallet}
+                onChange={(e) =>
+                  handleItemChange(item.id, "paymentViaWallet", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="yes">{t("productGrid.yes")}</option>
+                <option value="no">{t("productGrid.no")}</option>
+              </select>
+              
+              <select
+                value={item.depositRequirementWallet}
+                onChange={(e) =>
+                  handleItemChange(item.id, "depositRequirementWallet", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="yes">{t("productGrid.yes")}</option>
+                <option value="no">{t("productGrid.no")}</option>
+              </select>
+
+             
+              <select
+                value={item.vat}
+                onChange={(e) =>
+                  handleItemChange(item.id, "vat", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="yes">{t("productGrid.yes")}</option>
+                <option value="no">{t("productGrid.no")}</option>
+              </select>
+              <input
+                type="number"
+                min="0"
+                value={item.quantityMinimum}
+                onChange={(e) =>
+                  handleItemChange(item.id, "quantityMinimum", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+              <input
+                type="text"
+                value={item.unit}
+                onChange={(e) =>
+                  handleItemChange(item.id, "unit", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300"
+                disabled
+              />
+              <input
+                type="currency"
+                value={item.unitMarketPrice}
+                onChange={(e) =>
+                  handleItemChange(item.id, "unitMarketPrice", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+
+              <select
+                value={item.vat}
+                onChange={(e) =>
+                  handleItemChange(item.id, "vat", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="yes">{t("productGrid.highest")}</option>
+                <option value="no">{t("productGrid.lowest")}</option>
+              </select>
+              
+              <input
+                type="currency"
+                value={item.amountDesired}
+                onChange={(e) =>
+                  handleItemChange(item.id, "amountDesired", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                placeholder=""
+                disabled
+              />
+              {isManpower ? (
+                 <div className="whitespace-nowrap px-1">
+                 <button
+                   className="w-full cursor-pointer border border-gray-300 text-center bg-gray-100"
+                 >{t("detailOfGoods.downloadFile")}</button>
+                 </div>
               ) : (
-                <span className="text-gray-400 text-xs">{t("productGrid.noFile")}</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={item.orderQuantity || ""}
+                  onChange={(e) =>
+                    handleItemChange(item.id, "orderQuantity", e.target.value)
+                  }
+                  className="w-full border-t border-b border-r border-gray-300 text-right"
+                  placeholder=""
+                />
               )}
-            </div>
-            <div className="border-r border-b border-gray-300 p-2 flex items-center justify-center">
-              {item.videoFile ? (
-                <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs">{t("productGrid.viewFile")}</button>
-              ) : (
-                <span className="text-gray-400 text-xs">{t("productGrid.noFile")}</span>
-              )}
-            </div>
-            <div className="border-r border-b border-gray-300 p-2 flex items-center justify-center">
-              {item.qualityInfoFile ? (
-                <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs">{t("productGrid.viewFile")}</button>
-              ) : (
-                <span className="text-gray-400 text-xs">{t("productGrid.noFile")}</span>
-              )}
-            </div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.posterInfo}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.warrantyChangeDays} {item.warrantyChangeDays ? 'ngày' : ''}</div>
-            <div className="border-r border-b border-gray-300 p-2 flex items-center justify-center">
-              {item.warrantyPolicyFile ? (
-                <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs">{t("productGrid.viewFile")}</button>
-              ) : (
-                <span className="text-gray-400 text-xs">{t("productGrid.noFile")}</span>
-              )}
-            </div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.warrantyRepairDays} {item.warrantyRepairDays ? 'ngày' : ''}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.repairWarrantyRetentionPercent}%</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.maxDeliveryDaysAfterAcceptance} {item.maxDeliveryDaysAfterAcceptance ? 'ngày' : ''}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.handoverLocation}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.contractDurationMultiplicity}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.contractDurationUnit}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.directPayment}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.depositRequirementDirect}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.paymentViaWallet}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.depositRequirementWallet}%</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.vat}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.paymentOnPlatform}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.timeUserMustPayAfterDelivery} {item.timeUserMustPayAfterDelivery ? 'ngày' : ''}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.quantityMinimum}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.quantityMinRequire}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 truncate">{item.unit}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.unitMarketPrice}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.unitAskingPrice}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.amountDesired}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.totalAmountAndVat}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.autoAcceptPrice}</div>
-            <div className="w-full border-r border-b border-gray-300 p-2 text-right">{item.autoRejectPrice}</div>
+               <input
+                type="number"
+                min="0"
+                value={item.orderUnitPrice || ""}
+                onChange={(e) =>
+                  handleItemChange(item.id, "orderUnitPrice", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                placeholder=""
+                disabled={isManpower}
+              />
+               <input
+                type="text"
+                value={((parseFloat(item.orderQuantity || 0) * parseFloat(item.orderUnitPrice || 0)) || 0).toLocaleString()}
+                readOnly
+                className="w-full border-t border-b border-r border-gray-300 text-right bg-gray-100"
+                placeholder=""
+              />
+              <button
+                className="w-full cursor-pointer border border-gray-300 text-center"
+              >{t("detailOfGoods.confirm")}</button>
           </div>
         ))}
+
+        <div className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}>
+          {/* <div className="border-r border-gray-300 p-2 text-center">
+            <button
+              type="button"
+              onClick={handleAddItem}
+              className="w-full text-center font-bold text-blue-500 hover:text-blue-700"
+            >
+              +
+            </button>
+          </div> */}
+          
+
+          
+        </div>
+        {/* Always-visible horizontal scrollbar track + moving thumb */}
+        {/*<div className="scrollbar-track" aria-hidden="true" ref={trackRef}>*/}
+        {/*  <div className="scrollbar-thumb" ref={thumbRef}></div>*/}
+        {/*</div>*/}
       </div>
     </>
   );

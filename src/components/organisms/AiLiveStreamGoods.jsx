@@ -7,6 +7,7 @@ import {
     ChevronRight,
     Bookmark,
     Flag,
+    FileWarning,
     Trash2,
     Play,
     SearchIcon,
@@ -33,7 +34,7 @@ export default function AiLiveStreamGoods() {
         if (typeof url !== "string") return null
         if (/^https?:\/\//i.test(url)) return url
         if (url.startsWith("/")) return `${FILE_BASE_URL}${url}`
-        return url
+        return `${FILE_BASE_URL}/${url}`
     }, [FILE_BASE_URL])
 
     const getLivestreamVideoUrl = useCallback((product) => {
@@ -63,7 +64,6 @@ export default function AiLiveStreamGoods() {
     const [liveVideoError, setLiveVideoError] = useState("")
     const [liveVideoPage, setLiveVideoPage] = useState(1)
     const [liveVideoTotalPages, setLiveVideoTotalPages] = useState(1)
-    const [videoPlaybackErrors, setVideoPlaybackErrors] = useState({})
 
     const fetchLiveVideos = useCallback(async () => {
         try {
@@ -287,15 +287,6 @@ export default function AiLiveStreamGoods() {
                             const url = getLivestreamVideoUrl(p)
                             const pid = getProductRouteId(p)
                             const title = getFirstItemName(p) || pid
-                            const hasError = Boolean(videoPlaybackErrors[pid])
-                            const type = (() => {
-                                if (!url) return undefined
-                                const clean = url.split("?")[0]
-                                if (clean.endsWith(".mp4")) return "video/mp4"
-                                if (clean.endsWith(".webm")) return "video/webm"
-                                if (clean.endsWith(".mov")) return "video/quicktime"
-                                return "video/mp4"
-                            })()
                             return (
                                 <div key={pid} className="border border-gray-300 rounded p-2">
                                     <div className="flex items-center justify-between gap-2 mb-2">
@@ -309,25 +300,12 @@ export default function AiLiveStreamGoods() {
                                         </button>
                                     </div>
                                     <video
+                                        src={url || undefined}
                                         controls
                                         playsInline
                                         preload="metadata"
                                         className="w-full aspect-video bg-black rounded"
-                                        onError={() => {
-                                            if (!pid) return
-                                            setVideoPlaybackErrors((prev) => ({ ...prev, [pid]: true }))
-                                        }}
-                                    >
-                                        {url && <source src={url} type={type} />}
-                                    </video>
-                                    {hasError && url && (
-                                        <div className="mt-2 text-xs text-red-600">
-                                            <div>Video không phát được trên trình duyệt.</div>
-                                            <a className="underline" href={url} target="_blank" rel="noreferrer">
-                                                Mở video
-                                            </a>
-                                        </div>
-                                    )}
+                                    />
                                 </div>
                             )
                         })}

@@ -49,6 +49,7 @@ import {
 } from '../services/authService';
 import { initialFriends, initialGroups, initialFriendRequests, initialGroupInvites } from '../data/contactMockData';
 import ConversationItemMenu from '../components/contact/ConversationItemMenu';
+import ContactAvatarMenu from '../components/contact/ContactAvatarMenu';
 import PendingListModal from '../components/contact/PendingListModal';
 import ContactQrModal from '../components/contact/ContactQrModal';
 import CreateGroupPanel from '../components/contact/CreateGroupPanel';
@@ -807,6 +808,8 @@ export default function ContactAdminPage() {
 
   // #C-03: which item's right-tap quick-action menu is open
   const [openMenuId, setOpenMenuId] = useState(null);
+  // Left avatar-side quick-action menu (Ẩn / Xóa tên / Báo cáo)
+  const [openAvatarMenuId, setOpenAvatarMenuId] = useState(null);
 
   // #C-05 / #C-07: pending invite list modals
   const [isFriendRequestsOpen, setIsFriendRequestsOpen] = useState(false);
@@ -898,6 +901,36 @@ export default function ContactAdminPage() {
   const handleMuteConversation = (id, type) => {
     const setList = type === 'friend' ? setFriends : setGroups;
     setList(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+  };
+
+  // Avatar-side menu: hide a conversation from the list (soft hide)
+  const handleHideConversation = (id, type) => {
+    const setList = type === 'friend' ? setFriends : setGroups;
+    setList(prev => prev.map(item => item.id === id ? { ...item, hidden: true } : item));
+    if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+  };
+
+  // Avatar-side menu: report a conversation (frontend-only for now)
+  const handleReportConversation = (id, type) => {
+    const list = type === 'friend' ? friends : groups;
+    const target = list.find(item => item.id === id);
+    window.alert(`Đã gửi báo cáo${target ? ` về "${target.displayName || target.name}"` : ''}. Cảm ơn bạn đã phản hồi.`);
+  };
+
+  // Chat header: send current location as a message into the active conversation
+  const handleSendLocation = () => {
+    if (!activeContactId) return;
+    const sendLoc = (lat, lng) =>
+      handleSendMessage(`📍 Vị trí của tôi: https://maps.google.com/?q=${lat},${lng}`);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => sendLoc(pos.coords.latitude.toFixed(6), pos.coords.longitude.toFixed(6)),
+        () => handleSendMessage('📍 Không thể lấy vị trí (đã bị từ chối hoặc không khả dụng).'),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    } else {
+      handleSendMessage('📍 Thiết bị không hỗ trợ định vị.');
+    }
   };
 
   const handleRenameConversation = (id, type) => {
@@ -1064,9 +1097,9 @@ export default function ContactAdminPage() {
     else setIsJoinGroupQrOpen(true);
   };
 
-  // Most recently updated conversation first
-  const sortedFriends = [...friends].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-  const sortedGroups = [...groups].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  // Most recently updated conversation first — hidden items are excluded
+  const sortedFriends = [...friends].filter(f => !f.hidden).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const sortedGroups = [...groups].filter(g => !g.hidden).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   const listItems = activeTab === 'personal' ? sortedFriends : sortedGroups;
 
   // Chat header label
@@ -1107,30 +1140,7 @@ export default function ContactAdminPage() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-3 flex items-center gap-2 border-b border-gray-200">
-          <div className="flex-1 bg-gray-100 flex items-center px-3 py-1.5 rounded-md">
-            <Search className="text-gray-500 z-10" size={16} />
-            <input
-              type="text"
-              placeholder={t('contact.search', 'Tìm kiếm')}
-              className="bg-transparent border-none outline-none w-full ml-2 text-sm"
-            />
-          </div>
-          <button type="button" onClick={handleAddIconClick} title={activeTab === 'personal' ? 'Lời mời kết bạn' : 'Lời mời vào nhóm'}>
-            <UserPlus className="text-blue-800 cursor-pointer" size={20} />
-          </button>
-          <button type="button" onClick={handleQrIconClick} title="Quét QR">
-            <QrCode className="text-blue-800 cursor-pointer" size={20} />
-          </button>
-          {activeTab === 'group' && (
-            <button type="button" onClick={() => { setEditingGroup(null); setIsCreateGroupOpen(true); }} title="Tạo nhóm mới">
-              <Plus className="text-blue-800 cursor-pointer" size={20} />
-            </button>
-          )}
-        </div>
-
-        {/* #C-01: Cá nhân / Nhóm tabs */}
+        {/* #C-01: Cá nhân / Nhóm tabs — placed above search so users pick a purpose first */}
         <div className="flex border-b border-gray-200 text-sm font-semibold">
           <button
             type="button"
@@ -1154,6 +1164,29 @@ export default function ContactAdminPage() {
           </button>
         </div>
 
+        {/* Search Bar — below the tabs so the active tab scopes the search */}
+        <div className="p-3 flex items-center gap-2 border-b border-gray-200">
+          <div className="flex-1 bg-gray-100 flex items-center px-3 py-1.5 rounded-md">
+            <Search className="text-gray-500 z-10" size={16} />
+            <input
+              type="text"
+              placeholder={t('contact.search', 'Tìm kiếm')}
+              className="bg-transparent border-none outline-none w-full ml-2 text-sm"
+            />
+          </div>
+          <button type="button" onClick={handleAddIconClick} title={activeTab === 'personal' ? 'Lời mời kết bạn' : 'Lời mời vào nhóm'}>
+            <UserPlus className="text-blue-800 cursor-pointer" size={20} />
+          </button>
+          <button type="button" onClick={handleQrIconClick} title="Quét QR">
+            <QrCode className="text-blue-800 cursor-pointer" size={20} />
+          </button>
+          {activeTab === 'group' && (
+            <button type="button" onClick={() => { setEditingGroup(null); setIsCreateGroupOpen(true); }} title="Tạo nhóm mới">
+              <Plus className="text-blue-800 cursor-pointer" size={20} />
+            </button>
+          )}
+        </div>
+
         {/* Conversation List — #C-03 */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           {listItems.map((item) => {
@@ -1164,6 +1197,24 @@ export default function ContactAdminPage() {
                 key={item.id}
                 className={`relative flex items-start p-3 hover:bg-blue-50 border-b border-gray-100 ${isActive ? 'bg-blue-50' : ''}`}
               >
+                {/* Avatar-side ("đứng") 3-dot -> Ẩn / Xóa tên / Báo cáo menu */}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setOpenAvatarMenuId(openAvatarMenuId === item.id ? null : item.id); setOpenMenuId(null); }}
+                  className="mr-1 -ml-1 p-0.5 text-blue-400 hover:text-blue-800 flex-shrink-0 self-center"
+                >
+                  <MoreVertical size={16} />
+                </button>
+
+                {openAvatarMenuId === item.id && (
+                  <ContactAvatarMenu
+                    onHide={() => handleHideConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onDelete={() => handleDeleteConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onReport={() => handleReportConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onCloseMenu={() => setOpenAvatarMenuId(null)}
+                  />
+                )}
+
                 {/* Avatar tap -> Ai LIVE post (friends only); red dot if unseen */}
                 <button
                   type="button"
@@ -1292,6 +1343,15 @@ export default function ContactAdminPage() {
                 <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <Video size={18} />
                 </div>
+                {/* Location — sends current position into the chat */}
+                <button
+                  type="button"
+                  onClick={handleSendLocation}
+                  title="Gửi vị trí"
+                  className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500"
+                >
+                  <MapPin size={18} />
+                </button>
                 <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <User size={18} />
                 </div>
@@ -1304,13 +1364,6 @@ export default function ContactAdminPage() {
                 </button>
                 {isHeaderMenuOpen && (
                   <div className="absolute right-0 top-full mt-1 z-30 bg-white border border-gray-200 rounded-lg shadow-lg w-48 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setIsHeaderMenuOpen(false)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-900 hover:bg-blue-50 text-left"
-                    >
-                      <MapPin size={15} /> Gửi vị trí
-                    </button>
                     <button
                       type="button"
                       onClick={() => setIsHeaderMenuOpen(false)}

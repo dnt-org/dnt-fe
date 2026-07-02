@@ -1,18 +1,15 @@
-import { useEffect, useRef, useState } from "react"
-import { useParams, useNavigate, useLocation } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { useParams, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { Eye, Flag, Handshake, UserCheck, ArrowRight, Save } from "lucide-react"
 import ContactListModal from "../components/molecules/ContactListModal.jsx"
 import ViolationReportModal from "../components/molecules/ViolationReportModal.jsx"
 import LiveGoodsTable from "../components/organisms/LiveGoodsTable.jsx"
-import { getProductById } from "../services/productService"
     
 export default function AiLiveVideoDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const location = useLocation()
   const { t } = useTranslation()
-  const videoRef = useRef(null)
   const [showShare, setShowShare] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const [isFollowed, setIsFollowed] = useState(false)
@@ -21,11 +18,6 @@ export default function AiLiveVideoDetailPage() {
   const [blink, setBlink] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [audioOn, setAudioOn] = useState(false)
-  const [product, setProduct] = useState(null)
-  const [videoUrl, setVideoUrl] = useState("")
-  const [videoError, setVideoError] = useState(false)
-  const [loadingVideo, setLoadingVideo] = useState(true)
-  const [loadingProduct, setLoadingProduct] = useState(true)
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
   const [ownerDecision, setOwnerDecision] = useState("none")
 
@@ -74,71 +66,6 @@ export default function AiLiveVideoDetailPage() {
     return () => clearInterval(id)
   }, [audioOn])
 
-  useEffect(() => {
-    let cancelled = false
-    const run = async () => {
-      try {
-        setLoadingProduct(true)
-        setVideoError(false)
-        const stateUrl = location?.state?.videoUrl
-        if (typeof stateUrl === "string" && stateUrl) setVideoUrl(stateUrl)
-
-        const res = await getProductById(id)
-        const data = res?.data?.data
-        if (cancelled) return
-        setProduct(data || null)
-
-        const fromFileLinks = data?.fileLinks?.product?.livestreamVideoFile
-        if (typeof fromFileLinks === "string") {
-          setVideoUrl(fromFileLinks)
-          return
-        }
-        if (Array.isArray(fromFileLinks) && typeof fromFileLinks[0] === "string") {
-          setVideoUrl(fromFileLinks[0])
-          return
-        }
-
-        const m = data?.livestreamVideoFile
-        if (typeof m === "string") {
-          setVideoUrl(m)
-          return
-        }
-        if (m?.url) {
-          setVideoUrl(m.url)
-          return
-        }
-        if (m?.data?.attributes?.url) {
-          setVideoUrl(m.data.attributes.url)
-          return
-        }
-
-        setVideoUrl("")
-      } catch (_) {
-        if (cancelled) return
-        setProduct(null)
-        setVideoUrl("")
-      } finally {
-        if (!cancelled) setLoadingProduct(false)
-      }
-    }
-    run()
-    return () => {
-      cancelled = true
-    }
-  }, [id, location?.state?.videoUrl])
-
-  useEffect(() => {
-    setVideoError(false)
-    setLoadingVideo(Boolean(videoUrl))
-    const el = videoRef.current
-    if (!el || !videoUrl) return
-    try {
-      el.load()
-      const p = el.play()
-      if (p && typeof p.catch === "function") p.catch(() => { })
-    } catch { }
-  }, [videoUrl])
-
   const viewers = 2112
   const reactions = 12
   const name = `${t("aiLiveVideo.video", "VIDEO")} ${id}`
@@ -164,78 +91,26 @@ export default function AiLiveVideoDetailPage() {
       </div> */}
 
       <div className="grid grid-cols-1 gap-6">
-        <div className="relative border border-black min-h-[420px] bg-black">
-          {videoUrl ? (
-            <video
-              key={videoUrl}
-              ref={videoRef}
-              className="absolute inset-0 w-full h-full object-contain"
-              controls
-              playsInline
-              preload="auto"
-              autoPlay
-              muted
-              loop
-              onError={() => setVideoError(true)}
-              onLoadedData={() => setLoadingVideo(false)}
-              onCanPlay={() => {
-                setLoadingVideo(false)
-                const el = videoRef.current
-                if (!el) return
-                if (!el.paused) return
-                const p = el.play()
-                if (p && typeof p.catch === "function") p.catch(() => { })
-              }}
-            >
-              <source
-                src={videoUrl}
-                type={(() => {
-                  const clean = String(videoUrl).split("?")[0]
-                  if (clean.endsWith(".webm")) return "video/webm"
-                  if (clean.endsWith(".mov")) return "video/quicktime"
-                  return "video/mp4"
-                })()}
-              />
-            </video>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-white text-sm">
-              {loadingProduct ? t("common.loading", "Đang tải...") : t("common.noVideo", "Không có video")}
-            </div>
-          )}
-
-          {(loadingProduct || loadingVideo) && (
-            <div className="absolute inset-0 flex items-center justify-center text-white text-sm z-10 pointer-events-none">
-              {t("common.loading", "Đang tải...")}
-            </div>
-          )}
-
-          <div className="relative z-10 text-xs flex items-start justify-start">
-            <div className="font-bold ml-2 text-white">{product?.productItems?.[0]?.name || name}</div>
-            <div className="font-bold ml-2 text-white">{product?.custom_id || product?.documentId || productId}</div>
+        <div className="relative border border-black min-h-[420px]">
+          <div className="text-xs flex  items-start justify-start">
+            <img className="w-8 h-8 rounded-full" src={{}} />
+            <div className="font-bold ml-2">{name}</div>
+            <div className="font-bold ml-2">{productId}</div>
 
           </div>
-          <div className="absolute left-2 top-10 space-y-2 text-xs z-10 text-white">
+          <div className="absolute left-2 top-10 space-y-2 text-xs">
             <div className="flex items-center gap-1"><Eye size={24} /><span>{viewers} đang xem</span></div>
             <div className="flex items-center gap-1"><Handshake size={24} /><span className="font-semibold">{reactions}</span></div>
           </div>
-          <div className="absolute right-3 bottom-3 flex flex-col items-center gap-2 z-10">
+          <div className="absolute right-3 bottom-3 flex flex-col items-center gap-2">
             <button onClick={() => onFollowHandle()} className={`border border-black p-2 rounded  text-sm font-bold ${isFollowed ? "bg-blue-300" : "bg-white"}`}><UserCheck size={18} /></button>
             <button onClick={() => onSaveHandle()} className={`border border-black p-2 rounded  text-sm font-bold ${isSaved ? "bg-blue-300" : "bg-white"}`}><Save size={18} /></button>
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowShare(true)}><ArrowRight size={18} /></button>
             <button className="border border-black bg-white p-2 rounded" onClick={() => setShowReport(true)}><Flag size={18} /></button>
           </div>
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 transform z-10">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 transform">
             <button className="border border-black px-4 py-2 bg-yellow-100 text-sm font-bold">THAM GIA</button>
           </div>
-
-          {videoError && videoUrl && (
-            <div className="absolute bottom-14 left-2 right-2 z-10 bg-white/90 text-xs p-2 rounded">
-              <div>{t("common.videoError", "Video không phát được trên trình duyệt.")}</div>
-              <a className="underline" href={videoUrl} target="_blank" rel="noreferrer">
-                {t("common.openVideo", "Mở video")}
-              </a>
-            </div>
-          )}
         </div>
       </div>
 
