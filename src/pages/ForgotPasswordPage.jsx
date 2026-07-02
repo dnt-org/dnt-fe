@@ -423,7 +423,7 @@ export default function ForgotPasswordPage() {
             step === 'VERIFY'
               ? t('forgotPassword.title', 'KHÔI PHỤC MẬT KHẨU')
               : step === 'OTP'
-                ? t('forgotPassword.otpTitle', 'XÁC THỰC OTP')
+                ? t('forgotPassword.otpTitle', 'XÁC THỰC MẬT MÃ')
                 : t('forgotPassword.resetTitle', 'ĐẶT MẬT KHẨU MỚI')
           }
           leftButton={
@@ -499,6 +499,10 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 <div className="text-center mt-6">
+                  {/* reCAPTCHA v2 Checkbox — placed above the action button */}
+                  <div className="flex justify-center my-2">
+                    <div id="recaptcha-forgot"></div>
+                  </div>
                   <button
                     className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || isBlocked || isTempBlocked
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
@@ -513,10 +517,6 @@ export default function ForgotPasswordPage() {
                         ? t('common.loading', 'Đang xử lý...')
                         : t('forgotPassword.verifyButton', 'XÁC THỰC')}
                   </button>
-                  {/* reCAPTCHA v2 Checkbox */}
-                  <div className="flex justify-center my-2">
-                    <div id="recaptcha-forgot"></div>
-                  </div>
                 </div>
               </>
             )}
@@ -526,10 +526,10 @@ export default function ForgotPasswordPage() {
               <>
                 <div className="text-center mb-4">
                   <p className="text-gray-600 text-sm">
-                    {t('forgotPassword.otpDescription', 'Vui lòng nhập mật mã OTP của bạn.')}
+                    {t('forgotPassword.otpDescription', 'Vui lòng nhập mật mã của bạn.')}
                   </p>
                   <p className="text-gray-400 text-xs mt-1">
-                    {t('forgotPassword.otpDescriptionHint', '(mã OTP này do bạn tự đặt ở trang đăng ký, hệ thống không gửi tin nhắn)')}
+                    {t('forgotPassword.otpDescriptionHint', '(mật mã này do bạn tự đặt ở trang đăng ký, hệ thống không gửi tin nhắn)')}
                   </p>
                 </div>
 
@@ -537,26 +537,24 @@ export default function ForgotPasswordPage() {
                   <input
                     type="text"
                     className="border p-3 rounded w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-center text-2xl tracking-widest"
-                    placeholder="______"
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                    onChange={(e) => setOtp(e.target.value)}
                     disabled={isLoading}
-                    maxLength={6}
                   />
                 </div>
 
                 <div className="text-center mt-6">
                   <button
-                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || otp.length < 6
+                    className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || !otp.trim()
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
                       : 'hover:bg-gray-100'
                       }`}
                     onClick={handleVerifyOtp}
-                    disabled={isLoading || otp.length < 6}
+                    disabled={isLoading || !otp.trim()}
                   >
                     {isLoading
                       ? t('common.loading', 'Đang xử lý...')
-                      : t('forgotPassword.verifyOtpButton', 'XÁC NHẬN OTP')}
+                      : t('forgotPassword.verifyOtpButton', 'XÁC NHẬN MẬT MÃ')}
                   </button>
                 </div>
 
@@ -674,6 +672,10 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <div className="text-center mt-6">
+                  {/* reCAPTCHA for the auto-login call right after a successful reset — above the button */}
+                  <div className="flex justify-center my-2">
+                    <div id="recaptcha-forgot-reset"></div>
+                  </div>
                   <button
                     className={`border-2 border-black font-bold px-6 py-3 rounded w-1/4 transition-all ${isLoading || !passwordValidation.isValid || newPassword !== confirmPassword || newPasswordCrossError
                       ? 'opacity-50 cursor-not-allowed bg-gray-100'
@@ -686,10 +688,6 @@ export default function ForgotPasswordPage() {
                       ? t('common.loading', 'Đang xử lý...')
                       : t('forgotPassword.resetButton', 'ĐỔI MẬT KHẨU')}
                   </button>
-                  {/* reCAPTCHA for the auto-login call right after a successful reset */}
-                  <div className="flex justify-center my-2">
-                    <div id="recaptcha-forgot-reset"></div>
-                  </div>
                 </div>
 
                 

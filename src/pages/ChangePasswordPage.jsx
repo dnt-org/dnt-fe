@@ -60,7 +60,7 @@ export default function ChangePasswordPage() {
         const hasLowercase = /[a-z]/.test(password);
         const hasNumber = /\d/.test(password);
         const hasSpecialChar = /[~!@#$%^&*()_]/.test(password);
-        const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && password.length >= 6;
+        const isValid = hasUppercase && hasLowercase && hasNumber && hasSpecialChar && password.length >= 8;
 
         return {
             hasUppercase,
@@ -237,8 +237,8 @@ export default function ChangePasswordPage() {
                                     {t('register.passwordValidation.hasSpecialChar')}
                                 </div>
                                 <div
-                                    className={`flex items-center ${formData.newPassword.length >= 6 ? 'text-green-600' : 'text-red-600'}`}>
-                                    <span className="mr-2">{formData.newPassword.length >= 6 ? '✓' : '✗'}</span>
+                                    className={`flex items-center ${formData.newPassword.length >= 8 ? 'text-green-600' : 'text-red-600'}`}>
+                                    <span className="mr-2">{formData.newPassword.length >= 8 ? '✓' : '✗'}</span>
                                     {t('register.passwordValidation.minLength')}
                                 </div>
                             </div>
@@ -287,6 +287,9 @@ export default function ChangePasswordPage() {
                     </div>
 
                     <div className="text-center mt-4">
+                        <div className="flex justify-center my-2">
+                            <div id="recaptcha-change-password"></div>
+                        </div>
                         <button
                             onClick={() => handleRegister()}
                             disabled={!passwordValidation.isValid || formData.newPassword !== formData.confirmPassword}
@@ -296,9 +299,6 @@ export default function ChangePasswordPage() {
                                 }`}>
                             {t('common.confirm')}
                         </button>
-                        <div className="flex justify-center my-2">
-                            <div id="recaptcha-change-password"></div>
-                        </div>
                     </div>
                 </div>
             </div>

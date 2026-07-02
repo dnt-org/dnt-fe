@@ -34,7 +34,7 @@ export default function GuideRulesPage() {
             iconBg: "bg-blue-100",
             badge: "bg-blue-600",
             title: t('guideRules.step1.title', 'Đăng nhập vào nền tảng bằng một tài khoản khác'),
-            description: t('guideRules.step1.description', 'Sử dụng một tài khoản khác mà bạn đang sở hữu (của người thân, bạn bè hoặc tài khoản phụ) để đăng nhập vào hệ thống.'),
+            description: t('guideRules.step1.description', 'Sử dụng một tài khoản khác (của người thân, bạn bè) có chức năng liên lạc, đã được xác thực và có số dư Ví > 0, để đăng nhập vào hệ thống.'),
             action: t('guideRules.step1.action', 'Đến trang Đăng nhập'),
             onAction: () => navigate('/login'),
         },
@@ -54,7 +54,7 @@ export default function GuideRulesPage() {
             iconBg: "bg-green-100",
             badge: "bg-green-600",
             title: t('guideRules.step3.title', 'Đăng nhập lại bằng mật khẩu mới'),
-            description: t('guideRules.step3.description', 'Sử dụng Mật khẩu nền tảng cung cấp và đăng nhập lại để hoàn thành khôi phục tài khoản bị khóa vĩnh viễn.'),
+            description: t('guideRules.step3.description', 'Sử dụng Mật khẩu nền tảng cung cấp và đăng nhập lại để hoàn thành khôi phục tài khoản bị khóa vĩnh viễn, thực hiện các cài đặt cần thiết và sử dụng bình thường.'),
             action: t('guideRules.step3.action', 'Đến trang Đăng nhập'),
             // Flag this login as the post-unblock recovery login so Login.jsx routes
             // to the new security setup page instead of straight home.
@@ -70,6 +70,7 @@ export default function GuideRulesPage() {
                     onColorChange={handleChangeColor}
                     titlePrefix=""
                     title={t('guideRules.title', 'HƯỚNG DẪN KHÔI PHỤC TÀI KHOẢN BỊ KHÓA VĨNH VIỄN')}
+                    titleClassName="text-lg md:text-xl whitespace-nowrap"
                     leftButton={
                         <button
                             className="text-gray-600 hover:text-gray-800"
@@ -143,7 +144,7 @@ export default function GuideRulesPage() {
                     <div className="flex items-start gap-3">
                         <CheckCircle2 size={24} className="text-green-600 flex-shrink-0 mt-0.5" />
                         <p className="text-green-800 leading-relaxed">
-                            {t('guideRules.note', 'Lưu ý: Khi liên hệ với quản trị viên, vui lòng cung cấp đầy đủ thông tin tài khoản cũ (số tài khoản, email đăng ký, số điện thoại) để được hỗ trợ nhanh chóng.')}
+                            {t('guideRules.note', 'Lưu ý: Khi liên hệ với quản trị viên, vui lòng cung cấp đầy đủ, đúng các thông tin tài khoản đang bị khóa vĩnh viễn theo đúng yêu cầu của hệ thống (hoặc theo đúng yêu cầu từ nền tảng) để có thể được hỗ trợ.')}
                         </p>
                     </div>
                 </div>
