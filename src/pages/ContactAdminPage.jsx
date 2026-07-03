@@ -16,6 +16,7 @@ import {
   Building2,
   Landmark,
   Bell,
+  BellOff,
   CheckSquare,
   Bookmark,
   QrCode,
@@ -47,15 +48,24 @@ import {
   verifyRecoveryBalance,
   verifyRecoveryCccd
 } from '../services/authService';
-import { initialFriends, initialGroups, initialFriendRequests, initialGroupInvites } from '../data/contactMockData';
+import { initialGroups, initialGroupInvites } from '../data/contactMockData';
 import {
-  getConversations,
   getOrCreateConversation,
-  getMessages,
   sendMessage,
-  markAsRead,
-  getUnreadCount
+  uploadFile,
+  syncAll,
+  hideConversation,
+  muteConversation,
+  clearMessages,
+  reportConversation,
+  removeContact
 } from '../services/messageService';
+import {
+  searchUsers,
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest
+} from '../services/friendService';
 import ConversationItemMenu from '../components/contact/ConversationItemMenu';
 import ContactAvatarMenu from '../components/contact/ContactAvatarMenu';
 import PendingListModal from '../components/contact/PendingListModal';
@@ -443,7 +453,7 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 bg-[#F4F5F7]">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3 bg-[#F4F5F7]">
         {messages.map(msg => <BotBubble key={msg.id} msg={msg} />)}
         {isTyping && <TypingIndicator />}
         <div ref={endRef} />
@@ -568,9 +578,55 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
 // ─── Normal Chat Panel (Zalo-like Chat Interface) ────────────────────────────
 const BUBBLE_COLORS = ['#2563eb', '#16a34a', '#9333ea', '#db2777', '#ea580c'];
 
-function NormalChatPanel({ contact, t, messages, onSendMessage }) {
+// Maps a backend message (api::message.message) into the shape NormalChatPanel renders.
+const toChatMessage = (msg, currentUserId) => ({
+  id: msg.id,
+  text: msg.content,
+  type: msg.type || 'text',
+  imageUrl: msg.type === 'image' ? (msg.attachment?.url || null) : null,
+  sender: msg.sender?.id === currentUserId ? 'me' : 'them',
+  timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+});
+
+// Per-device contact nicknames — there's no backend field for this, so it's
+// stored locally and merged back in every time conversations are (re)mapped,
+// which keeps it from being wiped out by the poll overwriting `friends`.
+const NICKNAMES_KEY = 'contactNicknames';
+const readNicknames = () => {
+  try {
+    return JSON.parse(localStorage.getItem(NICKNAMES_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+const getNickname = (conversationId) => readNicknames()[conversationId] || null;
+const setNickname = (conversationId, name) => {
+  const all = readNicknames();
+  all[conversationId] = name;
+  localStorage.setItem(NICKNAMES_KEY, JSON.stringify(all));
+};
+
+// Maps a backend conversation (api::conversation.conversation) into the shape
+// the left-hand contact list renders.
+const mapConversation = (convo) => ({
+  id: convo.id,
+  otherUserId: convo.other_user?.id,
+  name: convo.other_user?.full_name || 'Người dùng',
+  displayName: getNickname(convo.id) || convo.other_user?.full_name || 'Người dùng',
+  avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
+  lastMessage: convo.last_message || 'Chưa có tin nhắn',
+  updatedAt: convo.last_message_at || new Date().toISOString(),
+  unread: convo.unread_count || 0,
+  muted: !!convo.muted,
+  hasUnseenAiLive: false,
+  otpPending: false
+});
+
+function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
   const [inputText, setInputText] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const scrollRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // #C-11: own message bubble background color, default blue
   const [bubbleColor, setBubbleColor] = useState(BUBBLE_COLORS[0]);
@@ -588,11 +644,16 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
     }
   }, [messages]);
 
+  // Guards against a single click/Enter firing twice (e.g. Enter immediately
+  // followed by a stray click on the Send button) resulting in two separate
+  // messages being sent for the one action.
+  const sendingRef = useRef(false);
   const handleSend = () => {
-    if (inputText.trim()) {
-      onSendMessage(inputText.trim());
-      setInputText('');
-    }
+    if (!inputText.trim() || sendingRef.current) return;
+    sendingRef.current = true;
+    onSendMessage(inputText.trim());
+    setInputText('');
+    setTimeout(() => { sendingRef.current = false; }, 300);
   };
 
   const handleKeyDown = (e) => {
@@ -602,12 +663,26 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
     }
   };
 
+  const handlePickImage = () => fileInputRef.current?.click();
+
+  const handleImageSelected = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file later
+    if (!file || !onSendImage) return;
+    setIsUploadingImage(true);
+    try {
+      await onSendImage(file);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   return (
-    <div className={`flex-1 flex flex-col h-full ${isDark ? 'bg-gray-900' : 'bg-[#F4F5F7]'}`}>
+    <div className={`flex-1 flex flex-col min-h-0 h-full ${isDark ? 'bg-gray-900' : 'bg-[#F4F5F7]'}`}>
       {/* Chat Area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4"
+        className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4"
       >
         {messages && messages.length > 0 ? (
           messages.map((msg, idx) => {
@@ -615,7 +690,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
             return (
               <div
                 key={msg.id || idx}
-                className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}
+                className={`flex items-end gap-2 w-full ${isMe ? 'justify-end' : 'justify-start'}`}
               >
                 {!isMe && (
                   <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mb-1">
@@ -626,18 +701,41 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
                     />
                   </div>
                 )}
-                <div className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div
-                    style={isMe ? { backgroundColor: bubbleColor } : undefined}
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm relative ${isMe
-                      ? 'text-white rounded-br-none'
-                      : `${isDark ? 'bg-gray-700 border-gray-600 text-red-400' : 'bg-white border-gray-100 text-red-600'} rounded-bl-none border`
-                      }`}
-                  >
-                    {msg.text}
-                  </div>
-                  <span className={`text-[10px] mt-1 px-1 ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>
-                    {msg.timestamp || "Vừa xong"}
+                {/* max-w lives here (a flex item of the full-width row above) —
+                    putting it on a descendant instead resolves the percentage
+                    against a shrink-to-fit ancestor and wraps text far too early. */}
+                <div className={`flex flex-col max-w-[66%] ${isMe ? 'items-end' : 'items-start'}`}>
+                  {msg.type === 'image' && msg.imageUrl ? (
+                    <a
+                      href={msg.imageUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={`block max-w-full rounded-2xl overflow-hidden border transition-opacity ${msg.failed ? 'border-red-300' : 'border-gray-200'} ${msg.pending ? 'opacity-60' : ''}`}
+                    >
+                      <img src={msg.imageUrl} alt={msg.text || 'Hình ảnh'} className="max-w-full h-auto object-cover" />
+                    </a>
+                  ) : (
+                    <div
+                      style={isMe ? { backgroundColor: bubbleColor } : undefined}
+                      className={`px-3 py-2 rounded-2xl text-sm relative break-words transition-opacity ${isMe
+                        ? 'text-white rounded-br-none'
+                        : `${isDark ? 'bg-gray-700 border-gray-600 text-red-400' : 'bg-white border-gray-100 text-red-600'} rounded-bl-none border`
+                        } ${msg.pending ? 'opacity-60' : ''} ${msg.failed ? 'ring-2 ring-red-400' : ''}`}
+                    >
+                      {msg.text}
+                    </div>
+                  )}
+                  <span className={`flex items-center gap-1 text-[10px] mt-1 px-1 ${msg.failed ? 'text-red-500' : 'text-gray-400'}`}>
+                    {msg.pending ? (
+                      <>
+                        <RefreshCw size={10} className="animate-spin" />
+                        Đang gửi...
+                      </>
+                    ) : msg.failed ? (
+                      'Gửi lỗi'
+                    ) : (
+                      msg.timestamp || "Vừa xong"
+                    )}
                   </span>
                 </div>
               </div>
@@ -656,7 +754,18 @@ function NormalChatPanel({ contact, t, messages, onSendMessage }) {
       {/* Input Area */}
       <div className={isDark ? 'bg-gray-800 border-t border-gray-700' : 'bg-white border-t border-gray-200'}>
         <div className={`relative flex items-center gap-4 px-4 py-2 border-b ${isDark ? 'border-gray-700' : 'border-gray-50'}`}>
-          <ImageIcon className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelected}
+          />
+          <button type="button" onClick={handlePickImage} disabled={!onSendImage || isUploadingImage} title="Gửi hình ảnh">
+            {isUploadingImage
+              ? <RefreshCw className="text-blue-500 animate-spin" size={20} />
+              : <ImageIcon className={`${onSendImage ? 'text-gray-500 cursor-pointer hover:text-blue-500' : 'text-gray-300 cursor-not-allowed'}`} size={20} />}
+          </button>
           <Smile className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
           <Mic className="text-gray-500 cursor-pointer hover:text-blue-500" size={20} />
 
@@ -811,7 +920,7 @@ export default function ContactAdminPage() {
   const [activeTab, setActiveTab] = useState('personal'); // 'personal' | 'group'
   const [friends, setFriends] = useState([]);
   const [groups, setGroups] = useState(initialGroups);
-  const [friendRequests, setFriendRequests] = useState(initialFriendRequests);
+  const [friendRequests, setFriendRequests] = useState([]);
   const [groupInvites, setGroupInvites] = useState(initialGroupInvites);
 
   const currentUser = (() => {
@@ -827,89 +936,127 @@ export default function ContactAdminPage() {
   const chatMessagesRef = useRef([]);
   chatMessagesRef.current = chatMessages;
 
-  // Poll conversations every 5 seconds
-  useEffect(() => {
-    const fetchConvos = async () => {
-      try {
-        const data = await getConversations();
-        const mapped = data.map(convo => ({
-          id: convo.id,
-          otherUserId: convo.other_user?.id,
-          name: convo.other_user?.full_name || 'Người dùng',
-          displayName: convo.other_user?.full_name || 'Người dùng',
-          avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
-          lastMessage: convo.last_message || 'Chưa có tin nhắn',
-          updatedAt: convo.last_message_at || new Date().toISOString(),
-          unread: convo.unread_count || 0,
-          hasUnseenAiLive: false,
-          otpPending: false
-        }));
-        setFriends(mapped);
-      } catch (err) {
-        console.error('Error fetching conversations:', err);
-      }
-    };
+  // Refs so the sync loop below always reads the latest active-chat state
+  // without needing to be re-created (and re-scheduled) on every change.
+  const activeContactIdRef = useRef(null);
+  const activeContactTypeRef = useRef(null);
+  activeContactIdRef.current = activeContactId;
+  activeContactTypeRef.current = activeContactType;
+  // Which conversation the current chatMessages array belongs to — lets the
+  // sync loop know whether chatMessagesRef's last id is a valid "since" cursor.
+  const chatMessagesConvIdRef = useRef(null);
+  // The highest real (numeric) message id we've confirmed for the active
+  // conversation. Updated directly at every mutation point (not derived from
+  // chatMessagesRef, which only reflects the last completed render) so the
+  // "since" cursor used below is always accurate even mid-send, before React
+  // has re-rendered — otherwise a poll racing a send can pass a stale cursor.
+  const lastMessageIdRef = useRef({ convId: null, id: null });
 
-    fetchConvos();
-    const interval = setInterval(fetchConvos, 5000);
+  // Single combined poll: conversations + incoming friend requests + (if a
+  // friend chat is open) its new messages, marking them read — one request
+  // instead of separately polling conversations/incoming/messages/read.
+  const runSync = async () => {
+    const convType = activeContactTypeRef.current;
+    const convId = convType === 'friend' ? activeContactIdRef.current : null;
+    const sinceId = (convId && lastMessageIdRef.current.convId === convId)
+      ? lastMessageIdRef.current.id
+      : undefined;
+
+    try {
+      const data = await syncAll(convId || undefined, sinceId);
+
+      setFriends((data.conversations || []).map(mapConversation));
+      setFriendRequests((data.incoming_friend_requests || []).map(r => ({
+        id: r.id,
+        name: r.from_user?.full_name || 'Người dùng',
+        avatar: r.from_user?.avt || 'https://via.placeholder.com/150'
+      })));
+
+      if (convId && data.messages && data.messages.length > 0) {
+        const mapped = data.messages.map(msg => toChatMessage(msg, currentUserId));
+        chatMessagesConvIdRef.current = convId;
+        const maxId = Math.max(...mapped.map(m => m.id));
+        lastMessageIdRef.current = {
+          convId,
+          id: Math.max(lastMessageIdRef.current.convId === convId ? (lastMessageIdRef.current.id || 0) : 0, maxId)
+        };
+        // Dedupe by id — a just-sent (optimistically appended) message can also
+        // come back from this sync, and races can re-deliver the same rows.
+        setChatMessages(prev => {
+          const existing = new Set(prev.map(m => m.id));
+          const toAdd = mapped.filter(m => !existing.has(m.id));
+          return toAdd.length ? [...prev, ...toAdd] : prev;
+        });
+      } else if (convId) {
+        chatMessagesConvIdRef.current = convId;
+      }
+    } catch (err) {
+      console.error('Error syncing:', err);
+    }
+  };
+  const runSyncRef = useRef(runSync);
+  runSyncRef.current = runSync;
+
+  // Reset the chat pane immediately when switching conversations, then sync
+  // right away instead of waiting for the next interval tick.
+  useEffect(() => {
+    setChatMessages([]);
+    chatMessagesConvIdRef.current = null;
+    lastMessageIdRef.current = { convId: null, id: null };
+    if (activeContactType === 'friend' && activeContactId) {
+      runSyncRef.current();
+    }
+  }, [activeContactId, activeContactType]);
+
+  // The one and only poll loop for this page — every 4 seconds.
+  useEffect(() => {
+    runSyncRef.current();
+    const interval = setInterval(() => runSyncRef.current(), 4000);
     return () => clearInterval(interval);
   }, []);
-
-  // Poll active chat messages every 3 seconds
-  useEffect(() => {
-    if (!activeContactId || activeContactType !== 'friend') {
-      setChatMessages([]);
-      return;
-    }
-
-    const fetchInitial = async () => {
-      try {
-        const data = await getMessages(activeContactId, '', 50);
-        const mapped = data.map(msg => ({
-          id: msg.id,
-          text: msg.content,
-          sender: msg.sender?.id === currentUserId ? 'me' : 'them',
-          timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }));
-        setChatMessages(mapped);
-        
-        await markAsRead(activeContactId);
-      } catch (err) {
-        console.error('Error fetching initial messages:', err);
-      }
-    };
-
-    fetchInitial();
-
-    const interval = setInterval(async () => {
-      const msgs = chatMessagesRef.current;
-      const lastMsgId = msgs.length > 0 ? msgs[msgs.length - 1].id : '';
-      
-      try {
-        const data = await getMessages(activeContactId, lastMsgId, 50);
-        if (data && data.length > 0) {
-          const mapped = data.map(msg => ({
-            id: msg.id,
-            text: msg.content,
-            sender: msg.sender?.id === currentUserId ? 'me' : 'them',
-            timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          }));
-          setChatMessages(prev => [...prev, ...mapped]);
-        }
-        
-        await markAsRead(activeContactId);
-      } catch (err) {
-        console.error('Error polling messages:', err);
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [activeContactId, activeContactType, currentUserId]);
 
   // #C-03: which item's right-tap quick-action menu is open
   const [openMenuId, setOpenMenuId] = useState(null);
   // Left avatar-side quick-action menu (Ẩn / Xóa tên / Báo cáo)
   const [openAvatarMenuId, setOpenAvatarMenuId] = useState(null);
+
+  // Add-friend search (by bank_number or full_name) — dropdown under the search box
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [sentRequestIds, setSentRequestIds] = useState(() => new Set());
+
+  useEffect(() => {
+    if (activeTab !== 'personal' || !searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchUsers(searchQuery.trim());
+        setSearchResults(results || []);
+      } catch (err) {
+        console.error('Error searching users:', err);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery, activeTab]);
+
+  const handleSendFriendRequest = async (targetUserId) => {
+    try {
+      await sendFriendRequest(targetUserId);
+      setSentRequestIds(prev => new Set(prev).add(targetUserId));
+    } catch (err) {
+      // Backend returns 400 for "already friends" / "already pending" — still
+      // mark as sent so the button reflects there's nothing more to do here.
+      console.error('Error sending friend request:', err);
+      setSentRequestIds(prev => new Set(prev).add(targetUserId));
+    }
+  };
 
   // #C-05 / #C-07: pending invite list modals
   const [isFriendRequestsOpen, setIsFriendRequestsOpen] = useState(false);
@@ -948,36 +1095,55 @@ export default function ContactAdminPage() {
     sessionStorage.setItem('contactAdBannerClosed', 'true');
   };
 
-  const handleSendMessage = async (text, type = 'text') => {
+  // Appends a local "sending" bubble immediately so the UI never waits on the
+  // network round-trip before showing something — replaced by the real
+  // message on success, or flagged failed (with a retry) on error.
+  const addOptimisticMessage = (draft) => {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setChatMessages(prev => [...prev, {
+      id: tempId,
+      sender: 'me',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      pending: true,
+      ...draft
+    }]);
+    chatMessagesConvIdRef.current = activeContactId;
+    return tempId;
+  };
+
+  const resolveOptimisticMessage = (tempId, msg) => {
+    const mapped = toChatMessage(msg, currentUserId);
+    setChatMessages(prev => {
+      const withoutTemp = prev.filter(m => m.id !== tempId);
+      return withoutTemp.some(m => m.id === mapped.id) ? withoutTemp : [...withoutTemp, mapped];
+    });
+    // Update the sync cursor immediately — don't wait for a re-render — so a
+    // poll firing right after this doesn't refetch (and risk re-appending) it.
+    if (activeContactId != null) {
+      lastMessageIdRef.current = {
+        convId: activeContactId,
+        id: Math.max(lastMessageIdRef.current.convId === activeContactId ? (lastMessageIdRef.current.id || 0) : 0, mapped.id)
+      };
+    }
+  };
+
+  const failOptimisticMessage = (tempId) => {
+    setChatMessages(prev => prev.map(m => m.id === tempId ? { ...m, pending: false, failed: true } : m));
+  };
+
+  const handleSendMessage = async (text, type = 'text', attachmentId) => {
     if (!activeContactId) return;
 
     if (activeContactType === 'friend') {
-      try {
-        const msg = await sendMessage(activeContactId, text, type);
-        const mapped = {
-          id: msg.id,
-          text: msg.content,
-          sender: 'me',
-          timestamp: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setChatMessages(prev => [...prev, mapped]);
+      const tempId = addOptimisticMessage({ text, type, imageUrl: null });
 
-        const data = await getConversations();
-        const mappedConvos = data.map(convo => ({
-          id: convo.id,
-          otherUserId: convo.other_user?.id,
-          name: convo.other_user?.full_name || 'Người dùng',
-          displayName: convo.other_user?.full_name || 'Người dùng',
-          avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
-          lastMessage: convo.last_message || 'Chưa có tin nhắn',
-          updatedAt: convo.last_message_at || new Date().toISOString(),
-          unread: convo.unread_count || 0,
-          hasUnseenAiLive: false,
-          otpPending: false
-        }));
-        setFriends(mappedConvos);
+      try {
+        const msg = await sendMessage(activeContactId, text, type, attachmentId);
+        resolveOptimisticMessage(tempId, msg);
+        await runSyncRef.current(); // refresh the left-hand list's last-message/order
       } catch (err) {
         console.error('Error sending message:', err);
+        failOptimisticMessage(tempId);
       }
     } else {
       const msgId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -992,6 +1158,28 @@ export default function ContactAdminPage() {
         if (current.some(m => m.id === msgId)) return prev; // idempotent guard
         return { ...prev, [activeContactId]: [...current, newMessage] };
       });
+    }
+  };
+
+  // Uploads an image file then sends it as an image-type message (friend chats only).
+  // Shows a local preview immediately (before the upload even starts) via an
+  // object URL, so the bubble appears instantly instead of after the upload.
+  const handleSendImage = async (file) => {
+    if (!activeContactId || activeContactType !== 'friend' || !file) return;
+
+    const localUrl = URL.createObjectURL(file);
+    const tempId = addOptimisticMessage({ text: '📷 Hình ảnh', type: 'image', imageUrl: localUrl });
+
+    try {
+      const media = await uploadFile(file);
+      if (!media?.id) throw new Error('Upload did not return a media id');
+      const msg = await sendMessage(activeContactId, '', 'image', media.id);
+      resolveOptimisticMessage(tempId, msg);
+      URL.revokeObjectURL(localUrl);
+      await runSyncRef.current();
+    } catch (err) {
+      console.error('Error sending image:', err);
+      failOptimisticMessage(tempId); // keep the local preview visible alongside the failed state
     }
   };
 
@@ -1022,30 +1210,94 @@ export default function ContactAdminPage() {
     navigate('/ai-live');
   };
 
-  // #C-03: right-tap ("thả") quick-action menu
-  const handleDeleteConversation = (id, type) => {
-    if (type === 'friend') setFriends(prev => prev.filter(f => f.id !== id));
-    else setGroups(prev => prev.filter(g => g.id !== id));
-    if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+  // #C-03: right-tap ("thả") quick-action menu — "Xóa tin nhắn": clears chat
+  // history but keeps the conversation/friendship. Friend conversations are
+  // server-driven (overwritten by the sync poll), so this needs a real backend
+  // call — a local-only removal would just reappear on the next poll tick.
+  const handleDeleteConversation = async (id, type) => {
+    if (type === 'friend') {
+      try {
+        await clearMessages(id);
+        if (activeContactId === id) {
+          setChatMessages([]);
+          chatMessagesConvIdRef.current = id;
+        }
+        await runSyncRef.current();
+      } catch (err) {
+        console.error('Error clearing messages:', err);
+      }
+    } else {
+      setGroups(prev => prev.filter(g => g.id !== id));
+      if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+    }
   };
 
-  const handleMuteConversation = (id, type) => {
-    const setList = type === 'friend' ? setFriends : setGroups;
-    setList(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+  const handleMuteConversation = async (id, type) => {
+    if (type === 'friend') {
+      // Optimistic flip while the request is in flight; the next sync corrects it if needed.
+      setFriends(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+      try {
+        await muteConversation(id);
+      } catch (err) {
+        console.error('Error toggling mute:', err);
+        setFriends(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+      }
+    } else {
+      setGroups(prev => prev.map(item => item.id === id ? { ...item, muted: !item.muted } : item));
+    }
   };
 
-  // Avatar-side menu: hide a conversation from the list (soft hide)
-  const handleHideConversation = (id, type) => {
-    const setList = type === 'friend' ? setFriends : setGroups;
-    setList(prev => prev.map(item => item.id === id ? { ...item, hidden: true } : item));
-    if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+  // Avatar-side menu: hide a conversation from my list only (server-side for
+  // friends, so it stays hidden across polls/reloads; local-only for groups).
+  const handleHideConversation = async (id, type) => {
+    if (type === 'friend') {
+      setFriends(prev => prev.filter(f => f.id !== id)); // optimistic
+      if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+      try {
+        await hideConversation(id);
+      } catch (err) {
+        console.error('Error hiding conversation:', err);
+        await runSyncRef.current(); // restore it in the list if the call failed
+      }
+    } else {
+      setGroups(prev => prev.map(item => item.id === id ? { ...item, hidden: true } : item));
+      if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+    }
   };
 
-  // Avatar-side menu: report a conversation (frontend-only for now)
-  const handleReportConversation = (id, type) => {
+  // Avatar-side menu: report a conversation
+  const handleReportConversation = async (id, type) => {
     const list = type === 'friend' ? friends : groups;
     const target = list.find(item => item.id === id);
-    window.alert(`Đã gửi báo cáo${target ? ` về "${target.displayName || target.name}"` : ''}. Cảm ơn bạn đã phản hồi.`);
+    if (type === 'friend') {
+      try {
+        await reportConversation(id);
+        window.alert(`Đã gửi báo cáo${target ? ` về "${target.displayName || target.name}"` : ''}. Cảm ơn bạn đã phản hồi.`);
+      } catch (err) {
+        console.error('Error reporting conversation:', err);
+        window.alert('Gửi báo cáo thất bại. Vui lòng thử lại.');
+      }
+    } else {
+      window.alert(`Đã gửi báo cáo${target ? ` về "${target.displayName || target.name}"` : ''}. Cảm ơn bạn đã phản hồi.`);
+    }
+  };
+
+  // Avatar-side menu: "Xóa tên" — unfriends + deletes the conversation entirely.
+  const handleRemoveContact = async (id, type) => {
+    if (type === 'friend') {
+      const wasActive = activeContactId === id;
+      setFriends(prev => prev.filter(f => f.id !== id)); // optimistic
+      if (wasActive) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); setChatMessages([]); }
+      try {
+        await removeContact(id);
+      } catch (err) {
+        console.error('Error removing contact:', err);
+        await runSyncRef.current(); // restore it in the list if the call failed
+      }
+    } else {
+      setGroups(prev => prev.filter(g => g.id !== id));
+      if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
+    }
   };
 
   // Chat header: send current location as a message into the active conversation
@@ -1074,6 +1326,9 @@ export default function ContactAdminPage() {
     const current = friends.find(item => item.id === id);
     const next = window.prompt('Nhập tên hiển thị mới:', current?.displayName || current?.name || '');
     if (!next || !next.trim()) return;
+    // No backend field for per-contact nicknames — persisted locally so it
+    // survives the sync poll overwriting `friends` (see mapConversation).
+    setNickname(id, next.trim());
     setFriends(prev => prev.map(item => item.id === id ? { ...item, displayName: next.trim() } : item));
   };
 
@@ -1097,33 +1352,24 @@ export default function ContactAdminPage() {
     if (activeContactId === id) { setChatMode('none'); setActiveContactId(null); setActiveContactType(null); }
   };
 
-  // #C-05: friend requests — accept moves the request into the friends list
-  const handleAcceptFriendRequest = (id) => {
-    const req = friendRequests.find(r => r.id === id);
-    if (!req) return;
-    setFriends(prev => [
-      ...prev,
-      {
-        id: req.id,
-        name: req.name,
-        displayName: req.displayName || req.name,
-        avatar: req.avatar,
-        lastMessage: 'Các bạn đã trở thành bạn bè.',
-        updatedAt: new Date().toISOString(),
-        unread: 0,
-        hasUnseenAiLive: false,
-        otpPending: false,
-      },
-    ]);
-    setFriendRequests(prev => prev.filter(r => r.id !== id));
+  // #C-05: friend requests — accept opens the 1-1 conversation with the sender
+  const handleAcceptFriendRequest = async (id) => {
+    try {
+      await acceptFriendRequest(id);
+      setFriendRequests(prev => prev.filter(r => r.id !== id));
+      await runSyncRef.current(); // picks up the newly-created conversation
+    } catch (err) {
+      console.error('Error accepting friend request:', err);
+    }
   };
 
-  const handleRejectFriendRequest = (id) => {
-    setFriendRequests(prev => prev.filter(r => r.id !== id));
-  };
-
-  const handleRenameFriendRequest = (id, newName) => {
-    setFriendRequests(prev => prev.map(r => r.id === id ? { ...r, displayName: newName } : r));
+  const handleRejectFriendRequest = async (id) => {
+    try {
+      await rejectFriendRequest(id);
+      setFriendRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('Error rejecting friend request:', err);
+    }
   };
 
   // #C-07: group invites — accept moves the invite into the groups list
@@ -1182,22 +1428,9 @@ export default function ContactAdminPage() {
       const actualUserId = scannedFriend.userId || parseInt(scannedFriend.id, 10);
       if (!isNaN(actualUserId)) {
         const convo = await getOrCreateConversation(actualUserId);
-        
-        const data = await getConversations();
-        const mapped = data.map(c => ({
-          id: c.id,
-          otherUserId: c.other_user?.id,
-          name: c.other_user?.full_name || 'Người dùng',
-          displayName: c.other_user?.full_name || 'Người dùng',
-          avatar: c.other_user?.avt || 'https://via.placeholder.com/150',
-          lastMessage: c.last_message || 'Chưa có tin nhắn',
-          updatedAt: c.last_message_at || new Date().toISOString(),
-          unread: c.unread_count || 0,
-          hasUnseenAiLive: false,
-          otpPending: false
-        }));
-        setFriends(mapped);
-        
+
+        // Switching the active chat triggers the sync effect, which refreshes
+        // the conversations list and loads this conversation's messages.
         setActiveContactId(convo.id);
         setActiveContactType('friend');
         setChatMode('user');
@@ -1322,12 +1555,14 @@ export default function ContactAdminPage() {
         </div>
 
         {/* Search Bar — below the tabs so the active tab scopes the search */}
-        <div className="p-3 flex items-center gap-2 border-b border-gray-200">
+        <div className="relative p-3 flex items-center gap-2 border-b border-gray-200">
           <div className="flex-1 bg-gray-100 flex items-center px-3 py-1.5 rounded-md">
             <Search className="text-gray-500 z-10" size={16} />
             <input
               type="text"
-              placeholder={t('contact.search', 'Tìm kiếm')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={activeTab === 'personal' ? t('contact.searchFriend', 'Tìm theo tên hoặc số TK ngân hàng') : t('contact.search', 'Tìm kiếm')}
               className="bg-transparent border-none outline-none w-full ml-2 text-sm"
             />
           </div>
@@ -1337,6 +1572,35 @@ export default function ContactAdminPage() {
           <button type="button" onClick={handleQrIconClick} title="Quét QR">
             <QrCode className="text-blue-800 cursor-pointer" size={20} />
           </button>
+
+          {/* Add-friend search results dropdown */}
+          {activeTab === 'personal' && searchQuery.trim() && (
+            <div className="absolute left-3 right-3 top-full mt-1 z-30 bg-white border border-gray-200 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+              {searchLoading ? (
+                <div className="px-4 py-3 text-sm text-gray-400">Đang tìm...</div>
+              ) : searchResults.length === 0 ? (
+                <div className="px-4 py-3 text-sm text-gray-400">Không tìm thấy người dùng.</div>
+              ) : (
+                searchResults.map(u => (
+                  <div key={u.id} className="flex items-center gap-3 px-3 py-2 hover:bg-blue-50">
+                    <img src={u.avt || `https://i.pravatar.cc/40?u=${u.id}`} alt={u.full_name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-blue-900 text-sm truncate">{u.full_name || 'Người dùng'}</div>
+                      {u.bank_number && <div className="text-[11px] text-gray-400 truncate">STK: {u.bank_number}</div>}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={sentRequestIds.has(u.id)}
+                      onClick={() => handleSendFriendRequest(u.id)}
+                      className={`px-2.5 py-1 text-xs font-bold rounded flex-shrink-0 ${sentRequestIds.has(u.id) ? 'bg-gray-100 text-gray-400 cursor-default' : 'bg-blue-700 hover:bg-blue-800 text-white'}`}
+                    >
+                      {sentRequestIds.has(u.id) ? 'Đã gửi' : 'Kết bạn'}
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
           {activeTab === 'group' && (
             <button type="button" onClick={() => { setEditingGroup(null); setIsCreateGroupOpen(true); }} title="Tạo nhóm mới">
               <Plus className="text-blue-800 cursor-pointer" size={20} />
@@ -1366,7 +1630,7 @@ export default function ContactAdminPage() {
                 {openAvatarMenuId === item.id && (
                   <ContactAvatarMenu
                     onHide={() => handleHideConversation(item.id, isGroup ? 'group' : 'friend')}
-                    onDelete={() => handleDeleteConversation(item.id, isGroup ? 'group' : 'friend')}
+                    onDelete={() => handleRemoveContact(item.id, isGroup ? 'group' : 'friend')}
                     onReport={() => handleReportConversation(item.id, isGroup ? 'group' : 'friend')}
                     onCloseMenu={() => setOpenAvatarMenuId(null)}
                   />
@@ -1393,7 +1657,10 @@ export default function ContactAdminPage() {
                   className="ml-3 flex-1 overflow-hidden text-left"
                 >
                   <div className="flex justify-between items-center">
-                    <span className="font-bold uppercase truncate">{item.displayName || item.name}</span>
+                    <span className="flex items-center gap-1 font-bold uppercase truncate">
+                      {item.displayName || item.name}
+                      {item.muted && <BellOff size={11} className="text-gray-400 flex-shrink-0" />}
+                    </span>
                     {item.unread > 0 && (
                       <span className="bg-blue-800 text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] font-bold ml-1 flex-shrink-0">
                         {item.unread}
@@ -1463,7 +1730,7 @@ export default function ContactAdminPage() {
       </div>
 
       {/* ── Main Chat Area ───────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col bg-[#F4F5F7]">
+      <div className="flex-1 flex flex-col min-h-0 bg-[#F4F5F7]">
 
         {/* Header */}
         <div className="h-[60px] bg-white border-b border-gray-300 flex items-center justify-between px-4 flex-shrink-0">
@@ -1551,7 +1818,6 @@ export default function ContactAdminPage() {
             items={friendRequests}
             onAccept={handleAcceptFriendRequest}
             onReject={handleRejectFriendRequest}
-            onRename={handleRenameFriendRequest}
             onClose={() => setInlinePanelType(null)}
           />
         ) : inlinePanelType === 'groupInvites' ? (
@@ -1587,6 +1853,7 @@ export default function ContactAdminPage() {
             t={t}
             messages={activeContactType === 'friend' ? chatMessages : (contactMessages[activeContactId] || [])}
             onSendMessage={handleSendMessage}
+            onSendImage={activeContactType === 'friend' ? handleSendImage : undefined}
           />
         )}
       </div>

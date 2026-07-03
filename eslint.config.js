@@ -17,7 +17,7 @@ export default [
         sourceType: 'module',
       },
     },
-    KeyboardIcon: { react: { version: '18.3' } },
+    settings: { react: { version: '18.3' } },
     plugins: {
       react,
       'react-hooks': reactHooks,
