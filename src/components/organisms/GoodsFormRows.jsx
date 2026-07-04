@@ -295,8 +295,8 @@ export default function GoodsFormRows({
         <div className="col-span-29">
 
           {/* PHÍ THÀNH CÔNG */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.successFee", "PHÍ THÀNH CÔNG")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
@@ -304,29 +304,29 @@ export default function GoodsFormRows({
               <span className="text-gray-700">%</span>
               <span className="text-red-500 font-bold ml-1">*</span>
             </div>
-            <div className="col-span-10 p-2 flex items-center" />
+            <div className="col-span-16 p-2 flex items-center" />
           </div>
 
           {/* PHÍ HIỂN THỊ TRÊN TRANG CHỦ */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.eventFee", "PHÍ HIỂN THỊ TRÊN TRANG CHỦ")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="eventPercentFee" value={goodsInfo.eventPercentFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="eventFee" value={goodsInfo.eventFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col justify-center gap-1">
-              <NumberInput name="mainPageViewCount" value={goodsInfo.mainPageViewCount} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-center text-xs" placeholder={t("goods.enterNum", "(nhập số)")} />
-              <div className="flex items-center gap-1 text-[10px] text-gray-600">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-7 border-r border-gray-300 p-2 flex items-center justify-center gap-2 min-w-0">
+              <NumberInput name="mainPageViewCount" value={goodsInfo.mainPageViewCount} onChange={onGoodsInfoChange} className="flex-1 min-w-[50px] border border-gray-300 rounded p-1 text-center text-xs" placeholder={t("goods.enterNum", "(nhập số)")} />
+              <div className="flex items-center gap-1 text-[10px] text-gray-600 shrink basis-[70px] whitespace-normal leading-none">
                 <TwoLineUnitInput unitBottom="D" centerOnly={true} className="!text-[10px] !w-auto" />
                 <span>/ GIẤY / LƯỢT XEM</span>
               </div>
@@ -334,66 +334,66 @@ export default function GoodsFormRows({
           </div>
 
           {/* PHÍ LIVESTREAM HÀNG HÓA */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
               <div>{t("goods.livestreamFee")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="livestreamPercentFee" value={goodsInfo.livestreamPercentFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="livestreamFee" value={goodsInfo.livestreamFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* (Tải video) LIVESTREAM HÀNG HÓA */}
-            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-4 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="livestreamVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">LIVESTREAM HÀNG HÓA</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="livestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
 
           {/* PHÍ QUẢNG CÁO */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-center">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
               <div className="uppercase">{t("goods.advertisingFee", "PHÍ QUẢNG CÁO")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="advertisingPercent" value={goodsInfo.advertisingPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="advertisingFee" value={goodsInfo.advertisingFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* Nhập số D / GIẤY / LƯỢT XEM */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col justify-center gap-1">
-              <NumberInput name="advertisingAmount" value={goodsInfo.advertisingAmount} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-center text-xs" placeholder={t("goods.enterNum", "(nhập số)")} />
-              <div className="flex items-center gap-1 text-[10px] text-gray-600">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center gap-1 min-w-0">
+              <NumberInput name="advertisingAmount" value={goodsInfo.advertisingAmount} onChange={onGoodsInfoChange} className="flex-1 min-w-[40px] border border-gray-300 rounded p-1 text-center text-xs" placeholder={t("goods.enterNum", "(nhập số)")} />
+              <div className="flex items-center gap-1 text-[10px] text-gray-600 shrink basis-[55px] whitespace-normal leading-none">
                 <TwoLineUnitInput unitBottom="D" centerOnly={true} className="!text-[10px] !w-auto" />
                 <span>/ GIẤY / LƯỢT XEM</span>
               </div>
             </div>
             {/* (Tải video) QUẢNG CÁO */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="advertisingVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">QUẢNG CÁO</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="advertisingCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
@@ -401,8 +401,8 @@ export default function GoodsFormRows({
 
           {/* ĐĂNG KÝ LÀM VIDEO — 3 rows, each with its own right-side columns */}
           {/* Row 1: LIVESTREAM HÀNG HÓA */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regLivestreamGoods" checked={goodsInfo.regLivestreamGoods} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div className="leading-tight font-medium">
                 <span>ĐĂNG KÝ LÀM VIDEO </span>
@@ -413,16 +413,16 @@ export default function GoodsFormRows({
               <NumberInput name="regLivestreamGoodsPercent" value={goodsInfo.regLivestreamGoodsPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regLivestreamGoodsFee" value={goodsInfo.regLivestreamGoodsFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* AI / Người thực */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
               <label className="flex items-center gap-1 text-sm cursor-pointer font-medium">
                 <input type="checkbox" name="regLivestreamGoodsAI" checked={goodsInfo.regLivestreamGoodsAI || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
                 <span>AI</span>
@@ -433,20 +433,20 @@ export default function GoodsFormRows({
               </label>
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regLivestreamProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regLivestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
 
           {/* Row 2: QUẢNG CÁO SẢN PHẨM */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regProductAdVideo" checked={goodsInfo.regProductAdVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div className="leading-tight font-medium">
                 <span>ĐĂNG KÝ LÀM VIDEO </span>
@@ -457,16 +457,16 @@ export default function GoodsFormRows({
               <NumberInput name="regProductAdPercent" value={goodsInfo.regProductAdPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regProductAdFee" value={goodsInfo.regProductAdFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* AI / Người thực */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
               <label className="flex items-center gap-1 text-sm cursor-pointer font-medium">
                 <input type="checkbox" name="regProductAdAI" checked={goodsInfo.regProductAdAI || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
                 <span>AI</span>
@@ -477,12 +477,12 @@ export default function GoodsFormRows({
               </label>
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regProductAdCompanyProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO + Nền tảng hỗ trợ */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regProductAdCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
               <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-1">
@@ -493,8 +493,8 @@ export default function GoodsFormRows({
           </div>
 
           {/* Row 3: THƯƠNG HIỆU BẢN THÂN */}
-          <div className="grid grid-cols-16 border-b border-gray-300">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex items-start gap-2">
+          <div className="grid grid-cols-24 border-b border-gray-300">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regPersonalBrandVideo" checked={goodsInfo.regPersonalBrandVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div className="leading-tight font-medium">{t("goods.registerPersonalBrandVideo", "ĐĂNG KÝ LÀM VIDEO THƯƠNG HIỆU BẢN THÂN")}</div>
             </div>
@@ -502,16 +502,16 @@ export default function GoodsFormRows({
               <NumberInput name="regPersonalBrandPercent" value={goodsInfo.regPersonalBrandPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandFee" value={goodsInfo.regPersonalBrandFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* AI / Người thực */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
               <label className="flex items-center gap-1 text-sm cursor-pointer font-medium">
                 <input type="checkbox" name="regPersonalBrandAI" checked={goodsInfo.regPersonalBrandAI || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
                 <span>AI</span>
@@ -522,20 +522,20 @@ export default function GoodsFormRows({
               </label>
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regPersonalBrandProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
-            <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
+            <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
               <FileInput name="regPersonalBrandCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
 
           {/* TỔNG PHÍ NỀN TẢNG */}
-          <div className="grid grid-cols-16">
-            <div className="col-span-4 border-r border-gray-300 p-2 flex flex-col justify-center">
+          <div className="grid grid-cols-24">
+            <div className="col-span-6 border-r border-gray-300 p-2 flex flex-col justify-center">
               <div className="font-semibold text-black">{t("goods.totalPlatformFee", "TỔNG PHÍ NỀN TẢNG")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-end">
@@ -543,16 +543,16 @@ export default function GoodsFormRows({
               <span className="font-medium">0</span>
               <span className="ml-1 text-gray-700">%</span>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">+</div>
+            <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
               <span className="text-[10px] text-gray-400 mr-1">(b)</span>
               <div className="w-full p-1 text-right font-medium">0</div>
             </div>
-            <div className="col-span-1 border-r border-gray-300 p-2 flex items-center justify-center">
+            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />
             </div>
-            <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
-            <div className="col-span-3 border-r border-gray-300 p-2" />
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
+            <div className="col-span-7 border-r border-gray-300 p-2" />
           </div>
         </div>
       </div>
