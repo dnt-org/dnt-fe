@@ -333,6 +333,7 @@ const DropdownAuth = () => {
                         padding: "0.4vw",
                         marginBottom: "1vw",
                         width: "100%",
+                        height: "clamp(30px, 4vw, 50px)",
                         boxSizing: "border-box",
                     }}
                 >
@@ -348,6 +349,7 @@ const DropdownAuth = () => {
                         padding: "0.4vw",
                         marginBottom: "0.4vw",
                         width: "100%",
+                        height: "clamp(30px, 4vw, 50px)",
                         boxSizing: "border-box",
                     }}
                     onClick={() => navigate("/admin-control")}
@@ -375,6 +377,7 @@ const DropdownAuth = () => {
                         border: "1px solid black",
                         padding: "0.4vw",
                         width: "100%",
+                        height: "clamp(30px, 4vw, 50px)",
                         boxSizing: "border-box",
                     }}
                 >
@@ -397,6 +400,7 @@ const DropdownAuth = () => {
                         border: "1px solid black",
                         padding: "0.4vw",
                         width: "100%",
+                        height: "clamp(30px, 4vw, 50px)",
                         boxSizing: "border-box",
                     }}
                 >
