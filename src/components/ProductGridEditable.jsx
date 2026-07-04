@@ -271,9 +271,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             )}
             {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
               <>
-                <select>
-                  <option value="1">(21)  {t("productGrid.quantitymax")}</option>
-                  <option value="2">(21)  {t("productGrid.quantityMinimum")}</option>
+                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
+                  <option value="1">(21) Số lượng tối đa</option>
+                  <option value="2">(21) Số lượng tối thiểu</option>
                 </select>
               </>
             )}
@@ -302,9 +302,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             )}
             {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
               <>
-                <select>
-                  <option value="1">(25) {stripHtml(t("productGrid.desiredUnitPriceLow"))}</option>
-                  <option value="2">(25) {stripHtml(t("productGrid.desiredUnitPriceHigh"))}</option>
+                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
+                  <option value="1">(25) Đơn giá thấp nhất</option>
+                  <option value="2">(25) Đơn giá cao nhất</option>
                 </select>
               </>
             )}
@@ -318,9 +318,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             )}
             {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
               <>
-                <select>
-                  <option value="1">(26) {stripHtml(t("productGrid.lowestAmount"))}</option>
-                  <option value="2">(26) {stripHtml(t("productGrid.highestAmount"))}</option>
+                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
+                  <option value="1">(26) Thành tiền thấp nhất</option>
+                  <option value="2">(26) Thành tiền cao nhất</option>
                 </select>
               </>
             )}
@@ -339,9 +339,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             )}
             {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
               <>
-                <select>
-                  <option value="1">(28) {stripHtml(t("productGrid.lowestLOWAutoAccept"))}</option>
-                  <option value="2">(28) {stripHtml(t("productGrid.lowestHighestAutoAccept"))}</option>
+                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
+                  <option value="1">(28) Tự động chấp nhận - thấp</option>
+                  <option value="2">(28) Tự động chấp nhận - cao</option>
                 </select>
               </>
             )}
@@ -356,9 +356,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             )}
             {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
               <>
-                <select>
-                  <option value="1">(29) {stripHtml(t("productGrid.autoRejectPricelow"))}</option>
-                  <option value="2">(29) {stripHtml(t("productGrid.autoRejectPricehigh"))}</option>
+                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
+                  <option value="1">(29) Tự động từ chối - thấp</option>
+                  <option value="2">(29) Tự động từ chối - cao</option>
                 </select>
               </>
             )}
