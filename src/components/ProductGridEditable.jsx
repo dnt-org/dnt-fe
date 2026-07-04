@@ -164,6 +164,8 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       amountDesired: "",
       autoAcceptPrice: "",
       autoRejectPrice: "",
+      autoAcceptPriceLow: "",
+      autoRejectPriceLow: "",
     };
     const updated = [...items, newItem];
     setItems(updated);
@@ -363,6 +365,14 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               </>
             )}
 
+          </div>
+
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div> (30) {t("productGrid.autoAcceptPriceLow", "ĐƠN GIÁ THẤP NHẤT TỰ ĐỘNG DUYỆT CHO SL YÊU CẦU ÍT NHẤT")} <span className="text-red-500">*</span></div>
+          </div>
+
+          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+            <div> (31) {t("productGrid.autoRejectPriceLow", "ĐƠN GIÁ THẤP NHẤT TỰ ĐỘNG TỪ CHỐI CHO SL YÊU CẦU ÍT NHẤT")} <span className="text-red-500">*</span></div>
           </div>
         </div>
 
@@ -802,6 +812,30 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 type="number"
                 value={item.autoRejectPrice}
                 onChange={(e) => handleItemChange(item.id, "autoRejectPrice", e.target.value)}
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
+
+            {/* Col 30: autoAcceptPriceLow */}
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="autoAcceptPriceLow"
+                type="number"
+                value={item.autoAcceptPriceLow}
+                onChange={(e) => handleItemChange(item.id, "autoAcceptPriceLow", e.target.value)}
+                placeholder={t("goods.enter")}
+                country={getUserCountry()}
+              />
+            </div>
+
+            {/* Col 31: autoRejectPriceLow */}
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <TwoLineUnitInput
+                name="autoRejectPriceLow"
+                type="number"
+                value={item.autoRejectPriceLow}
+                onChange={(e) => handleItemChange(item.id, "autoRejectPriceLow", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
               />

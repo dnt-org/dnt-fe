@@ -234,7 +234,7 @@ export default function GoodsFormRows({
       <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={8} className="col-span-1 p-2" />
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
-          <div>{t("goods.taxVatAndPit", "NỘP HỖ THUẾ VAT + TNCN")}</div>
+          <div>{t("goods.taxVatAndPit", "NỘP HỘ THUẾ VAT + TNCN")}</div>
         </div>
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center justify-end">
           <span className="font-medium">0</span>

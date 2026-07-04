@@ -52,6 +52,8 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
       amountDesired: "",
       autoAcceptPrice: "",
       autoRejectPrice: "",
+      autoAcceptPriceLow: "",
+      autoRejectPriceLow: "",
     };
     const updated = [...items, newItem];
     setItems(updated);
