@@ -54,6 +54,8 @@ import {
   sendMessage,
   uploadFile,
   syncAll,
+  getMessages,
+  markAsRead,
   hideConversation,
   muteConversation,
   clearMessages,
@@ -66,6 +68,10 @@ import {
   acceptFriendRequest,
   rejectFriendRequest
 } from '../services/friendService';
+import useSupabaseRealtimeAuth from '../custom-hooks/useSupabaseRealtimeAuth';
+import useConversationChannel from '../custom-hooks/useConversationChannel';
+import useInboxChannel from '../custom-hooks/useInboxChannel';
+import usePresence from '../custom-hooks/usePresence';
 import ConversationItemMenu from '../components/contact/ConversationItemMenu';
 import ContactAvatarMenu from '../components/contact/ContactAvatarMenu';
 import PendingListModal from '../components/contact/PendingListModal';
@@ -622,11 +628,31 @@ const mapConversation = (convo) => ({
   otpPending: false
 });
 
-function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
+function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage, peerTyping, onTypingChange }) {
   const [inputText, setInputText] = useState('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const scrollRef = useRef(null);
   const fileInputRef = useRef(null);
+  const typingStopTimeoutRef = useRef(null);
+  const isTypingRef = useRef(false);
+
+  // Broadcasts "typing" on keystroke (throttled to once per active burst via
+  // isTypingRef) and auto-clears to "stopped" after ~2s of inactivity.
+  const handleInputChange = (e) => {
+    setInputText(e.target.value);
+    if (!onTypingChange) return;
+    if (!isTypingRef.current) {
+      isTypingRef.current = true;
+      onTypingChange(true);
+    }
+    clearTimeout(typingStopTimeoutRef.current);
+    typingStopTimeoutRef.current = setTimeout(() => {
+      isTypingRef.current = false;
+      onTypingChange(false);
+    }, 2000);
+  };
+
+  useEffect(() => () => clearTimeout(typingStopTimeoutRef.current), []);
 
   // #C-11: own message bubble background color, default blue
   const [bubbleColor, setBubbleColor] = useState(BUBBLE_COLORS[0]);
@@ -637,12 +663,12 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
   useEffect(() => { localStorage.setItem('contactTheme', theme); }, [theme]);
   const isDark = theme === 'dark';
 
-  // Auto-scroll to bottom on new messages
+  // Auto-scroll to bottom on new messages (or when the typing indicator appears)
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, peerTyping]);
 
   // Guards against a single click/Enter firing twice (e.g. Enter immediately
   // followed by a stray click on the Send button) resulting in two separate
@@ -653,6 +679,11 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
     sendingRef.current = true;
     onSendMessage(inputText.trim());
     setInputText('');
+    if (isTypingRef.current) {
+      isTypingRef.current = false;
+      clearTimeout(typingStopTimeoutRef.current);
+      onTypingChange?.(false);
+    }
     setTimeout(() => { sendingRef.current = false; }, 300);
   };
 
@@ -749,6 +780,18 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
             <p className="text-sm italic">Hãy bắt đầu cuộc trò chuyện với {contact?.name || 'người này'}</p>
           </div>
         )}
+        {peerTyping && (
+          <div className="flex items-end gap-2">
+            <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex-shrink-0 mb-1">
+              <img src={contact?.avatar || "https://via.placeholder.com/32"} alt="avatar" className="w-full h-full object-cover" />
+            </div>
+            <div className={`px-3 py-2.5 rounded-2xl rounded-bl-none flex items-center gap-1 border ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-100'}`}>
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
@@ -812,7 +855,7 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage }) {
         <div className="flex items-end px-3 py-3 gap-2">
           <textarea
             value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder={t('contact.typeMessage', `Nhập tin nhắn tới ${contact?.name || '...'}`)}
             className={`flex-1 max-h-32 min-h-[40px] resize-none border-none outline-none text-sm bg-transparent py-1.5 ${isDark ? 'text-white placeholder:text-gray-500' : ''}`}
@@ -952,9 +995,31 @@ export default function ContactAdminPage() {
   // has re-rendered — otherwise a poll racing a send can pass a stale cursor.
   const lastMessageIdRef = useRef({ convId: null, id: null });
 
-  // Single combined poll: conversations + incoming friend requests + (if a
-  // friend chat is open) its new messages, marking them read — one request
-  // instead of separately polling conversations/incoming/messages/read.
+  // Merges newly fetched/pushed messages into chatMessages, deduping by id and
+  // advancing the "since" cursor — shared by the initial load, the slow
+  // safety-net poll below, and the realtime-driven fetch further down.
+  const applyIncomingMessages = (convId, mapped) => {
+    chatMessagesConvIdRef.current = convId;
+    if (!mapped.length) return;
+    const maxId = Math.max(...mapped.map(m => m.id));
+    lastMessageIdRef.current = {
+      convId,
+      id: Math.max(lastMessageIdRef.current.convId === convId ? (lastMessageIdRef.current.id || 0) : 0, maxId)
+    };
+    // Dedupe by id — a just-sent (optimistically appended) message can also
+    // come back here, and races can re-deliver the same rows.
+    setChatMessages(prev => {
+      const existing = new Set(prev.map(m => m.id));
+      const toAdd = mapped.filter(m => !existing.has(m.id));
+      return toAdd.length ? [...prev, ...toAdd] : prev;
+    });
+  };
+
+  // Combined poll: conversations + incoming friend requests + (if a friend
+  // chat is open) its new messages, marking them read — kept as a slow
+  // (30s) safety net now that realtime carries the live-update load: it
+  // keeps friend requests fresh and re-syncs if Realtime silently stalls
+  // without emitting a detectable channel-error status.
   const runSync = async () => {
     const convType = activeContactTypeRef.current;
     const convId = convType === 'friend' ? activeContactIdRef.current : null;
@@ -972,23 +1037,8 @@ export default function ContactAdminPage() {
         avatar: r.from_user?.avt || 'https://via.placeholder.com/150'
       })));
 
-      if (convId && data.messages && data.messages.length > 0) {
-        const mapped = data.messages.map(msg => toChatMessage(msg, currentUserId));
-        chatMessagesConvIdRef.current = convId;
-        const maxId = Math.max(...mapped.map(m => m.id));
-        lastMessageIdRef.current = {
-          convId,
-          id: Math.max(lastMessageIdRef.current.convId === convId ? (lastMessageIdRef.current.id || 0) : 0, maxId)
-        };
-        // Dedupe by id — a just-sent (optimistically appended) message can also
-        // come back from this sync, and races can re-deliver the same rows.
-        setChatMessages(prev => {
-          const existing = new Set(prev.map(m => m.id));
-          const toAdd = mapped.filter(m => !existing.has(m.id));
-          return toAdd.length ? [...prev, ...toAdd] : prev;
-        });
-      } else if (convId) {
-        chatMessagesConvIdRef.current = convId;
+      if (convId) {
+        applyIncomingMessages(convId, (data.messages || []).map(msg => toChatMessage(msg, currentUserId)));
       }
     } catch (err) {
       console.error('Error syncing:', err);
@@ -997,8 +1047,39 @@ export default function ContactAdminPage() {
   const runSyncRef = useRef(runSync);
   runSyncRef.current = runSync;
 
-  // Reset the chat pane immediately when switching conversations, then sync
-  // right away instead of waiting for the next interval tick.
+  // Fired by the realtime conversation channel (new message broadcast, or on
+  // resubscribe after a drop) — a targeted fetch of just the active
+  // conversation's new messages, reusing the same populated shape as REST
+  // instead of trusting the broadcast payload (which is the bare DB row,
+  // missing populated sender/attachment relations). Also marks them read,
+  // mirroring what the old combined /sync call did server-side while a
+  // conversation was open.
+  const fetchNewMessagesForActiveConversation = async () => {
+    const convId = activeContactIdRef.current;
+    if (activeContactTypeRef.current !== 'friend' || !convId) return;
+    const sinceId = lastMessageIdRef.current.convId === convId ? lastMessageIdRef.current.id : undefined;
+    try {
+      const data = await getMessages(convId, sinceId || '');
+      if (data && data.length > 0) {
+        applyIncomingMessages(convId, data.map(msg => toChatMessage(msg, currentUserId)));
+        markAsRead(convId).catch(err => console.error('Error marking as read:', err));
+      }
+    } catch (err) {
+      console.error('Error fetching new messages:', err);
+    }
+  };
+
+  // Patches a message's read/seen status in place from a realtime broadcast —
+  // no re-fetch needed, the updated row already carries everything used here.
+  const applyMessageUpdate = (record) => {
+    if (!record) return;
+    setChatMessages(prev => prev.map(m => m.id === record.id
+      ? { ...m, is_read: record.is_read, read_at: record.read_at }
+      : m));
+  };
+
+  // Reset the chat pane immediately when switching conversations, then load
+  // its messages right away instead of waiting for the channel to deliver one.
   useEffect(() => {
     setChatMessages([]);
     chatMessagesConvIdRef.current = null;
@@ -1008,12 +1089,39 @@ export default function ContactAdminPage() {
     }
   }, [activeContactId, activeContactType]);
 
-  // The one and only poll loop for this page — every 4 seconds.
+  // Slow safety-net poll (was the one and only 4s loop before realtime).
   useEffect(() => {
     runSyncRef.current();
-    const interval = setInterval(() => runSyncRef.current(), 4000);
+    const interval = setInterval(() => runSyncRef.current(), 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // ── Supabase Realtime: replaces the poll for messages + conversation list ──
+  const { isAuthReady } = useSupabaseRealtimeAuth(!!currentUserId);
+
+  useInboxChannel({
+    userId: currentUserId,
+    enabled: isAuthReady,
+    onConversationUpdated: (payload) => {
+      setFriends(prev => prev.map(f => f.id === payload.conversation_id
+        ? {
+          ...f,
+          lastMessage: payload.last_message || f.lastMessage,
+          updatedAt: payload.last_message_at || f.updatedAt
+        }
+        : f));
+    },
+  });
+
+  const { peerTyping, sendTyping } = useConversationChannel({
+    conversationId: activeContactType === 'friend' ? activeContactId : null,
+    enabled: isAuthReady,
+    onInsert: fetchNewMessagesForActiveConversation,
+    onUpdate: applyMessageUpdate,
+    onGapFill: fetchNewMessagesForActiveConversation,
+  });
+
+  const { isOnline } = usePresence({ userId: currentUserId, enabled: isAuthReady });
 
   // #C-03: which item's right-tap quick-action menu is open
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -1750,14 +1858,22 @@ export default function ContactAdminPage() {
           ) : chatMode !== 'none' ? (
             <>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100">
+                <div className="relative w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-100">
                   {isBotMode
                     ? <ShieldAlert size={20} className="text-blue-600" />
                     : <img src={activeContact?.avatar || "https://via.placeholder.com/40"} alt="avatar" className="w-full h-full object-cover" />
                   }
+                  {!isBotMode && activeContactType === 'friend' && activeFriend?.otherUserId && isOnline(activeFriend.otherUserId) && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white" />
+                  )}
                 </div>
-                <div className={`font-bold uppercase ${isBotMode ? 'text-blue-700' : 'text-gray-800'}`}>
-                  {chatTitle}
+                <div>
+                  <div className={`font-bold uppercase ${isBotMode ? 'text-blue-700' : 'text-gray-800'}`}>
+                    {chatTitle}
+                  </div>
+                  {!isBotMode && activeContactType === 'friend' && peerTyping && (
+                    <div className="text-[11px] text-blue-500 normal-case">đang nhập...</div>
+                  )}
                 </div>
               </div>
               <div className={`relative flex items-center gap-2 bg-blue-400 p-1 rounded ${isBotMode && !videoUnlocked ? 'opacity-40' : ''}`}>
@@ -1854,6 +1970,10 @@ export default function ContactAdminPage() {
             messages={activeContactType === 'friend' ? chatMessages : (contactMessages[activeContactId] || [])}
             onSendMessage={handleSendMessage}
             onSendImage={activeContactType === 'friend' ? handleSendImage : undefined}
+            peerTyping={activeContactType === 'friend' ? peerTyping : false}
+            onTypingChange={activeContactType === 'friend'
+              ? (isTyping) => sendTyping(currentUserId, isTyping)
+              : undefined}
           />
         )}
       </div>
@@ -1864,14 +1984,18 @@ export default function ContactAdminPage() {
         onClose={() => setIsAddFriendQrOpen(false)}
         onScanResult={handleAddFriendScanResult}
         myQrLabel="Mã QR của bạn — cho người khác quét để kết bạn"
+        myPayload={currentUserId ? { userId: currentUserId, name: currentUserName } : null}
       />
 
-      {/* #C-09: scan a group's QR to join it — result shown inline */}
+      {/* #C-09: scan a group's QR to join it — result shown inline. Groups are
+          still local-only mock data (no backend group API yet), so there's no
+          real group id to encode — kept as a placeholder until groups exist server-side. */}
       <ContactQrModal
         isOpen={isJoinGroupQrOpen}
         onClose={() => setIsJoinGroupQrOpen(false)}
         onScanResult={handleJoinGroupScanResult}
         myQrLabel="Mã QR nhóm của bạn — cho người khác quét để tham gia"
+        myPayload={null}
       />
 
       {/* #C-08: create/edit group — owner-only, members from own friends list only */}

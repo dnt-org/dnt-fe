@@ -1,13 +1,24 @@
-import { useState, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import PropTypes from "prop-types"
 import { QrCode, Download, ScanLine } from "lucide-react"
+import QRCode from "qrcode"
 import QRModalComponent from "../QRModalComponent"
 
 // Shared QR flow for both "add friend" (#C-06) and "join group" (#C-09):
 // toggle between scanning someone else's QR and showing/downloading your own.
-export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabel }) {
+// `myPayload` is the identity object encoded into the QR (e.g. { userId, name }
+// for add-friend) — the scanning side (handleAddFriendScanResult /
+// handleJoinGroupScanResult) parses it back out as JSON.
+export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabel, myPayload }) {
   const [mode, setMode] = useState("scan") // 'scan' | 'mine'
   const canvasRef = useRef(null)
+
+  useEffect(() => {
+    if (mode !== "mine" || !canvasRef.current || !myPayload) return
+    QRCode.toCanvas(canvasRef.current, JSON.stringify(myPayload), { width: 220, margin: 1 }, (err) => {
+      if (err) console.error("Error rendering QR code:", err)
+    })
+  }, [mode, myPayload])
 
   if (!isOpen) return null
 
@@ -50,11 +61,15 @@ export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabe
           <div className="relative bg-white rounded-lg p-6 w-full max-w-md flex flex-col items-center">
             <button className="absolute top-1 right-2 text-gray-600 hover:text-black" onClick={handleClose}>✕</button>
             <p className="text-sm text-gray-600 mb-3 mt-4 text-center">{myQrLabel}</p>
-            {/* Placeholder QR pattern — no backend identity payload to encode yet */}
-            <MockQrCanvas canvasRef={canvasRef} />
+            {myPayload ? (
+              <canvas ref={canvasRef} width={220} height={220} className="border rounded" />
+            ) : (
+              <p className="text-sm text-red-500 py-8">Không thể tạo mã QR — thiếu thông tin.</p>
+            )}
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700"
+              disabled={!myPayload}
+              className="flex items-center gap-2 px-4 py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download size={16} /> Tải ảnh QR
             </button>
@@ -65,42 +80,15 @@ export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabe
   )
 }
 
-function MockQrCanvas({ canvasRef }) {
-  const size = 220
-  const cells = 14
-  const cellSize = size / cells
-  // Deterministic pseudo-random pattern so it looks like a QR code without encoding real data
-  const pattern = Array.from({ length: cells * cells }, (_, i) => (i * 37 + 11) % 7 < 3)
-
-  const draw = (canvas) => {
-    if (!canvas) return
-    canvasRef.current = canvas
-    const ctx = canvas.getContext("2d")
-    ctx.fillStyle = "#fff"
-    ctx.fillRect(0, 0, size, size)
-    ctx.fillStyle = "#1e3a8a"
-    pattern.forEach((on, i) => {
-      if (!on) return
-      const x = (i % cells) * cellSize
-      const y = Math.floor(i / cells) * cellSize
-      ctx.fillRect(x, y, cellSize, cellSize)
-    })
-  }
-
-  return <canvas ref={draw} width={size} height={size} className="border rounded" />
-}
-
-MockQrCanvas.propTypes = {
-  canvasRef: PropTypes.object.isRequired,
-}
-
 ContactQrModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onScanResult: PropTypes.func.isRequired,
   myQrLabel: PropTypes.string,
+  myPayload: PropTypes.object,
 }
 
 ContactQrModal.defaultProps = {
   myQrLabel: "Mã QR của bạn — cho người khác quét để kết bạn",
+  myPayload: null,
 }
