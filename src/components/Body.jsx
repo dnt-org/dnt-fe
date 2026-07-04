@@ -332,6 +332,8 @@ const DropdownAuth = () => {
                         border: "1px solid black",
                         padding: "0.4vw",
                         marginBottom: "1vw",
+                        width: "100%",
+                        boxSizing: "border-box",
                     }}
                 >
                     {t("navigation.login", "ĐĂNG NHẬP")}
@@ -343,9 +345,10 @@ const DropdownAuth = () => {
                     style={{
                         cursor: "pointer",
                         border: "1px solid black",
-                        padding: "3px",
+                        padding: "0.4vw",
                         marginBottom: "0.4vw",
-                        width: "fit-content",
+                        width: "100%",
+                        boxSizing: "border-box",
                     }}
                     onClick={() => navigate("/admin-control")}
                 >
@@ -371,6 +374,8 @@ const DropdownAuth = () => {
                         cursor: "pointer",
                         border: "1px solid black",
                         padding: "0.4vw",
+                        width: "100%",
+                        boxSizing: "border-box",
                     }}
                 >
                     {t("navigation.register", "ĐĂNG KÝ")}
@@ -391,6 +396,8 @@ const DropdownAuth = () => {
                         cursor: "pointer",
                         border: "1px solid black",
                         padding: "0.4vw",
+                        width: "100%",
+                        boxSizing: "border-box",
                     }}
                 >
                     {t("navigation.logout", "THOÁT")}
