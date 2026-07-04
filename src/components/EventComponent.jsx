@@ -235,7 +235,6 @@ export default function EventComponent() {
             gridTemplateRows: "repeat(2, 1fr)",
             gap: "10px",
             flex: 1,
-            padding: "0 10px",
             userSelect: "none",
           }}
           onMouseDown={(e) => onPointerDown(e.clientX)}
@@ -282,7 +281,6 @@ export default function EventComponent() {
             gridTemplateRows: "repeat(2, 1fr)",
             gap: "10px",
             flex: 1,
-            padding: "0 10px",
             userSelect: "none",
           }}
           onTouchStart={(e) => onPointerDown(e.touches[0].clientX)}
