@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 
-export default function ProductGridReadOnly({ products = [], onItemsChange, extraColumns = [] }) {
+export default function ProductGridReadOnly({ products = [], onItemsChange, extraColumns = [], rowStyle }) {
   const { t } = useTranslation();
   const [items, setItems] = useState(products || []);
   const [isManpower, setIsManpower] = useState(false);
@@ -160,7 +160,8 @@ export default function ProductGridReadOnly({ products = [], onItemsChange, extr
         {items.map((item, rowIndex) => (
           <div
             key={item.id}
-            className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}
+            className={`grid grid-flow-col auto-cols-[300px] border-gray-300 ${rowStyle ? '[&_input]:bg-transparent [&_select]:bg-transparent [&_textarea]:bg-transparent' : ''}`}
+            style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)', ...(rowStyle ? rowStyle(item, rowIndex) : {}) }}
           >
             <div className="border-r border-b border-gray-300 text-center flex items-center justify-center">
               <div>{item.id}</div>

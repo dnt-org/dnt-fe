@@ -29,6 +29,16 @@ const computeTotalPayable = (item, thanhTien, tax) => {
 
 const keyOf = (item, index) => item.documentId || item.id || item.rowIndex || index
 
+const formatCountdown = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")} : ${String(s % 60).padStart(2, "0")}`
+
+// Cùng 1 khách đặt nhiều mặt hàng -> cùng 1 màu nền
+const CUSTOMER_COLORS = ["#fef9c3", "#dbeafe", "#dcfce7", "#fce7f3", "#f3e8ff", "#ffedd5"]
+const colorForCustomer = (name, palette) => {
+  if (!name) return undefined
+  if (!palette.has(name)) palette.set(name, CUSTOMER_COLORS[palette.size % CUSTOMER_COLORS.length])
+  return palette.get(name)
+}
+
 /**
  * Bảng hàng hóa trong phiên live: tái dùng ProductGridReadOnly để hiển thị đủ
  * các cột product item của phần ĐĂNG BÀI, và gắn thêm cột cuối tùy theo vai trò:
@@ -39,10 +49,20 @@ const keyOf = (item, index) => item.documentId || item.id || item.rowIndex || in
 export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mode = "joiner" }) {
   const { t } = useTranslation()
   const [decisions, setDecisions] = useState({})
+  const [seconds, setSeconds] = useState({})
   const [otpOpen, setOtpOpen] = useState(false)
   const [liveItems, setLiveItems] = useState(items)
 
   useEffect(() => setLiveItems(items), [items])
+
+  // Giá đặt mới nhất của khách theo từng mặt hàng
+  const latestBidByItem = useMemo(() => {
+    return bids.reduce((acc, bid) => {
+      const key = bid.productItemDocumentId || bid.productItemId || bid.itemIndex
+      if (key !== undefined && acc[key] === undefined) acc[key] = bid
+      return acc
+    }, {})
+  }, [bids])
 
   // Phản hồi (ĐỒNG Ý/TỪ CHỐI) từ chủ bài đăng theo từng mặt hàng
   const responseByItem = useMemo(() => {
@@ -53,39 +73,109 @@ export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mo
     }, {})
   }, [bids])
 
+  // Chủ bài đăng: đồng hồ đếm ngược từng dòng; về 00:00 tự động TỪ CHỐI
+  useEffect(() => {
+    if (mode !== "poster") return
+    setSeconds((prev) => {
+      const next = { ...prev }
+      items.forEach((item, index) => {
+        const k = keyOf(item, index)
+        if (next[k] === undefined) next[k] = 30 + index * 55
+      })
+      return next
+    })
+  }, [items, mode])
+
+  useEffect(() => {
+    if (mode !== "poster") return undefined
+    const timer = setInterval(() => {
+      setSeconds((prev) => {
+        const next = {}
+        for (const [k, v] of Object.entries(prev)) next[k] = Math.max(0, v - 1)
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [mode])
+
+  useEffect(() => {
+    if (mode !== "poster") return
+    setDecisions((prev) => {
+      let changed = false
+      const next = { ...prev }
+      for (const [k, v] of Object.entries(seconds)) {
+        if (v <= 0 && !next[k]) { next[k] = "rejected"; changed = true }
+      }
+      return changed ? next : prev
+    })
+  }, [seconds, mode])
+
   const uploadButton = (
     <button type="button" className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600">
       {t("productGrid.uploadFile", "Tải lên")}
     </button>
   )
 
-  /* -------- Chủ bài đăng: cột XÁC NHẬN có 2 nút hành động -------- */
+  /* -------- Chủ bài đăng: giá khách đặt + phí + (30)(31)(32) + XÁC NHẬN (đếm ngược) -------- */
   if (mode === "poster") {
+    const numCell = (value, bold = false) => (
+      <div className={`w-full text-right pr-2 whitespace-nowrap ${bold ? "font-bold" : ""}`}>{formatMoney(value)}</div>
+    )
+    const bidOf = (item, index) => latestBidByItem[item.documentId] || latestBidByItem[item.id] || latestBidByItem[index]
+
+    // Tô cùng màu nền cho các mặt hàng của cùng 1 khách
+    const palette = new Map()
+    const rowStyle = (item, index) => {
+      const bg = colorForCustomer(bidOf(item, index)?.viewerName, palette)
+      return bg ? { backgroundColor: bg } : {}
+    }
+
     const extraColumns = [
-      { header: t("liveGoods.responseProfile", "HỒ SƠ ĐÁP ỨNG"), render: () => uploadButton },
+      { header: t("liveGoods.customerQuantity", "KHÁCH ĐẶT SỐ LƯỢNG"), render: (item, index) => numCell(bidOf(item, index)?.quantity) },
+      { header: t("liveGoods.customerUnitPrice", "KHÁCH ĐẶT ĐƠN GIÁ"), render: (item, index) => numCell(bidOf(item, index)?.unitPrice) },
+      {
+        header: t("liveGoods.customerTotal", "THÀNH TIỀN"),
+        render: (item, index) => {
+          const bid = bidOf(item, index)
+          return numCell(bid?.totalAmount || numberValue(bid?.quantity) * numberValue(bid?.unitPrice), true)
+        },
+      },
+      { header: t("liveGoods.platformFee", "TỔNG PHÍ NỀN TẢNG (không tính phần trả trước)"), render: (item) => numCell(item.platformFee) },
+      { header: `(30) ${t("liveGoods.autoApproveLowest", "TỰ ĐỘNG DUYỆT")}`, render: (item) => numCell(item.autoAcceptPriceLow || item.autoAcceptPrice) },
+      { header: `(31) ${t("liveGoods.autoRejectLowest", "TỰ ĐỘNG TỪ CHỐI")}`, render: (item) => numCell(item.autoRejectPrice || item.autoRejectPriceLow) },
+      { header: `(32) ${t("liveGoods.responseProfile", "HỒ SƠ ĐÁP ỨNG")}`, render: () => uploadButton },
       {
         header: t("customerConfirm.title", "XÁC NHẬN"),
         render: (item, index) => {
           const k = keyOf(item, index)
           const decision = decisions[k]
+          const sec = seconds[k] ?? 0
           return (
-            <div className="flex gap-1">
-              <button
-                type="button"
-                onClick={() => setDecisions((prev) => ({ ...prev, [k]: "accepted" }))}
-                className={`px-3 py-1 text-xs font-bold text-white ${decision === "accepted" ? "ring-2 ring-offset-1 ring-blue-800" : ""}`}
-                style={{ backgroundColor: "#1e40af" }}
-              >
-                {t("liveConfirm.agree", "ĐỒNG Ý")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDecisions((prev) => ({ ...prev, [k]: "rejected" }))}
-                className={`px-3 py-1 text-xs font-bold text-white ${decision === "rejected" ? "ring-2 ring-offset-1 ring-red-800" : ""}`}
-                style={{ backgroundColor: "#ef4444" }}
-              >
-                {t("liveConfirm.reject", "TỪ CHỐI")}
-              </button>
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setDecisions((prev) => ({ ...prev, [k]: "accepted" }))}
+                  className={`px-2 py-1 text-xs font-bold text-white ${decision === "accepted" ? "ring-2 ring-offset-1 ring-blue-800" : ""}`}
+                  style={{ backgroundColor: "#1e40af" }}
+                >
+                  {t("liveConfirm.agree", "ĐỒNG Ý")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDecisions((prev) => ({ ...prev, [k]: "rejected" }))}
+                  className={`px-2 py-1 text-xs font-bold text-white ${decision === "rejected" ? "ring-2 ring-offset-1 ring-red-800" : ""}`}
+                  style={{ backgroundColor: "#ef4444" }}
+                >
+                  {t("liveConfirm.reject", "TỪ CHỐI")}
+                </button>
+              </div>
+              <span className={`text-sm font-bold tabular-nums ${sec <= 10 ? "text-red-600" : ""}`}>{formatCountdown(sec)}</span>
+              {decision && (
+                <span className={`text-[10px] font-bold ${decision === "accepted" ? "text-blue-700" : "text-red-600"}`}>
+                  {decision === "accepted" ? t("liveConfirm.agreed", "ĐÃ ĐỒNG Ý") : t("liveConfirm.rejected", "ĐÃ TỪ CHỐI")}
+                </span>
+              )}
             </div>
           )
         },
@@ -93,7 +183,7 @@ export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mo
     ]
     return (
       <div className="mt-4">
-        <ProductGridReadOnly products={items} extraColumns={extraColumns} />
+        <ProductGridReadOnly products={items} extraColumns={extraColumns} rowStyle={rowStyle} />
       </div>
     )
   }
