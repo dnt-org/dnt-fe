@@ -128,7 +128,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
         <div className="flex-1 min-w-0 border-2 border-black rounded">
 
           {/* Header — Company name (blue, centered, inside frame) */}
-          <div className="border-b-2 border-black p-3 text-center">
+          <div className="border-b-2 border-black p-2 text-center">
             <h2 className="font-bold text-sm sm:text-base text-blue-700">
               {userData?.company_name || fallback.companyName}
             </h2>
@@ -138,14 +138,14 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
           <div className="divide-y divide-black text-xs sm:text-sm">
 
             {/* Row 1: Số ĐKKD */}
-            <div className="flex items-center">
-              <div className="flex-0 border-r-2 border-black bg-gray-100 p-2 font-bold min-w-max">
+            <div className="flex items-stretch">
+              <div className="flex-0 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold min-w-max flex items-center">
                 {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
               </div>
-              <div className="flex-1 p-2 text-center">
+              <div className="flex-1 px-2 py-1.5 text-center font-bold flex items-center justify-center">
                 {userData?.cccd || fallback.mst}
               </div>
-              <div className="flex-0 border-l-2 border-black p-2">
+              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
                 <button
                   type="button"
                   onClick={() => openDoc(userData?.tax_code_certificate?.url)}
@@ -158,14 +158,14 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             </div>
 
             {/* Row 2: Số GPHD */}
-            <div className="flex items-center">
-              <div className="flex-0 border-r-2 border-black bg-gray-100 p-2 font-bold min-w-max">
+            <div className="flex items-stretch">
+              <div className="flex-0 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold min-w-max flex items-center">
                 {currentLang === 'vi' ? 'Số GPHĐ:' : 'License No.:'}
               </div>
-              <div className="flex-1 p-2 text-center">
+              <div className="flex-1 px-2 py-1.5 text-center font-bold flex items-center justify-center">
                 {fallback.soGphd || '-'}
               </div>
-              <div className="flex-0 border-l-2 border-black p-2">
+              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
                 <button
                   type="button"
                   onClick={() => openDoc(userData?.business_registration?.url)}
@@ -177,12 +177,12 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
               </div>
             </div>
 
-            {/* Row 3: Tài khoản định danh tại ngân hàng (MERGED label + value) */}
-            <div className="flex items-center">
-              <div className="flex-1 border-r-2 border-black bg-gray-100 p-2 font-bold">
+            {/* Row 3: Tài khoản định danh tại ngân hàng (MERGED label + value, centered) */}
+            <div className="flex items-stretch">
+              <div className="flex-1 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold text-center flex items-center justify-center leading-tight">
                 {bankLabel}
               </div>
-              <div className="flex-0 border-l-2 border-black p-2">
+              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
                 <button
                   type="button"
                   onClick={() => openDoc(userData?.bank_certificate?.url)}
@@ -198,7 +198,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             <button
               onClick={handleViewContract}
               disabled={dlLoading.contract}
-              className="w-full flex items-center justify-center gap-2 p-3 text-blue-700 font-bold text-sm hover:text-blue-800 disabled:opacity-50 leading-tight"
+              className="w-full flex items-center justify-center gap-2 px-2 py-1.5 text-blue-700 font-bold text-sm hover:text-blue-800 disabled:opacity-50 leading-tight"
             >
               {userData?.company_logo?.url ? (
                 <img src={userData.company_logo.url} alt="" className="w-4 h-4 rounded-full object-cover flex-shrink-0" />
