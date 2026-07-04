@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Home as HomeIcon,
-  KeyboardIcon as KeyboardIcon,
-} from "lucide-react";
 import "../styles/Login.css";
 import AiLiveLiveStreamComponent from "../components/AiLiveLiveStreamComponent";
 import AiLiveVideoComponent from "../components/AiLiveVideoComponent";
@@ -12,7 +7,6 @@ import AiLiveLiveComponent from "../components/AiLiveLiveComponent";
 import { useTranslation } from 'react-i18next';
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx";
 import NumericInput from "../components/NumericInput.jsx";
-import AiLiveAccount from "../components/AiLiveAccount.jsx";
 import AiLiveStreamGoods from "../components/organisms/AiLiveStreamGoods.jsx";
 import AiLiveVideoList from "../components/AiLiveVideoList.jsx";
 
@@ -22,7 +16,6 @@ export default function AiLivePage() {
   const [color, setColor] = useState(localStorage.getItem("selectedColor") || "#ffffff");
   const [inputValue, setInputValue] = useState("");
   const [user, setUser] = useState(null);
-  const navigate = useNavigate();
   const [selectedComponent, setSelectedComponent] = useState("VIDEO");
 
   // Using the shared NumericInput component for numeric-only input
@@ -46,35 +39,18 @@ export default function AiLivePage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-center items-start min-h-screen pt-2">
       <div className="bg-transparent backdrop-blur-md p-0 rounded-lg w-full  mx-auto">
         {/* Header */}
         <PageHeaderWithOutColorPicker
           color={color}
           onColorChange={handleChangeColor}
           titlePrefix="8"
-          leftButton={
-            <button
-              className="text-red-600 hover:text-red-800 relative"
-              onClick={() => navigate("/")}
-            >
-              <HomeIcon size={28} />
-            </button>
-          }
-          rightButton={
-            <button
-              className="text-red-600 hover:text-red-800"
-              onClick={() => navigate("/admin-control")}
-            >
-              <KeyboardIcon size={28} />
-            </button>
-          }
           title={t('aiLive.pageTitle')}
         />
-        <AiLiveAccount title={t('aiLive.accountOfAiLive')} />
 
-        {/* 6 Buttons */}
-        <div className="grid grid-cols-3 sm:grid-cols-6  gap-4 mt-1">
+        {/* 6 Buttons - compact row (kéo lên, kích thước nhỏ thôi) */}
+        <div className="grid grid-cols-3 sm:grid-cols-6  gap-2 mt-0">
           {[
                 { label: t('aiLive.livestream'), sub: t('aiLive.livestreamSub'), value: "LIVESTREAM" },
                 { label: t('aiLive.video'), sub: "", value: "VIDEO" },
@@ -87,12 +63,12 @@ export default function AiLivePage() {
                   key={idx}
                   className={
                     selectedComponent === item.value
-                      ? "bg-blue-600 text-white font-bold py-4 px-6 rounded-lg text-center transition-all"
-                      : " hover:bg-blue-600 text-black font-bold py-4 px-6 rounded-lg text-center transition-all"
+                      ? "bg-blue-600 text-white font-bold py-1.5 px-2 text-sm rounded-lg text-center transition-all"
+                      : "border border-gray-200 hover:bg-blue-50 hover:text-blue-700 text-black font-bold py-1.5 px-2 text-sm rounded-lg text-center transition-all"
                   }
                   onClick={() => {setSelectedComponent(item.value);}}
                 >
-                  
+
                 </button>
               ))}
         </div>

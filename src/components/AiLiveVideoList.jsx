@@ -10,14 +10,20 @@ export default function AiLiveVideoList({ videos = [] }) {
   const [currentPage, setCurrentPage] = useState(0);
   const navigate = useNavigate()
 
-  const data = videos.length
+  const rawData = videos.length
     ? videos
     : Array.from({ length: 50 }, (_, i) => ({
         id: i + 1,
         name: `${t("aiLiveVideo.video", "VIDEO")} ${i + 1}`,
         productId: `PRD-${String(i + 1).padStart(3, "0")}`,
         viewers: 2112,
+        saves: 35143,
+        shares: 424652,
+        hasPlatformLogo: i % 5 === 0,
       }))
+
+  // Video có Logo nền tảng đứng đầu danh sách của ID hàng hóa đó
+  const data = [...rawData].sort((a, b) => (b.hasPlatformLogo ? 1 : 0) - (a.hasPlatformLogo ? 1 : 0))
 
   const pageSize = 12;
   const totalPages = Math.ceil(data.length / pageSize);
@@ -50,6 +56,9 @@ export default function AiLiveVideoList({ videos = [] }) {
                 name={v.name}
                 productId={v.productId}
                 viewers={v.viewers}
+                saves={v.saves}
+                shares={v.shares}
+                hasPlatformLogo={v.hasPlatformLogo}
                 selected={selectedIndex === originalIndex}
                 onClick={() => { setSelectedIndex(originalIndex); navigate(`/ai-live/${v.isGoods ? 'video-goods' : 'video'}/${v.id}`) }}
               />

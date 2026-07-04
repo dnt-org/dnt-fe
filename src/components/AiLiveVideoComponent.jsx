@@ -157,8 +157,7 @@ export default function AiLiveVideoComponent() {
   }
 
   const confirmAndOpen = (videoId) => {
-    const ok = window.confirm("Xác nhận phát livestream?")
-    if (ok) navigate(`/ai-live/video/${videoId}`)
+    navigate(`/ai-live/video/${videoId}`)
   }
 
   const onTouchStart = (e) => {

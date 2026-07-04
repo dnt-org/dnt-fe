@@ -7,17 +7,17 @@ import {
     ChevronRight,
     Bookmark,
     Flag,
-    FileWarning,
     Trash2,
-    Play,
     SearchIcon,
     Mic,
     FlagOff,
     Save,
-    Package
+    Package,
+    Share2
 } from "lucide-react"
-import AiLiveVideoList from "../AiLiveVideoList.jsx";
-import { filterProducts } from "../../services/productService";
+import VideoCard from "../molecules/VideoCard.jsx";
+import CategorySelect from "../CategorySelect.jsx";
+import { getCountries, getCountryByCode } from "../../services/countries";
 
 
 
@@ -26,78 +26,20 @@ export default function AiLiveStreamGoods() {
     const { t } = useTranslation()
     const navigate = useNavigate()
 
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
-    const FILE_BASE_URL = API_URL.replace(/\/api\/?$/, "")
+    // Bộ lọc quốc gia / tỉnh thành để người dùng tìm theo yêu cầu
+    const [nation, setNation] = useState({ vi: "Viet Nam", en: "Vietnam" })
+    const [province, setProvince] = useState({ vi: "Tất cả", en: "all" })
+    const [searchText, setSearchText] = useState("")
 
-    const normalizeFileUrl = useCallback((url) => {
-        if (!url) return null
-        if (typeof url !== "string") return null
-        if (/^https?:\/\//i.test(url)) return url
-        if (url.startsWith("/")) return `${FILE_BASE_URL}${url}`
-        return `${FILE_BASE_URL}/${url}`
-    }, [FILE_BASE_URL])
-
-    const getLivestreamVideoUrl = useCallback((product) => {
-        const fromFileLinks = product?.fileLinks?.product?.livestreamVideoFile
-        if (typeof fromFileLinks === "string") return normalizeFileUrl(fromFileLinks)
-        if (Array.isArray(fromFileLinks) && typeof fromFileLinks[0] === "string") return normalizeFileUrl(fromFileLinks[0])
-
-        const m = product?.livestreamVideoFile
-        if (typeof m === "string") return normalizeFileUrl(m)
-        if (m?.url) return normalizeFileUrl(m.url)
-        if (m?.data?.attributes?.url) return normalizeFileUrl(m.data.attributes.url)
-        return null
-    }, [normalizeFileUrl])
-
-    const getFirstItemName = useCallback((product) => {
-        const items = product?.productItems || product?.items
-        const first = Array.isArray(items) ? items[0] : null
-        return first?.name || ""
-    }, [])
-
-    const getProductRouteId = useCallback((product) => {
-        return product?.custom_id || product?.documentId || product?.id
-    }, [])
-
-    const [liveVideoProducts, setLiveVideoProducts] = useState([])
-    const [liveVideoLoading, setLiveVideoLoading] = useState(false)
-    const [liveVideoError, setLiveVideoError] = useState("")
-    const [liveVideoPage, setLiveVideoPage] = useState(1)
-    const [liveVideoTotalPages, setLiveVideoTotalPages] = useState(1)
-
-    const fetchLiveVideos = useCallback(async () => {
-        try {
-            setLiveVideoLoading(true)
-            setLiveVideoError("")
-            const filters = {
-                listingType: localStorage.getItem("category") || "",
-                categoryType: localStorage.getItem("subcategory") || "",
-                conditionType: localStorage.getItem("condition") || "",
-                nation: localStorage.getItem("nation") || "",
-                province: localStorage.getItem("province") || "",
-                name: "",
-            }
-            if (filters.nation?.toLowerCase() === "all") filters.nation = ""
-            if (filters.province?.toLowerCase() === "all") filters.province = ""
-
-            const response = await filterProducts(filters, liveVideoPage, 12, null, false)
-            const products = response.data?.data || []
-            setLiveVideoProducts(products.filter((p) => Boolean(getLivestreamVideoUrl(p))))
-            setLiveVideoTotalPages(response.data?.meta?.pagination?.pageCount || 1)
-        } catch (err) {
-            setLiveVideoProducts([])
-            setLiveVideoTotalPages(1)
-            setLiveVideoError(err?.message || "Failed to load livestream videos")
-        } finally {
-            setLiveVideoLoading(false)
+    const handleFilterChange = useCallback((title, item) => {
+        if (title === "Nation") {
+            setNation(item)
+            setProvince({ vi: "Tất cả", en: "all" })
+        } else if (title === "Province") {
+            setProvince(item)
         }
-    }, [getLivestreamVideoUrl, liveVideoPage])
+    }, [])
 
-    useEffect(() => {
-        fetchLiveVideos()
-    }, [fetchLiveVideos])
-
-    const [followedByCount] = useState(123456)
     const [followedUsers, setFollowedUsers] = useState([])
     const [activeUserId, setActiveUserId] = useState(null)
     const [activeStreamIndex, setActiveStreamIndex] = useState(0)
@@ -106,25 +48,45 @@ export default function AiLiveStreamGoods() {
     const [productFolders, setProductFolders] = useState([])
     const [openFolderId, setOpenFolderId] = useState(null)
     const [completedFolders, setCompletedFolders] = useState([])
+    const [sharedFolders, setSharedFolders] = useState([])
     const [violations, setViolations] = useState([])
     const [reports, setReports] = useState([])
     const [activeTab, setActiveTab] = useState(null)
-    const [streams, setStreams] = useState([])
+    const [goodsGroups, setGoodsGroups] = useState([])
     const [isExpend, setIsExpend] = useState(false)
+    // Số video livestream đăng mới mà mình chưa xem
+    const [unseenCount] = useState(98765)
     useEffect(() => {
         const now = Date.now()
         const makeStreams = (u) => (
             Array.from({ length: u }, (_, i) => ({
                 id: Number(`${u}${i}${i + 1}`),
                 isGoods: true,
-                viewers: 123456,
+                viewers: 743646,
+                saves: 35143,
+                shares: 424652,
+                hasPlatformLogo: i % 5 === 0,
                 title: `${t("aiLiveVideo.video", "VIDEO")} ${i + 1}`,
                 productId: `PRD-${String(i + 1).padStart(3, "0")}`,
                 startedAt: new Date(now - i * 3600_000).toISOString(),
             }))
         )
 
-        setStreams(makeStreams(12))
+        // Nhóm video theo "Tên hàng hóa – ID hàng hóa" (accordion sổ xuống)
+        const makeGoodsVideos = (gid) => Array.from({ length: 5 }, (_, i) => ({
+            id: `${gid}-${i + 1}`,
+            name: "Tên hàng hóa",
+            productId: "ID",
+            viewers: [743646, 632833, 443235, 34567, 1678][i],
+            saves: [35143, 28632, 12457, 8765, 543][i],
+            shares: [424652, 23223, 12455, 7654, 345][i],
+            hasPlatformLogo: i === 0, // Logo nền tảng -> nằm đầu ID hàng hóa
+            avatar: `https://i.pravatar.cc/60?u=${gid}${i}`,
+        }))
+        setGoodsGroups([
+            { id: "G1", name: "Tên hàng hóa – ID hàng hóa 1", videos: makeGoodsVideos("G1") },
+            { id: "G2", name: "Tên hàng hóa – ID hàng hóa 2", videos: makeGoodsVideos("G2") },
+        ])
 
         setFollowedUsers([
             { id: 1, name: "A", avatar: "https://i.pravatar.cc/100?u=1", streams: makeStreams(3) },
@@ -134,23 +96,30 @@ export default function AiLiveStreamGoods() {
             { id: 5, name: "E", avatar: "https://i.pravatar.cc/100?u=5", streams: makeStreams(0) },
         ])
 
+        const makeFolderVideos = (prefix, n) => Array.from({ length: n }, (_, i) => ({
+            id: Number(`${prefix}${i + 1}`),
+            title: `VIDEO LIVESTREAM ${i + 1}`,
+            name: "Tên hàng hóa",
+            productId: "ID",
+            viewers: [743646, 632833, 443235, 34567, 1678][i % 5],
+            saves: [35143, 28632, 12457, 8765, 543][i % 5],
+            shares: [424652, 23223, 12455, 7654, 345][i % 5],
+            hasPlatformLogo: i === 0,
+            avatar: `https://i.pravatar.cc/60?u=${prefix}${i}`,
+        }))
+
         setProductFolders([
             {
                 id: "PRD-101",
                 name: "Tên hàng hóa – ID hàng hóa 1",
                 registeredAt: now - 86_400_000 * 2,
-                videos: [
-                    { id: 1001, title: "VIDEO LIVESTREAM 1" },
-                    { id: 1002, title: "VIDEO LIVESTREAM 2" },
-                ],
+                videos: makeFolderVideos(1010, 2),
             },
             {
                 id: "PRD-102",
                 name: "Tên hàng hóa – ID hàng hóa 2",
                 registeredAt: now - 86_400_000,
-                videos: [
-                    { id: 2001, title: "VIDEO LIVESTREAM 1" },
-                ],
+                videos: makeFolderVideos(2010, 1),
             },
         ])
 
@@ -160,6 +129,16 @@ export default function AiLiveStreamGoods() {
                 name: "Đã hoàn thành – ID 90",
                 movedAt: now - 86_400_000 * 4,
                 videos: [{ id: 9001, title: "VIDEO LIVESTREAM 1" }],
+            },
+        ])
+
+        // Thư mục được người khác chia sẻ cho mình
+        setSharedFolders([
+            {
+                id: "PRD-201",
+                name: "Được chia sẻ – ID hàng hóa 201",
+                sharedBy: "A",
+                videos: makeFolderVideos(2010, 2),
             },
         ])
 
@@ -202,9 +181,9 @@ export default function AiLiveStreamGoods() {
         navigate(`/ai-live/video/${streamId}`)
     }
 
+    // Đã xác thực OTP ở VideoCard nên phát thẳng, không hỏi confirm nữa
     const confirmAndOpen = (videoId) => {
-        const ok = window.confirm("Xác nhận phát livestream?")
-        if (ok) navigate(`/ai-live/video/${videoId}`)
+        navigate(`/ai-live/video/${videoId}`)
     }
 
     const onTouchStart = (e) => {
@@ -243,146 +222,81 @@ export default function AiLiveStreamGoods() {
 
     return (
         <div className="space-y-1 ">
-            <div className="border border-gray-300 bg-white rounded-md p-2">
-                <div className="flex items-center justify-between gap-2">
-                    <div className="font-bold text-sm">{t("aiLive.livestreamVideos", "VIDEO LIVESTREAM")}</div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            type="button"
-                            className="border px-2 py-1 text-xs disabled:opacity-50"
-                            disabled={liveVideoPage <= 1 || liveVideoLoading}
-                            onClick={() => setLiveVideoPage((p) => Math.max(1, p - 1))}
-                        >
-                            {t("common.prev", "Trước")}
-                        </button>
-                        <div className="text-xs text-gray-600">
-                            {liveVideoPage}/{liveVideoTotalPages}
-                        </div>
-                        <button
-                            type="button"
-                            className="border px-2 py-1 text-xs disabled:opacity-50"
-                            disabled={liveVideoPage >= liveVideoTotalPages || liveVideoLoading}
-                            onClick={() => setLiveVideoPage((p) => Math.min(liveVideoTotalPages, p + 1))}
-                        >
-                            {t("common.next", "Sau")}
-                        </button>
-                    </div>
-                </div>
-
-                {liveVideoLoading && (
-                    <div className="text-center text-sm text-gray-600 py-4">{t("common.loading", "Đang tải...")}</div>
-                )}
-
-                {!liveVideoLoading && liveVideoError && (
-                    <div className="text-center text-sm text-red-600 py-4">{liveVideoError}</div>
-                )}
-
-                {!liveVideoLoading && !liveVideoError && liveVideoProducts.length === 0 && (
-                    <div className="text-center text-sm text-gray-600 py-4">{t("common.noData", "Không có dữ liệu")}</div>
-                )}
-
-                {!liveVideoLoading && !liveVideoError && liveVideoProducts.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                        {liveVideoProducts.map((p) => {
-                            const url = getLivestreamVideoUrl(p)
-                            const pid = getProductRouteId(p)
-                            const title = getFirstItemName(p) || pid
-                            return (
-                                <div key={pid} className="border border-gray-300 rounded p-2">
-                                    <div className="flex items-center justify-between gap-2 mb-2">
-                                        <div className="text-xs font-bold truncate">{title}</div>
-                                        <button
-                                            type="button"
-                                            className="text-xs underline"
-                                            onClick={() => pid && navigate(`/list-of-goods/${pid}`)}
-                                        >
-                                            {t("common.detail", "Chi tiết")}
-                                        </button>
-                                    </div>
-                                    <video
-                                        src={url || undefined}
-                                        controls
-                                        playsInline
-                                        preload="metadata"
-                                        className="w-full aspect-video bg-black rounded"
-                                    />
-                                </div>
-                            )
-                        })}
-                    </div>
-                )}
-            </div>
             <div className="mt-1 border-1 border-gray-300">
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                     <SearchIcon size={24} className="text-gray-400" />
                     <Mic size={24} className="text-gray-400 hover:text-gray-600" />
                     <input
                         type="text"
-                        // placeholder={t('goods.searchPlaceholder')} 
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                        // placeholder={t('goods.searchPlaceholder')}
                         className="flex-1 p-2 rounded"
                     />
+                    {/* 2 ô lọc để người dùng tìm theo yêu cầu */}
+                    <div className="flex items-center gap-2 w-64 shrink-0">
+                        <CategorySelect
+                            title="Nation"
+                            items={[]}
+                            onChange={handleFilterChange}
+                            value={nation}
+                            fetchItems={getCountries}
+                            placeholder={{ vi: "Chọn quốc gia", en: "Select country" }}
+                            initIndex={1}
+                        />
+                        <CategorySelect
+                            title="Province"
+                            items={[]}
+                            onChange={handleFilterChange}
+                            value={province}
+                            fetchItems={getCountryByCode}
+                            dependsOn={nation?.en}
+                            placeholder={{ vi: "Tất cả", en: "all" }}
+                            initIndex={0}
+                        />
+                    </div>
                 </div>
             </div>
-            <div className="grid grid-cols-10">
-                <div onClick={() => setIsExpend(!isExpend)} className=" col-span-1 flex items-start justify-start gap-2">
-                    <div className="w-full flex  items-end gap-1">
-                        <img
-                            src={activeUser?.avatar}
-                            className="w-12 h-12 ring-2 ring-blue-500"
-                        />
-                        2342958
-                    </div>
+            <div className="grid grid-cols-12 items-end gap-1">
+                {/* Ẩn vào AVT của mình là cuốn hết (thu gọn thanh công cụ) */}
+                <div
+                    onClick={() => setIsExpend(!isExpend)}
+                    className="col-span-2 flex items-center gap-1 cursor-pointer rounded p-1 hover:bg-gray-50"
+                >
+                    <img
+                        src={activeUser?.avatar}
+                        className="w-12 h-12 rounded-full ring-1 ring-gray-300"
+                    />
+                    <span className="text-sm">2342958</span>
                 </div>
-                <div className={`col-span-9 flex justify-between ${isExpend ? 'block' : 'hidden'}`} >
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 relative ${activeTab === 'follow' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'follow' ? null : 'follow')}>
-                            <Users className="w-5 h-5" />
-                            <span style={{ right: '-40px' }} className="absolute text-right top-0 text-xs bg-red-500 text-white px-1 rounded-full">24958</span>
-                        </button>
-
-                    </div>
-
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 ${activeTab === 'package' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'package' ? null : 'package')}>
-                            <Package className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 ${activeTab === 'products' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'products' ? null : 'products')}>
-                            <Bookmark className="w-5 h-5" />
-                        </button>
-
-                    </div>
-
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 ${activeTab === 'completed' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'completed' ? null : 'completed')}>
-                            <Save className="w-5 h-5" />
-                        </button>
-
-                    </div>
-
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 ${activeTab === 'violations' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'violations' ? null : 'violations')}>
-                            <FlagOff className="w-5 h-5" />
-                        </button>
-
-                    </div>
-
-                    <div className=" rounded-lg p-3">
-                        <button className={`border p-2 ${activeTab === 'reports' ? 'bg-gray-100 border-gray-400' : ''}`} onClick={() => setActiveTab(prev => prev === 'reports' ? null : 'reports')}>
-                            <Flag className="w-5 h-5" />
-                        </button>
-                    </div>
+                <div className={`col-span-10 grid grid-cols-7 gap-1 ${isExpend ? 'grid' : 'hidden'}`}>
+                    {[
+                        { key: 'follow', Icon: Users, top: '2 ID', bottom: `${unseenCount} chưa xem`, danger: true },
+                        { key: 'package', Icon: Package, top: '1234 ID', bottom: '12457 video' },
+                        { key: 'products', Icon: Bookmark, top: '123 ID', bottom: '8765 video' },
+                        { key: 'completed', Icon: Save, top: '234 ID', bottom: '543 video' },
+                        { key: 'shared', Icon: Share2, top: '1122 ID', bottom: '345 video' },
+                        { key: 'violations', Icon: FlagOff, top: '22 ID', bottom: '5 báo cáo' },
+                        { key: 'reports', Icon: Flag, top: '11 ID', bottom: '6 báo cáo' },
+                    ].filter(({ key }) => activeTab === null || activeTab === key).map(({ key, Icon, top, bottom, danger }) => (
+                        <div key={key} className="flex flex-col items-center min-w-0">
+                            {/* SL ở trên */}
+                            <span className="text-[10px] text-gray-600 leading-tight mb-0.5 whitespace-nowrap">{top}</span>
+                            <button
+                                className={`border p-2 rounded ${activeTab === key ? 'ring-2 ring-blue-500 border-blue-500' : 'border-gray-300'}`}
+                                onClick={() => setActiveTab(prev => prev === key ? null : key)}
+                            >
+                                <Icon className="w-5 h-5" />
+                            </button>
+                            {/* SL ở dưới */}
+                            <span className={`text-[10px] leading-tight mt-0.5 whitespace-nowrap ${danger ? 'text-red-500 font-semibold' : 'text-gray-600'}`}>{bottom}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
 
             {activeTab === 'follow' && (
                 <div className="mt-3">
-                    <div className="flex border items-center gap-3 text-gray-800">
-                        <span className="font-semibold">{followedByCount} người theo dõi mình</span>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-2 mt-2">98765 theo dõi ai</div>
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
                         {sortedFollowed.map(u => (
                             <div key={u.id} className="relative flex-shrink-0">
@@ -435,7 +349,7 @@ export default function AiLiveStreamGoods() {
                     )}
                 </div>
             )}
-            {activeTab === 'package' && (
+            {(activeTab === 'package' || activeTab === 'products') && (
                 <div className="mt-3">
                     <div className="space-y-2">
                         {sortedFolders.map(f => (
@@ -445,46 +359,24 @@ export default function AiLiveStreamGoods() {
                                         <span>• {f.name}</span>
                                         <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
                                     </button>
-                                    <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
+                                    <button className="text-xs text-blue-600 whitespace-nowrap" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
                                 </div>
                                 {openFolderId === f.id && (
-                                    <div className="pl-6 mt-1 space-y-1">
-                                        {f.videos.map(v => (
-                                            <div key={v.id} className="flex items-center justify-between">
-                                                <span className="text-sm">{v.title}</span>
-                                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
-                                                    <Play className="w-4 h-4" /> Phát
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-            {activeTab === 'products' && (
-                <div className="mt-3">
-                    <div className="space-y-2">
-                        {sortedFolders.map(f => (
-                            <div key={f.id}>
-                                <div className="flex items-center justify-between">
-                                    <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
-                                        <span>• {f.name}</span>
-                                        <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
-                                    </button>
-                                    <button className="text-xs text-blue-600" onClick={() => moveFolderToCompleted(f.id)}>Chuyển sang Hoàn thành</button>
-                                </div>
-                                {openFolderId === f.id && (
-                                    <div className="pl-6 mt-1 space-y-1">
-                                        {f.videos.map(v => (
-                                            <div key={v.id} className="flex items-center justify-between">
-                                                <span className="text-sm">{v.title}</span>
-                                                <button className="flex items-center gap-1 text-blue-600 text-sm" onClick={() => confirmAndOpen(v.id)}>
-                                                    <Play className="w-4 h-4" /> Phát
-                                                </button>
-                                            </div>
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-2">
+                                        {f.videos.map((v, idx) => (
+                                            <VideoCard
+                                                key={v.id}
+                                                index={idx + 1}
+                                                name={v.name}
+                                                productId={v.productId}
+                                                viewers={v.viewers}
+                                                saves={v.saves}
+                                                shares={v.shares}
+                                                hasPlatformLogo={v.hasPlatformLogo}
+                                                avatar={v.avatar}
+                                                onClick={() => navigate(`/ai-live/video-goods/${v.id}`)}
+                                                onPlay={() => confirmAndOpen(v.id)}
+                                            />
                                         ))}
                                     </div>
                                 )}
@@ -505,6 +397,45 @@ export default function AiLiveStreamGoods() {
                             </div>
                         ))}
                         {completedFolders.length === 0 && (
+                            <div className="text-sm text-gray-500">Rỗng</div>
+                        )}
+                    </div>
+                </div>
+            )}
+            {activeTab === 'shared' && (
+                <div className="mt-3">
+                    <div className="space-y-2">
+                        {sharedFolders.map(f => (
+                            <div key={f.id}>
+                                <div className="flex items-center justify-between">
+                                    <button className="text-left w-full flex items-center gap-2" onClick={() => setOpenFolderId(prev => prev === f.id ? null : f.id)}>
+                                        <span>• {f.name}</span>
+                                        <span className="text-xs text-gray-500">({f.sharedBy} chia sẻ)</span>
+                                        <ChevronRight className={`w-4 h-4 ${openFolderId === f.id ? "rotate-90" : ""}`} />
+                                    </button>
+                                </div>
+                                {openFolderId === f.id && (
+                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-2">
+                                        {f.videos.map((v, idx) => (
+                                            <VideoCard
+                                                key={v.id}
+                                                index={idx + 1}
+                                                name={v.name}
+                                                productId={v.productId}
+                                                viewers={v.viewers}
+                                                saves={v.saves}
+                                                shares={v.shares}
+                                                hasPlatformLogo={v.hasPlatformLogo}
+                                                avatar={v.avatar}
+                                                onClick={() => navigate(`/ai-live/video-goods/${v.id}`)}
+                                                onPlay={() => confirmAndOpen(v.id)}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        {sharedFolders.length === 0 && (
                             <div className="text-sm text-gray-500">Rỗng</div>
                         )}
                     </div>
@@ -544,7 +475,28 @@ export default function AiLiveStreamGoods() {
                     </div>
                 </div>
             )}
-            <AiLiveVideoList videos={streams.filter(v => v.isGoods)} />
+            {/* Danh sách livestream nhóm theo ID hàng hóa (luôn hiển thị 5 card/hàng) */}
+            <div className="mt-2 space-y-3">
+                {goodsGroups.map(g => (
+                    <div key={g.id} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {g.videos.map((v, idx) => (
+                            <VideoCard
+                                key={v.id}
+                                index={idx + 1}
+                                name={v.name}
+                                productId={v.productId}
+                                viewers={v.viewers}
+                                saves={v.saves}
+                                shares={v.shares}
+                                hasPlatformLogo={v.hasPlatformLogo}
+                                avatar={v.avatar}
+                                onClick={() => navigate(`/ai-live/video-goods/${v.id}`)}
+                                onPlay={() => confirmAndOpen(v.id)}
+                            />
+                        ))}
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
