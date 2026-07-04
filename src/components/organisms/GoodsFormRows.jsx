@@ -536,8 +536,7 @@ export default function GoodsFormRows({
           {/* TỔNG PHÍ NỀN TẢNG */}
           <div className="grid grid-cols-16">
             <div className="col-span-4 border-r border-gray-300 p-2 flex flex-col justify-center">
-              <div className="font-semibold text-red-600">{t("goods.totalFeeVat", "TỔNG PHÍ NỀN TẢNG")}</div>
-              <div className="text-[10px] text-gray-500">(ko cộng Thuế + Phí khác vào đây)</div>
+              <div className="font-semibold text-red-600">{t("goods.totalPlatformFee", "TỔNG PHÍ NỀN TẢNG")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-end">
               <span className="text-[10px] text-gray-400 mr-1">(a)</span>
