@@ -193,7 +193,11 @@ export default function EventComponent() {
       onClick={onClick}
       disabled={disabled}
       style={{
-        background: disabled ? "#ccc" : "#007bff",
+        position: "absolute",
+        top: "50%",
+        transform: "translateY(-50%)",
+        [direction === "prev" ? "left" : "right"]: isMobile ? "5px" : "10px",
+        background: disabled ? "rgba(204,204,204,0.85)" : "rgba(0,123,255,0.9)",
         color: "white",
         border: "none",
         borderRadius: "50%",
@@ -204,7 +208,7 @@ export default function EventComponent() {
         alignItems: "center",
         justifyContent: "center",
         fontSize: isMobile ? "16px" : "20px",
-        zIndex: 10,
+        zIndex: 20,
       }}
     >
       {direction === "prev" ? "←" : "→"}
@@ -217,33 +221,14 @@ export default function EventComponent() {
       <div
         className="action-section-1"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1vw",
           position: "relative",
         }}
       >
-        {/* Navigation buttons on top, centered */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "2vw",
-            alignItems: "center",
-          }}
-        >
-          <NavigationButton
-            direction="prev"
-            onClick={() => handlePrevious(false)}
-            disabled={!canGoPreviousDesktop}
-          />
-
-          <NavigationButton
-            direction="next"
-            onClick={() => handleNext(false)}
-            disabled={!canGoNextDesktop}
-          />
-        </div>
+        <NavigationButton
+          direction="prev"
+          onClick={() => handlePrevious(false)}
+          disabled={!canGoPreviousDesktop}
+        />
 
         {/* Grid items, full width */}
         <div
@@ -267,41 +252,27 @@ export default function EventComponent() {
             <EventCard key={`${event.id}-${index}`} event={event} />
           ))}
         </div>
+
+        <NavigationButton
+          direction="next"
+          onClick={() => handleNext(false)}
+          disabled={!canGoNextDesktop}
+        />
       </div>
 
       {/* Mobile Layout */}
       <div
         className="action-section-1-mobile"
         style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "1vw",
           position: "relative",
         }}
       >
-        {/* Navigation buttons on top, centered */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "2vw",
-            alignItems: "center",
-          }}
-        >
-          <NavigationButton
-            direction="prev"
-            onClick={() => handlePrevious(true)}
-            disabled={!canGoPreviousMobile}
-            isMobile={true}
-          />
-
-          <NavigationButton
-            direction="next"
-            onClick={() => handleNext(true)}
-            disabled={!canGoNextMobile}
-            isMobile={true}
-          />
-        </div>
+        <NavigationButton
+          direction="prev"
+          onClick={() => handlePrevious(true)}
+          disabled={!canGoPreviousMobile}
+          isMobile={true}
+        />
 
         {/* Grid items, full width */}
         <div
@@ -321,6 +292,13 @@ export default function EventComponent() {
             <EventCard key={`${event.id}-${index}`} event={event} />
           ))}
         </div>
+
+        <NavigationButton
+          direction="next"
+          onClick={() => handleNext(true)}
+          disabled={!canGoNextMobile}
+          isMobile={true}
+        />
       </div>
     </section>
   );
