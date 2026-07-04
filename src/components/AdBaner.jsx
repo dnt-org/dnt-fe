@@ -16,13 +16,13 @@ export default function AdBanner() {
 
   return (
     <footer
-      className="fixed bottom-0 left-0 right-0 h-[100px] border-t font-bold bg-white flex items-center overflow-hidden"
+      className="fixed bottom-0 left-0 right-0 z-[100000] h-[100px] border-t font-bold bg-white flex items-center overflow-hidden"
     >
       {/* Close button */}
       {showCloseBtn && (
         <button
           onClick={() => setShowAd(false)}
-          className=" absolute z-10 top-1 right-2 text-gray-500 hover:text-black font-bold"
+          className="absolute z-[100001] top-1 right-2 text-gray-500 hover:text-black font-bold"
         >
           ✕
         </button>
