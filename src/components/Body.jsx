@@ -346,7 +346,7 @@ const DropdownAuth = () => {
                     style={{
                         cursor: "pointer",
                         border: "1px solid black",
-                        padding: "0.4vw",
+                        padding: "2px",
                         marginBottom: "0.4vw",
                         width: "100%",
                         height: "clamp(30px, 4vw, 50px)",
@@ -354,10 +354,10 @@ const DropdownAuth = () => {
                     }}
                     onClick={() => navigate("/admin-control")}
                 >
-                    <button className="text-red-600 hover:text-red-800 flex items-center justify-center">
+                    <button className="text-red-600 hover:text-red-800 flex items-center justify-center w-full h-full">
                         <KeyboardIcon
                             style={{cursor: "pointer"}}
-                            size={16}
+                            className="h-full w-auto"
                         />
                     </button>
                 </div>

@@ -124,96 +124,101 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
           </div>
         </div>
 
-        {/* RIGHT COLUMN: Info box (framed with border) */}
-        <div className="flex-1 min-w-0 border-2 border-black rounded">
+        {/* RIGHT COLUMN: Info box — dùng table để cột thẳng hàng, border cùng độ dày */}
+        <div className="flex-1 min-w-0">
+          <table className="w-full table-auto border-collapse border-2 border-black text-xs sm:text-sm">
+            <tbody>
+              {/* Header — Company name */}
+              <tr>
+                <td colSpan={3} className="border-2 border-black p-2 text-center">
+                  <span className="font-bold text-sm sm:text-base text-blue-700">
+                    {userData?.company_name || fallback.companyName}
+                  </span>
+                </td>
+              </tr>
 
-          {/* Header — Company name (blue, centered, inside frame) */}
-          <div className="border-b-2 border-black p-2 text-center">
-            <h2 className="font-bold text-sm sm:text-base text-blue-700">
-              {userData?.company_name || fallback.companyName}
-            </h2>
-          </div>
+              {/* Row 1: Số ĐKKD */}
+              <tr>
+                <td className="border-2 border-black bg-gray-100 px-2 py-1.5 font-bold whitespace-nowrap align-middle">
+                  {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
+                </td>
+                <td className="border-2 border-black px-2 py-1.5 text-center font-bold align-middle">
+                  {userData?.cccd || fallback.mst}
+                </td>
+                <td className="border-2 border-black px-2 py-1.5 text-center align-middle w-px">
+                  <button
+                    type="button"
+                    onClick={() => openDoc(userData?.tax_code_certificate?.url)}
+                    disabled={!userData?.tax_code_certificate?.url}
+                    className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                  >
+                    {currentLang === 'vi' ? 'Xem' : 'View'}
+                  </button>
+                </td>
+              </tr>
 
-          {/* Info table rows */}
-          <div className="divide-y divide-black text-xs sm:text-sm">
+              {/* Row 2: Số GPHD */}
+              <tr>
+                <td className="border-2 border-black bg-gray-100 px-2 py-1.5 font-bold whitespace-nowrap align-middle">
+                  {currentLang === 'vi' ? 'Số GPHĐ:' : 'License No.:'}
+                </td>
+                <td className="border-2 border-black px-2 py-1.5 text-center font-bold align-middle">
+                  {fallback.soGphd || '-'}
+                </td>
+                <td className="border-2 border-black px-2 py-1.5 text-center align-middle w-px">
+                  <button
+                    type="button"
+                    onClick={() => openDoc(userData?.business_registration?.url)}
+                    disabled={!userData?.business_registration?.url}
+                    className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                  >
+                    {currentLang === 'vi' ? 'Xem' : 'View'}
+                  </button>
+                </td>
+              </tr>
 
-            {/* Row 1: Số ĐKKD */}
-            <div className="flex items-stretch">
-              <div className="flex-0 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold min-w-max flex items-center">
-                {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
-              </div>
-              <div className="flex-1 px-2 py-1.5 text-center font-bold flex items-center justify-center">
-                {userData?.cccd || fallback.mst}
-              </div>
-              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => openDoc(userData?.tax_code_certificate?.url)}
-                  disabled={!userData?.tax_code_certificate?.url}
-                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                >
-                  {currentLang === 'vi' ? 'Xem' : 'View'}
-                </button>
-              </div>
-            </div>
+              {/* Row 3: Tài khoản định danh tại ngân hàng (MERGED label + value) */}
+              <tr>
+                <td colSpan={2} className="border-2 border-black bg-gray-100 px-2 py-1.5 font-bold text-center leading-tight align-middle">
+                  {bankLabel}
+                </td>
+                <td className="border-2 border-black px-2 py-1.5 text-center align-middle w-px">
+                  <button
+                    type="button"
+                    onClick={() => openDoc(userData?.bank_certificate?.url)}
+                    disabled={!userData?.bank_certificate?.url}
+                    className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                  >
+                    {currentLang === 'vi' ? 'Xem' : 'View'}
+                  </button>
+                </td>
+              </tr>
 
-            {/* Row 2: Số GPHD */}
-            <div className="flex items-stretch">
-              <div className="flex-0 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold min-w-max flex items-center">
-                {currentLang === 'vi' ? 'Số GPHĐ:' : 'License No.:'}
-              </div>
-              <div className="flex-1 px-2 py-1.5 text-center font-bold flex items-center justify-center">
-                {fallback.soGphd || '-'}
-              </div>
-              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => openDoc(userData?.business_registration?.url)}
-                  disabled={!userData?.business_registration?.url}
-                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                >
-                  {currentLang === 'vi' ? 'Xem' : 'View'}
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3: Tài khoản định danh tại ngân hàng (MERGED label + value, centered) */}
-            <div className="flex items-stretch">
-              <div className="flex-1 border-r-2 border-black bg-gray-100 px-2 py-1.5 font-bold text-center flex items-center justify-center leading-tight">
-                {bankLabel}
-              </div>
-              <div className="flex-0 border-l-2 border-black px-2 py-1.5 flex items-center">
-                <button
-                  type="button"
-                  onClick={() => openDoc(userData?.bank_certificate?.url)}
-                  disabled={!userData?.bank_certificate?.url}
-                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-                >
-                  {currentLang === 'vi' ? 'Xem' : 'View'}
-                </button>
-              </div>
-            </div>
-
-            {/* Row 4: Registered for operation (INSIDE frame, blue) */}
-            <button
-              onClick={handleViewContract}
-              disabled={dlLoading.contract}
-              className="w-full flex items-center justify-center gap-2 px-2 py-1.5 text-blue-700 font-bold text-sm hover:text-blue-800 disabled:opacity-50 leading-tight"
-            >
-              {userData?.company_logo?.url ? (
-                <img src={userData.company_logo.url} alt="" className="w-4 h-4 rounded-full object-cover flex-shrink-0" />
-              ) : (
-                <Building2 size={12} className="flex-shrink-0" />
-              )}
-              <span>
-                {dlLoading.contract
-                  ? '...'
-                  : (currentLang === 'vi'
-                    ? '(LOGO) ĐÃ ĐĂNG KÝ HOẠT ĐỘNG'
-                    : '(LOGO) REGISTERED FOR OPERATION')}
-              </span>
-            </button>
-          </div>
+              {/* Row 4: Registered for operation */}
+              <tr>
+                <td colSpan={3} className="border-2 border-black p-1.5 text-center">
+                  <button
+                    onClick={handleViewContract}
+                    disabled={dlLoading.contract}
+                    className="w-full flex items-center justify-center gap-2 text-blue-700 font-bold text-sm hover:text-blue-800 disabled:opacity-50 leading-tight"
+                  >
+                    {userData?.company_logo?.url ? (
+                      <img src={userData.company_logo.url} alt="" className="w-4 h-4 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <Building2 size={12} className="flex-shrink-0" />
+                    )}
+                    <span>
+                      {dlLoading.contract
+                        ? '...'
+                        : (currentLang === 'vi'
+                          ? '(LOGO) ĐÃ ĐĂNG KÝ HOẠT ĐỘNG'
+                          : '(LOGO) REGISTERED FOR OPERATION')}
+                    </span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

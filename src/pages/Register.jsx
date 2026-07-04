@@ -65,7 +65,7 @@ export default function RegisterPage() {
           titleClassName="text-3xl"
           compact
           rightButtonClassName="right-4"
-          rightButton={(
+          rightButton={page === 2 ? undefined : (
             <button
               type="button"
               onClick={handleContractDownload}
