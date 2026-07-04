@@ -263,6 +263,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div> (20) {t("productGrid.depositRequirement")} <span className="text-red-500">*</span></div>
+            <div className="text-[10px] text-gray-600 mt-1">Theo Bộ luật Dân sự Điều 328, 329, 330</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             {(category === "SALE" || category === "FOR RENT") && (
