@@ -309,7 +309,7 @@ const DropdownAuth = () => {
             style={{
                 display: "flex",
                 flexDirection: "column",
-                maxWidth: "20vw",
+                maxWidth: "18vw",
                 position: "absolute",
                 top: "clamp(11rem, 14vw, 50rem)",
                 left: "0",

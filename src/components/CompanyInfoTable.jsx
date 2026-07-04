@@ -18,7 +18,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     vi: {
       companyName: 'CÔNG TY TNHH ĐẠI NGHĨA TÍN',
       mst: '3702678200',
-      soGphd: '',
+      soGphd: '1234567890',
     },
     en: {
       companyName: 'US TECHNOLOGY CORPORATION',
@@ -90,142 +90,130 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     );
   }
 
-  const bankName = userData?.bank_name || '';
+  const bankName = userData?.bank_name || 'VIETINBANK';
   const bankLabel = currentLang === 'vi'
-    ? `TÀI KHOẢN ĐỊNH DANH TẠI NGÂN HÀNG${bankName ? ` ${bankName}` : ''}:`
-    : `IDENTITY ACCOUNT AT BANK${bankName ? ` ${bankName}` : ''}:`;
+    ? `TÀI KHOẢN ĐỊNH DANH TẠI NGÂN HÀNG ${bankName}`
+    : `IDENTITY ACCOUNT AT BANK ${bankName}`;
 
-  // Company logo = the globe/planet image (fallback to the bundled planet asset)
   const companyLogo = userData?.company_logo?.url || planetImage;
 
   return (
-    <div className="w-full h-full px-1">
-      {/* Two-column layout: left = company logo + personal avatar (stacked), right = name + table + status */}
-      <div className="flex flex-row gap-2 items-start">
+    <div className="w-full h-full px-4 py-4">
+      {/* Main layout: 2 columns — left logo+avatar, right info box */}
+      <div className="flex flex-row gap-6 items-start">
 
-        {/* LEFT column: company logo aligned with the info table (offset by company name heading height) */}
-        <div className="flex flex-col items-center flex-shrink-0 w-16 sm:w-20 pt-6">
-          {/* Company logo — large, round */}
+        {/* LEFT COLUMN: Company logo + user avatar (centered column) */}
+        <div className="flex flex-col items-center flex-shrink-0 w-auto">
+          {/* Company logo — LARGE, round, main focal point */}
           <img
             src={companyLogo}
             alt="Company Logo"
-            className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-gray-800"
+            className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-blue-700 shadow-lg"
           />
-          {/* Personal avatar — small, round, aligned in the same column below the company logo */}
+
+          {/* User avatar — small, round, centered below logo */}
           <img
             src={userData?.avt?.url || DEFAULT_AVATAR}
             alt="avatar"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-gray-800 mt-2"
+            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-blue-700 mt-4"
           />
-          <button onClick={fetchUserData} className="text-[9px] text-blue-600 underline mt-0.5">
-            {currentLang === 'vi' ? 'Kiểm tra lại ảnh' : 'Recheck photo'}
-          </button>
-          <div className="font-bold text-[10px] sm:text-xs text-center break-words leading-tight mt-0.5">
-            {userData?.full_name || 'NGUYEN VAN A'}
+
+          {/* User name — centered, uppercase */}
+          <div className="font-bold text-sm sm:text-base text-center mt-2 break-words leading-tight">
+            {(userData?.full_name || 'NGUYEN VAN A').toUpperCase()}
           </div>
         </div>
 
-        {/* RIGHT column: company name header + info table + status text */}
-        <div className="flex-1 min-w-0">
-          {/* Company name header — above the table */}
-          <div className="text-center mb-1">
-            <h2 className="font-bold text-xs sm:text-sm md:text-base break-words leading-tight">
+        {/* RIGHT COLUMN: Info box (framed with border) */}
+        <div className="flex-1 min-w-0 border-2 border-black rounded">
+
+          {/* Header — Company name (blue, centered, inside frame) */}
+          <div className="border-b-2 border-black p-3 text-center">
+            <h2 className="font-bold text-sm sm:text-base text-blue-700">
               {userData?.company_name || fallback.companyName}
             </h2>
           </div>
 
-          {/* Info table */}
-          <div className="border-2 border-black">
-            <div className="w-full min-w-full company-info-table">
-              <div className="text-[10px] flex flex-col">
+          {/* Info table rows */}
+          <div className="divide-y divide-black text-xs sm:text-sm">
 
-                {/* Row 1: Số ĐKKD */}
-                <div className="border-b border-black grid grid-cols-6 gap-0">
-                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
-                    <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
-                    </div>
-                  </div>
-                  <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
-                    <div className="break-all leading-tight">{userData?.cccd || fallback.mst}</div>
-                  </div>
-                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
-                    <button
-                      type="button"
-                      onClick={() => openDoc(userData?.tax_code_certificate?.url)}
-                      disabled={!userData?.tax_code_certificate?.url}
-                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
-                    >
-                      {currentLang === 'vi' ? 'Xem' : 'View'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Row 2: Số GPHD */}
-                <div className="border-b border-black grid grid-cols-6 gap-0">
-                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
-                    <div className="break-words leading-tight pt-2 pb-2">
-                      {currentLang === 'vi' ? 'Số GPHD:' : 'License No.:'}
-                    </div>
-                  </div>
-                  <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
-                    <div className="break-all leading-tight">{fallback.soGphd || '-'}</div>
-                  </div>
-                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
-                    <button
-                      type="button"
-                      onClick={() => openDoc(userData?.business_registration?.url)}
-                      disabled={!userData?.business_registration?.url}
-                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
-                    >
-                      {currentLang === 'vi' ? 'Xem' : 'View'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Row 3: Tài khoản định danh tại ngân hàng */}
-                <div className="grid grid-cols-6 gap-0">
-                  <div className="col-span-2 sm:p-2 border-r border-black font-bold bg-gray-100 text-[10px] break-words flex items-center">
-                    <div className="break-words leading-tight pt-2 pb-2 uppercase">
-                      {bankLabel}
-                    </div>
-                  </div>
-                  <div className="col-span-3 sm:p-2 border-r border-black text-[10px] flex items-center justify-center text-center">
-                    <div className="break-all leading-tight">{userData?.bank_number || '-'}</div>
-                  </div>
-                  <div className="col-span-1 sm:p-2 flex items-center justify-center">
-                    <button
-                      type="button"
-                      onClick={() => openDoc(userData?.bank_certificate?.url)}
-                      disabled={!userData?.bank_certificate?.url}
-                      className="text-[10px] py-1 px-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed leading-tight"
-                    >
-                      {currentLang === 'vi' ? 'Xem' : 'View'}
-                    </button>
-                  </div>
-                </div>
-
+            {/* Row 1: Số ĐKKD */}
+            <div className="flex items-center">
+              <div className="flex-0 border-r-2 border-black bg-gray-100 p-2 font-bold min-w-max">
+                {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
+              </div>
+              <div className="flex-1 p-2 text-center">
+                {userData?.cccd || fallback.mst}
+              </div>
+              <div className="flex-0 border-l-2 border-black p-2">
+                <button
+                  type="button"
+                  onClick={() => openDoc(userData?.tax_code_certificate?.url)}
+                  disabled={!userData?.tax_code_certificate?.url}
+                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                >
+                  {currentLang === 'vi' ? 'Xem' : 'View'}
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* Status text — registered for operation (in-panel text line, not a separate banner) */}
-          <button
-            onClick={handleViewContract}
-            disabled={dlLoading.contract}
-            className="mt-1 w-full flex items-center justify-center gap-1 text-[10px] font-bold text-orange-600 hover:text-orange-700 disabled:opacity-50 leading-tight"
-          >
-            {userData?.company_logo?.url ? (
-              <img src={userData.company_logo.url} alt="" className="w-3 h-3 rounded-full object-cover flex-shrink-0" />
-            ) : (
-              <Building2 size={10} className="flex-shrink-0" />
-            )}
-            {dlLoading.contract
-              ? '...'
-              : (currentLang === 'vi'
-                ? 'ĐÃ ĐĂNG KÝ HOẠT ĐỘNG (làm theo quy định pháp luật)'
-                : 'REGISTERED FOR OPERATION (in accordance with the law)')}
-          </button>
+            {/* Row 2: Số GPHD */}
+            <div className="flex items-center">
+              <div className="flex-0 border-r-2 border-black bg-gray-100 p-2 font-bold min-w-max">
+                {currentLang === 'vi' ? 'Số GPHĐ:' : 'License No.:'}
+              </div>
+              <div className="flex-1 p-2 text-center">
+                {fallback.soGphd || '-'}
+              </div>
+              <div className="flex-0 border-l-2 border-black p-2">
+                <button
+                  type="button"
+                  onClick={() => openDoc(userData?.business_registration?.url)}
+                  disabled={!userData?.business_registration?.url}
+                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                >
+                  {currentLang === 'vi' ? 'Xem' : 'View'}
+                </button>
+              </div>
+            </div>
+
+            {/* Row 3: Tài khoản định danh tại ngân hàng (MERGED label + value) */}
+            <div className="flex items-center">
+              <div className="flex-1 border-r-2 border-black bg-gray-100 p-2 font-bold">
+                {bankLabel}
+              </div>
+              <div className="flex-0 border-l-2 border-black p-2">
+                <button
+                  type="button"
+                  onClick={() => openDoc(userData?.bank_certificate?.url)}
+                  disabled={!userData?.bank_certificate?.url}
+                  className="text-xs py-1 px-2 bg-blue-700 text-white rounded hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+                >
+                  {currentLang === 'vi' ? 'Xem' : 'View'}
+                </button>
+              </div>
+            </div>
+
+            {/* Row 4: Registered for operation (INSIDE frame, blue) */}
+            <button
+              onClick={handleViewContract}
+              disabled={dlLoading.contract}
+              className="w-full flex items-center justify-center gap-2 p-3 text-blue-700 font-bold text-sm hover:text-blue-800 disabled:opacity-50 leading-tight"
+            >
+              {userData?.company_logo?.url ? (
+                <img src={userData.company_logo.url} alt="" className="w-4 h-4 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <Building2 size={12} className="flex-shrink-0" />
+              )}
+              <span>
+                {dlLoading.contract
+                  ? '...'
+                  : (currentLang === 'vi'
+                    ? '(LOGO) ĐÃ ĐĂNG KÝ HOẠT ĐỘNG'
+                    : '(LOGO) REGISTERED FOR OPERATION')}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
