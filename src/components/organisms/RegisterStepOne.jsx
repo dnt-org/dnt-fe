@@ -149,7 +149,7 @@ export default function RegisterStepOne({
               type="text"
               readOnly
               className="border py-1.5 px-2 rounded w-full text-[13px] bg-gray-100 text-gray-700"
-              placeholder={t("register.accountHolderNamePlaceholder", "Tên chủ tài khoản (tự động hiển thị)")}
+              placeholder={t("register.accountHolderNamePlaceholder", "Tên chủ tài khoản")}
               name="full_name"
               value={isFetchingAccountName ? t("common.loading", "Đang tải...") : formData.full_name}
               disabled={isFetchingAccountName}
@@ -168,7 +168,10 @@ export default function RegisterStepOne({
           onToggleVisible={() => toggleFieldVisible("password")}
         />
         {!validationErrors.password && (
-          <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
+          <>
+            <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
+            <p className="text-gray-400 text-xs -mt-2">(không hiển động chữ lúc này)</p>
+          </>
         )}
         <SecureField
           name="repeat_password"
@@ -182,7 +185,7 @@ export default function RegisterStepOne({
         <SecureField
           name="otp"
           value={formData.otp}
-          placeholder={t("register.otpPlaceholder", "MÃ OTP")}
+          placeholder={t("register.otpPlaceholder", "MẬT MÃ OTP")}
           onChange={handleInputChange}
           error={validationErrors.otp}
           visible={!!visibleFields.otp}
@@ -191,7 +194,7 @@ export default function RegisterStepOne({
         <SecureField
           name="repeat_otp"
           value={formData.repeat_otp}
-          placeholder={t("register.repeatOtpPlaceholder", "NHẬP LẠI MÃ OTP")}
+          placeholder={t("register.repeatOtpPlaceholder", "NHẬP LẠI MẬT MÃ OTP")}
           onChange={handleInputChange}
           error={validationErrors.repeat_otp}
           visible={!!visibleFields.repeat_otp}
@@ -200,7 +203,7 @@ export default function RegisterStepOne({
         <SecureField
           name="recovery_character"
           value={formData.recovery_character}
-          placeholder={t("register.recoveryCharacterPlaceholder", "KÝ TỰ KHÔI PHỤC TÀI KHOẢN (Account recovery character)")}
+          placeholder={t("register.recoveryCharacterPlaceholder", "KỲ TỰ KHÔI PHỤC TÀI KHOẢN")}
           onChange={handleInputChange}
           error={validationErrors.recovery_character}
           visible={!!visibleFields.recovery_character}
@@ -208,6 +211,7 @@ export default function RegisterStepOne({
         />
         {/* Fix G: helper text showing complexity requirements */}
         <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
+        <p className="text-gray-400 text-xs -mt-2">(không hiển động chữ lúc này)</p>
         <SecureField
           name="repeat_recovery_character"
           value={formData.repeat_recovery_character}

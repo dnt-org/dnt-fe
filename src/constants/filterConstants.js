@@ -53,6 +53,10 @@ export const subCategories = [
 export const conditions = [
     { vi: "Chọn tình trạng", en: "Select condition" },
     {
+        vi: "Tất cả",
+        en: "ALL",
+    },
+    {
         vi: "PHẾ LIỆU",
         en: "SCRAP",
     },
