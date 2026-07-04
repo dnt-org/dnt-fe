@@ -42,7 +42,6 @@ export default function AiLiveVideoDetailPage() {
   const [isFollowed, setIsFollowed] = useState(false)
   const [confirmSeconds, setConfirmSeconds] = useState(300)
   const [locked, setLocked] = useState(false)
-  const [blink, setBlink] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [audioOn, setAudioOn] = useState(false)
   const [product, setProduct] = useState(null)
@@ -53,8 +52,8 @@ export default function AiLiveVideoDetailPage() {
   const [liveError, setLiveError] = useState("")
   const [joining, setJoining] = useState(false)
   const [submittingBidKey, setSubmittingBidKey] = useState(null)
-  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`
-  const [ownerDecision, setOwnerDecision] = useState("none")
+  const [ownerDecision] = useState("none")
+  const [minimized, setMinimized] = useState(false)
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
   const FILE_BASE_URL = API_URL.replace(/\/api\/?$/, "")
@@ -214,7 +213,6 @@ export default function AiLiveVideoDetailPage() {
       setLocked(true)
       return
     }
-    setBlink(confirmSeconds <= 240)
     if (confirmSeconds <= 120 && !audioOn) setAudioOn(true)
   }, [audioOn, confirmSeconds])
 
@@ -278,6 +276,23 @@ export default function AiLiveVideoDetailPage() {
     setIsFollowed(!isFollowed)
   }
 
+  // Chủ bài đăng: 10 phút không tương tác thì tự động THOÁT
+  useEffect(() => {
+    if (!isPoster) return
+    let timeoutId
+    const reset = () => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => navigate("/ai-live"), 10 * 60 * 1000)
+    }
+    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"]
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }))
+    reset()
+    return () => {
+      clearTimeout(timeoutId)
+      events.forEach((e) => window.removeEventListener(e, reset))
+    }
+  }, [isPoster, navigate])
+
   return (
     <div className="p-2">
       {/* <div className="mb-4 flex items-center justify-between">
@@ -285,7 +300,20 @@ export default function AiLiveVideoDetailPage() {
         <div className="text-sm">{t("aiLiveVideo.detail", "Chi tiết video")}</div>
       </div> */}
 
-      <div className="grid grid-cols-1 gap-6">
+      {isPoster && (
+        <div className="mb-2 flex items-center justify-end">
+          <button
+            type="button"
+            className="border border-black px-2 leading-none"
+            title={t("aiLiveVideo.minimizeToggle", "Thu nhỏ / phóng to")}
+            onClick={() => setMinimized((v) => !v)}
+          >
+            {minimized ? "+" : "–"}
+          </button>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 gap-6 ${minimized ? "hidden" : ""}`}>
         <div className="relative border border-black min-h-[420px] overflow-hidden bg-black">
           {videoUrl ? (
             <video
@@ -304,7 +332,15 @@ export default function AiLiveVideoDetailPage() {
           <div className="relative z-20 flex items-start justify-start bg-white/85 px-2 py-1 text-xs text-black backdrop-blur-sm">
             <div className="w-8 h-8 rounded-full bg-white/80" />
             <div className="font-bold ml-2">{name}</div>
-            <div className="font-bold ml-2">{productId}</div>
+            {/* Ẩn vào ID hàng hóa thì đến CHI TIẾT BÀI ĐĂNG */}
+            <button
+              type="button"
+              className="font-bold ml-2 text-blue-700 underline"
+              title={t("customerConfirm.goToDetail", "ĐẾN CHI TIẾT BÀI ĐĂNG")}
+              onClick={() => navigate(`/list-of-goods/${id}`)}
+            >
+              {productId}
+            </button>
             <div className="ml-2">| {t("aiLiveVideo.host", "Người phát")}: <span className="font-bold">{broadcasterName}</span></div>
             <div className={`ml-2 border border-black px-2 font-bold ${isPoster ? "bg-blue-100" : "bg-yellow-100"}`}>{roleLabel}</div>
 
@@ -339,20 +375,7 @@ export default function AiLiveVideoDetailPage() {
         </div>
       </div>
 
-      {isPoster && bids.length > 0 ? (
-        <div className="mt-4 border border-black">
-          <div className="bg-blue-50 px-3 py-2 text-sm font-bold">{t("aiLiveVideo.posterControls", "Điều khiển chủ phiên")}</div>
-          <div className="grid grid-cols-3">
-            <button className={`flex items-center justify-center p-4 text-center font-bold ${blink ? "animate-pulse" : ""}`} style={{ backgroundColor: "#1e3a8a", color: "#f59e0b" }} onClick={() => setOwnerDecision("accepted")}>
-              {t("liveConfirm.agree", "ĐỒNG Ý")}
-            </button>
-            <div className="flex items-center justify-center text-center text-5xl tracking-widest text-black">{formatTime(confirmSeconds)}</div>
-            <button className="flex items-center justify-center p-4 text-center font-bold" style={{ backgroundColor: "#ef4444", color: "#111827" }} onClick={() => setOwnerDecision("rejected")}>
-              {t("liveConfirm.reject", "TỪ CHỐI")}
-            </button>
-          </div>
-        </div>
-      ) : !isPoster ? (
+      {!isPoster ? (
         <div className="mt-4 border border-black bg-yellow-50 px-3 py-3 text-sm font-bold">
           {hasJoined
             ? t("aiLiveVideo.joinerHintJoined", "Bạn đã tham gia phiên live. Nhập số lượng, giá đặt và bấm XÁC NHẬN để đấu giá.")

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 
-export default function ProductGridReadOnly({ products = [], onItemsChange }) {
+export default function ProductGridReadOnly({ products = [], onItemsChange, extraColumns = [] }) {
   const { t } = useTranslation();
   const [items, setItems] = useState(products || []);
   const [isManpower, setIsManpower] = useState(false);
@@ -148,10 +148,16 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
             <div>{t("detailOfGoods.confirm")}</div>
           </div>
+          {/* Cột phụ gắn thêm ở cuối (VD: HỒ SƠ ĐÁP ỨNG, nút xác nhận) */}
+          {extraColumns.map((col, i) => (
+            <div key={`xh-${i}`} className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
+              <div>{col.header}</div>
+            </div>
+          ))}
         </div>
 
         {/* Rows */}
-        {items.map((item) => (
+        {items.map((item, rowIndex) => (
           <div
             key={item.id}
             className="grid grid-flow-col auto-cols-[300px] border-gray-300" style={{ gridTemplateColumns: '50px repeat(auto-fit, 300px)' }}
@@ -477,6 +483,12 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
               <button
                 className="w-full cursor-pointer border border-gray-300 text-center"
               >{t("detailOfGoods.confirm")}</button>
+              {/* Ô cột phụ theo từng dòng */}
+              {extraColumns.map((col, i) => (
+                <div key={`xc-${i}`} className="border-r border-b border-gray-300 p-1 flex items-center justify-center">
+                  {col.render ? col.render(item, rowIndex) : null}
+                </div>
+              ))}
           </div>
         ))}
 
