@@ -110,7 +110,7 @@ const getProducts = async (authToken = null) => {
 
     const response = await axios.get(`${API_URL}/products`, { headers });
     return response;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch products");
   }
 };
@@ -128,9 +128,12 @@ const getProductById = async (productId, authToken = null) => {
       headers['Authorization'] = `Bearer ${authToken}`;
     }
 
-    const response = await axios.get(`${API_URL}/products/${productId}`, { headers });
+    const response = await axios.get(`${API_URL}/products/${productId}`, {
+      headers,
+      params: { populate: "*" },
+    });
     return response;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch product");
   }
 };
@@ -269,5 +272,35 @@ const updateProductPriceInfo = async (productId, authToken, priceData) => {
   }
 };
 
+const getLiveGoodsSession = async (productId, authToken = null) => {
+  try {
+    const headers = {};
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    return await axios.get(`${API_URL}/products/${productId}/live-session`, { headers });
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || "Failed to fetch live session");
+  }
+};
+
+const joinLiveGoodsSession = async (productId, viewer, authToken = null) => {
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    return await axios.post(`${API_URL}/products/${productId}/live-session/join`, { viewer }, { headers });
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || "Failed to join live session");
+  }
+};
+
+const submitLiveGoodsBid = async (productId, bidData, authToken = null) => {
+  try {
+    const headers = { "Content-Type": "application/json" };
+    if (authToken) headers.Authorization = `Bearer ${authToken}`;
+    return await axios.post(`${API_URL}/products/${productId}/live-session/bids`, bidData, { headers });
+  } catch (error) {
+    throw new Error(error.response?.data?.error?.message || "Failed to submit live bid");
+  }
+};
+
 export { createProduct, getProducts, getProductById, updateProduct, deleteProduct, 
-  filterProducts, updateProductPriceInfo };
+  filterProducts, updateProductPriceInfo, getLiveGoodsSession, joinLiveGoodsSession, submitLiveGoodsBid };

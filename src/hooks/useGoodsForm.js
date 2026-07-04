@@ -26,12 +26,15 @@ export default function useGoodsForm() {
     vat: "",
     timeUserMustPayAfterDelivery: "",
     quantityMinimum: "",
+    quantityMinRequire: "",
     unit: "",
     unitMarketPrice: "",
     unitAskingPrice: "",
     amountDesired: "",
     autoAcceptPrice: "",
     autoRejectPrice: "",
+    autoAcceptPriceLow: "",
+    autoRejectPriceLow: "",
   })
 
   const [goodsItems, setGoodsItems] = useState([emptyItem(1)])

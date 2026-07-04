@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Eye as EyeIcon, Forward as ForwardIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import useHorizontalScrollbar from "../custom-hooks/useHorizontalScrollbar";
 import TwoLineUnitInput from "./atoms/TwoLineUnitInput";
 
 export default function ProductGridReadOnly({ products = [], onItemsChange }) {
   const { t } = useTranslation();
   const [items, setItems] = useState(products || []);
   const [isManpower, setIsManpower] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const { containerRef, trackRef, thumbRef } = useHorizontalScrollbar();
-  const [lowestHighestAskingPrice, setLowestHighestAskingPrice] = useState(true);
 
   useEffect(() => {
     setItems(products || []);
@@ -25,41 +20,6 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
     setItems(updated);
     if (onItemsChange) onItemsChange(updated);
   };
-
-  const handleAddItem = () => {
-    const newItem = {
-      id: items.length + 1,
-      name: "",
-      model: "",
-      size: "",
-      color: "",
-      image: null,
-      qualityInfoFile: null,
-      warrantyChangeDays: "",
-      warrantyRepairDays: "",
-      repairWarrantyRetentionPercent: "",
-      maxDeliveryDaysAfterAcceptance: "",
-      handoverLocation: "",
-      contractDurationMultiplicity: "",
-      contractDurationUnit: "",
-      invoiceType: "",
-      paymentViaPlatform: "",
-      depositRequirement: "",
-      quantityMinimum: "",
-      unit: "",
-      unitMarketPrice: "",
-      unitAskingPrice: "",
-      amountDesired: "",
-      autoAcceptPrice: "",
-      autoRejectPrice: "",
-      autoAcceptPriceLow: "",
-      autoRejectPriceLow: "",
-    };
-    const updated = [...items, newItem];
-    setItems(updated);
-    if (onItemsChange) onItemsChange(updated);
-  };
-
 
   return (
     <>
@@ -149,6 +109,11 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
             <div>
               {t("productGrid.quantityMinimum")}{" "}
               <span className="text-red-500">*</span>
+            </div>
+          </div>
+          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
+            <div>
+              <span dangerouslySetInnerHTML={{ __html: t("productGrid.quantityMinRequire") }} />
             </div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
@@ -417,6 +382,16 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 value={item.quantityMinimum}
                 onChange={(e) =>
                   handleItemChange(item.id, "quantityMinimum", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-right"
+                disabled
+              />
+              <input
+                type="number"
+                min="0"
+                value={item.quantityMinRequire}
+                onChange={(e) =>
+                  handleItemChange(item.id, "quantityMinRequire", e.target.value)
                 }
                 className="w-full border-t border-b border-r border-gray-300 text-right"
                 disabled

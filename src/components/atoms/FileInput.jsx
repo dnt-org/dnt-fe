@@ -1,9 +1,9 @@
-import React from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 
-export default function FileInput({ name, onChange, className = "", label }) {
+export default function FileInput({ name, onChange, className = "", label, selectedFile }) {
   const { t } = useTranslation()
+  const fileName = selectedFile?.name || ""
   const defaultLabel = (
     <span className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
       {t("productGrid.uploadFile")}
@@ -17,6 +17,11 @@ export default function FileInput({ name, onChange, className = "", label }) {
       <label htmlFor={name} className="block cursor-pointer-label">
         {label ?? defaultLabel}
       </label>
+      {fileName && (
+        <div className="mt-1 max-w-[150px] truncate text-[10px] text-gray-700" title={fileName}>
+          {fileName}
+        </div>
+      )}
     </div>
   )
 }
@@ -26,4 +31,5 @@ FileInput.propTypes = {
   onChange: PropTypes.func,
   className: PropTypes.string,
   label: PropTypes.node,
+  selectedFile: PropTypes.object,
 }

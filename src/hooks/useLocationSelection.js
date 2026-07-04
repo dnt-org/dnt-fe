@@ -17,7 +17,9 @@ export default function useLocationSelection() {
         if (!mounted) return
         setCountries(list)
         // Do not prefill from localStorage anymore; leave defaults empty
-      } catch {}
+      } catch {
+        // Keep location options empty if the catalog cannot be loaded.
+      }
     })()
     return () => {
       mounted = false
@@ -75,6 +77,39 @@ export default function useLocationSelection() {
     localStorage.setItem("district", val || "")
   }
 
+  const setLocationSelection = async ({ country = "", province = "", district = "" } = {}) => {
+    setSelectedCountry(country)
+    if (!country) {
+      setProvinces([])
+      setDistricts([])
+      setSelectedProvince("")
+      setSelectedDistrict("")
+      return
+    }
+
+    try {
+      const states = await getCountryByCode(country)
+      setProvinces(states)
+    } catch {
+      setProvinces([])
+    }
+
+    setSelectedProvince(province)
+    if (!province) {
+      setDistricts([])
+      setSelectedDistrict("")
+      return
+    }
+
+    try {
+      const ds = await getDistrictByCode(province)
+      setDistricts(ds)
+    } catch {
+      setDistricts([])
+    }
+    setSelectedDistrict(district)
+  }
+
   return {
     countries,
     provinces,
@@ -85,5 +120,6 @@ export default function useLocationSelection() {
     handleCountryChange,
     handleProvinceChange,
     handleDistrictChange,
+    setLocationSelection,
   }
 }

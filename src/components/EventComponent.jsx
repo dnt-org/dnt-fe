@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { filterProducts } from "../services/productService";
 
 export default function EventComponent() {
   const { t } = useTranslation();
@@ -11,6 +12,7 @@ export default function EventComponent() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(null);
   const [dragLastX, setDragLastX] = useState(null);
+  const [homeProducts, setHomeProducts] = useState([]);
   const navigate = useNavigate();
 
   // Desktop: hiển thị 6 cột x 2 dòng = 12 events
@@ -77,6 +79,30 @@ export default function EventComponent() {
     },
   ];
 
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchHomeProducts = async () => {
+      try {
+        const response = await filterProducts({}, 1, 36, null, false);
+        if (!mounted) return;
+        setHomeProducts(response.data?.data || []);
+        setPageDesktop(0);
+        setPageMobile(0);
+      } catch (error) {
+        console.error("Cannot load home products:", error);
+        if (mounted) setHomeProducts([]);
+      }
+    };
+
+    fetchHomeProducts();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const homeEvents = homeProducts.length ? homeProducts : mockEvents;
+
   const getCurrentEvents = (isMobile = false) => {
     const columns = isMobile ? columnsMobile : columnsDesktop;
     const page = isMobile ? pageMobile : pageDesktop;
@@ -84,13 +110,13 @@ export default function EventComponent() {
 
     // Sequential row-major order: row 1 = 1..columns, row 2 = columns+1..columns*2
     const startIndex = page * eventsPerPage;
-    return mockEvents.slice(startIndex, startIndex + eventsPerPage);
+    return homeEvents.slice(startIndex, startIndex + eventsPerPage);
   };
 
   const getMaxPages = (isMobile = false) => {
     const columns = isMobile ? columnsMobile : columnsDesktop;
     const eventsPerPage = columns * 2;
-    return Math.max(1, Math.ceil(mockEvents.length / eventsPerPage));
+    return Math.max(1, Math.ceil(homeEvents.length / eventsPerPage));
   };
 
   const handlePrevious = (isMobile = false) => {
@@ -152,36 +178,81 @@ export default function EventComponent() {
     setDragLastX(null);
   };
 
-  const EventCard = ({ event }) => (
+  const getProductTitle = (event) => {
+    const firstItem = event.productItems?.[0] || {};
+    return firstItem.name || event.name || event.custom_id || event.id;
+  };
+
+  const getProductQuantity = (event) => {
+    const firstItem = event.productItems?.[0] || {};
+    return firstItem.quantityMinimum || firstItem.quantityMinRequire || "";
+  };
+
+  const getProductPrice = (event) => {
+    const firstItem = event.productItems?.[0] || {};
+    return firstItem.unitAskingPrice || firstItem.autoAcceptPrice || firstItem.unitMarketPrice || "";
+  };
+
+  const getProductDetailId = (event) => event.documentId || event.id;
+
+  const EventCard = ({ event }) => {
+    const isRealProduct = Boolean(event.productItems || event.documentId || event.custom_id);
+    const title = isRealProduct ? getProductTitle(event) : `${t("events.displayOnHome")} ${event.id}`;
+    const detailId = getProductDetailId(event);
+
+    return (
     <div
-      onClick={() => navigate(`/list-of-goods/${event.id}`)}
+      onClick={() => detailId && navigate(`/list-of-goods/${detailId}`)}
       style={{
         backgroundColor: "white",
-        aspectRatio: 3 / 4,
-        padding: "10px",
+        minHeight: "clamp(138px, 18vw, 230px)",
+        padding: "clamp(6px, 1vw, 10px)",
         borderRadius: "8px",
         boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        alignItems: "center",
+        alignItems: "stretch",
         textAlign: "center",
         border: "1px solid black",
+        boxSizing: "border-box",
         cursor: "pointer",
+        minWidth: 0,
+        overflow: "hidden",
       }}
     >
-      <h3 style={{ margin: "10px 0 0 0", fontSize: "14px", fontWeight: "bold" }}>
-        {t("events.displayOnHome")} <br /> {event.id}
+      <h3 style={{
+        margin: "4px 0 8px 0",
+        fontSize: "clamp(11px, 1.15vw, 14px)",
+        lineHeight: 1.25,
+        fontWeight: "bold",
+        overflow: "hidden",
+        display: "-webkit-box",
+        WebkitLineClamp: 3,
+        WebkitBoxOrient: "vertical",
+        overflowWrap: "anywhere",
+      }}>
+        {title}
       </h3>
-      <div style={{ alignSelf: "flex-start", textAlign: "left", fontSize: "12px", fontWeight: "bold", paddingLeft: "5px", paddingBottom: "10px" }}>
-        <p style={{ margin: "2px 0" }}>- {t("events.category")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.classification")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.status")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.goodsAddress")}</p>
-        <p style={{ margin: "2px 0" }}>- {t("events.quantity")}</p>
+      <div style={{
+        minWidth: 0,
+        textAlign: "left",
+        fontSize: "clamp(10px, 1vw, 12px)",
+        lineHeight: 1.25,
+        fontWeight: "bold",
+      }}>
+        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.category")}: {event.listingType || ""}</p>
+        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.classification")}: {event.categoryType || ""}</p>
+        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.status")}: {event.conditionType || event.status || ""}</p>
+        <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>- {t("events.goodsAddress")}: {event.goodsAddress || event.address || event.province || ""}</p>
+        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.quantity")}: {getProductQuantity(event)}</p>
+        {isRealProduct && getProductPrice(event) && (
+          <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("productGrid.unitAskingPrice", "Đơn giá")}: {getProductPrice(event)}</p>
+        )}
       </div>
     </div>
-  );
+    );
+  };
 
   const NavigationButton = ({
     direction,
@@ -234,10 +305,12 @@ export default function EventComponent() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(6, 1fr)",
+            gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
             gridTemplateRows: "repeat(2, 1fr)",
-            gap: "10px",
+            gap: "clamp(6px, 0.8vw, 10px)",
             width: "100%",
+            boxSizing: "border-box",
+            alignItems: "stretch",
             userSelect: "none",
           }}
           onMouseDown={(e) => onPointerDown(e.clientX)}
@@ -278,10 +351,12 @@ export default function EventComponent() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
             gridTemplateRows: "repeat(2, 1fr)",
-            gap: "10px",
+            gap: "8px",
             width: "100%",
+            boxSizing: "border-box",
+            alignItems: "stretch",
             userSelect: "none",
           }}
           onTouchStart={(e) => onPointerDown(e.touches[0].clientX)}

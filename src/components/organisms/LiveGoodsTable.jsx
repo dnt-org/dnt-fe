@@ -1,238 +1,158 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import MoneyInputModal from "../molecules/MoneyInputModal.jsx"
 
-export default function LiveGoodsTable({ initialItems = [] }) {
+const numberValue = (value) => {
+  const next = Number(value)
+  return Number.isFinite(next) ? next : 0
+}
+
+const formatMoney = (value) => {
+  const next = numberValue(value)
+  return next ? next.toLocaleString("vi-VN") : ""
+}
+
+const getItemKey = (item, index) => item.documentId || item.id || item.rowIndex || index
+
+export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, submittingBidKey, mode = "joiner" }) {
   const { t } = useTranslation()
-  const [items, setItems] = useState(
-    initialItems.length > 0
-      ? initialItems.map((it, idx) => ({
-          index: idx + 1,
-          name: it.name || "",
-          model: it.model || "",
-          size: it.size || "",
-          color: it.color || "",
-          images: [],
-          qualityFiles: [],
-          warrantyChangeDays: it.warrantyChangeDays || "",
-          warrantyRepairDays: it.warrantyRepairDays || "",
-          repairRetentionPercent: it.repairRetentionPercent || "",
-          maxDeliveryDays: it.maxDeliveryDays || "",
-          handoverLocation: it.handoverLocation || "",
-          contractDurationFrom: it.contractDurationFrom || "",
-          contractDurationTo: it.contractDurationTo || "",
-          invoiceType: it.invoiceType || "",
-          paymentViaPlatform: !!it.paymentViaPlatform,
-          timeUserMustPayAfterDelivery: it.timeUserMustPayAfterDelivery || "",
-          depositRequirement: it.depositRequirement || "",
-          qtyMin: it.qtyMin || "",
-          qtySet: it.qtySet || "",
-          unit: it.unit || "",
-          unitMarketPrice: it.unitMarketPrice || "",
-          unitAskingPriceLow: it.unitAskingPriceLow || "",
-          unitAskingPriceHigh: it.unitAskingPriceHigh || "",
-          askChoice: it.askChoice || "low",
-          setPrice: it.setPrice || "",
-        }))
-      : [
-          {
-            index: 1,
-            name: "",
-            model: "",
-            size: "",
-            color: "",
-            images: [],
-            qualityFiles: [],
-            warrantyChangeDays: "",
-            warrantyRepairDays: "",
-            repairRetentionPercent: "",
-            maxDeliveryDays: "",
-            handoverLocation: "",
-            contractDurationFrom: "",
-            contractDurationTo: "",
-            invoiceType: "",
-            paymentViaPlatform: false,
-            timeUserMustPayAfterDelivery: "",
-            depositRequirement: "",
-            qtyMin: "",
-            qtySet: "",
-            unit: "",
-            unitMarketPrice: "",
-            unitAskingPriceLow: "",
-            unitAskingPriceHigh: "",
-            askChoice: "low",
-            setPrice: "",
-          },
-        ]
-  )
-  const [moneyOpen, setMoneyOpen] = useState(false)
-  const [moneyRow, setMoneyRow] = useState(null)
-  const [moneyKey, setMoneyKey] = useState("")
-  const [moneyTitle, setMoneyTitle] = useState("")
-  const [moneyInitial, setMoneyInitial] = useState(0)
-  const [askChoiceColumn, setAskChoiceColumn] = useState("low")
+  const [drafts, setDrafts] = useState({})
+  const canBid = mode === "joiner"
 
-  const updateItem = (idx, patch) => {
-    setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)))
+  const latestBidByItem = useMemo(() => {
+    return bids.reduce((acc, bid) => {
+      const key = bid.productItemDocumentId || bid.productItemId || bid.itemIndex
+      if (key !== undefined && acc[key] === undefined) acc[key] = bid
+      return acc
+    }, {})
+  }, [bids])
+
+  const updateDraft = (key, patch) => {
+    setDrafts((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), ...patch } }))
   }
 
-  const calcAmount = (row) => {
-    const qty = Number(row.qtySet || 0)
-    const price = Number(row.setPrice || 0)
-    return qty * price
-  }
-
-  const openMoney = (idx, key, title, initial) => {
-    setMoneyRow(idx)
-    setMoneyKey(key)
-    setMoneyTitle(title)
-    setMoneyInitial(initial || 0)
-    setMoneyOpen(true)
-  }
-
-  const confirmMoney = (num) => {
-    if (moneyRow == null || !moneyKey) return
-    updateItem(moneyRow, { [moneyKey]: num })
+  const confirmBid = (item, index) => {
+    const key = getItemKey(item, index)
+    const draft = drafts[key] || {}
+    const quantity = numberValue(draft.quantity)
+    const unitPrice = numberValue(draft.unitPrice)
+    if (quantity <= 0 || unitPrice <= 0) return
+    onConfirmBid?.(item, index, {
+      quantity,
+      unitPrice,
+      totalAmount: quantity * unitPrice,
+      note: draft.note || "",
+    })
   }
 
   return (
     <div className="mt-6">
+      <div className="mb-2 text-sm font-bold">{t("aiLiveVideo.productItems", "Chi tiết sản phẩm trong phiên live")}</div>
       <div className="overflow-x-auto border border-black">
-        <table className="min-w-full text-xs">
+        <table className={`w-full text-xs ${canBid ? "min-w-[1200px]" : "min-w-[900px]"}`}>
           <thead>
             <tr className="bg-gray-100">
-              <th className="border border-black px-2 py-1">{t("productGrid.sequenceNumber")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.nameOfGoods")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.model")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.size")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.color")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.image") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.qualityInfo") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyChangeDays") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.warrantyRepairDays") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.repairWarrantyPercent") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.maxDeliveryDays")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.handoverLocation")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.invoiceType")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaPlatform") }} /></th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} /></th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.depositRequirement")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.quantityMinimum")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("liveGoods.setQuantity")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.unit")} *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.unitMarketPrice")} *</th>
-              <th className="border border-black px-2 py-1 min-w-[260px]">
-                <select className="w-full p-2" value={askChoiceColumn} onChange={(e) => setAskChoiceColumn(e.target.value)}>
-                  <option value="low">{t("productGrid.lowestHighestAskingPricelow")}</option>
-                  <option value="high">{t("productGrid.lowestHighestAskingPricehigh")}</option>
-                </select>
-              </th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.setPrice")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{askChoiceColumn === "low" ? t("liveGoods.totalLowest") : t("liveGoods.totalHighest")}</th>
-              
+              <th className="border border-black px-2 py-2">{t("productGrid.sequenceNumber", "STT")}</th>
+              <th className="border border-black px-2 py-2 min-w-[180px]">{t("productGrid.nameOfGoods", "Tên hàng hóa")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.model", "Model")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.size", "Kích thước")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.color", "Màu sắc")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.quantityMinimum", "SL tối thiểu")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.unit", "Đơn vị")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.unitMarketPrice", "Giá thị trường")}</th>
+              <th className="border border-black px-2 py-2">{t("productGrid.lowestHighestAskingPricelow", "Giá yêu cầu")}</th>
+              {canBid ? (
+                <>
+                  <th className="border border-black px-2 py-2 min-w-[120px]">{t("liveGoods.setQuantity", "SL đặt")}</th>
+                  <th className="border border-black px-2 py-2 min-w-[140px]">{t("productGrid.setPrice", "Giá đặt")}</th>
+                  <th className="border border-black px-2 py-2 min-w-[140px]">{t("liveGoods.totalLowest", "Thành tiền")}</th>
+                  <th className="border border-black px-2 py-2 min-w-[180px]">{t("common.note", "Ghi chú")}</th>
+                  <th className="border border-black px-2 py-2 min-w-[130px]">{t("customerConfirm.title", "XÁC NHẬN")}</th>
+                </>
+              ) : null}
+              <th className="border border-black px-2 py-2 min-w-[180px]">{t("aiLiveVideo.latestBid", "Giá mới nhất")}</th>
             </tr>
           </thead>
           <tbody>
-            {items.map((row, idx) => (
-              <tr key={idx}>
-                <td className="border border-black px-2 py-1 text-center">{row.index}</td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.name} onChange={(e) => updateItem(idx, { name: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.model} onChange={(e) => updateItem(idx, { model: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.size} onChange={(e) => updateItem(idx, { size: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.color} onChange={(e) => updateItem(idx, { color: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="file" className="w-full p-2" multiple onChange={(e) => updateItem(idx, { images: Array.from(e.target.files || []) })} />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="file" className="w-full p-2" multiple onChange={(e) => updateItem(idx, { qualityFiles: Array.from(e.target.files || []) })} />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.warrantyChangeDays} onChange={(e) => updateItem(idx, { warrantyChangeDays: e.target.value })} onDoubleClick={() => openMoney(idx, "warrantyChangeDays", t("productGrid.warrantyChangeDays"), row.warrantyChangeDays)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.warrantyRepairDays} onChange={(e) => updateItem(idx, { warrantyRepairDays: e.target.value })} onDoubleClick={() => openMoney(idx, "warrantyRepairDays", t("productGrid.warrantyRepairDays"), row.warrantyRepairDays)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.repairRetentionPercent} onChange={(e) => updateItem(idx, { repairRetentionPercent: e.target.value })} onDoubleClick={() => openMoney(idx, "repairRetentionPercent", t("productGrid.repairWarrantyPercent"), row.repairRetentionPercent)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.maxDeliveryDays} onChange={(e) => updateItem(idx, { maxDeliveryDays: e.target.value })} onDoubleClick={() => openMoney(idx, "maxDeliveryDays", t("productGrid.maxDeliveryDays"), row.maxDeliveryDays)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.handoverLocation} onChange={(e) => updateItem(idx, { handoverLocation: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <div className="flex items-center gap-2">
-                    <input value={row.contractDurationFrom} onChange={(e) => updateItem(idx, { contractDurationFrom: e.target.value })} className="flex-1 p-2" placeholder={t("liveGoods.from")} />
-                    <input value={row.contractDurationTo} onChange={(e) => updateItem(idx, { contractDurationTo: e.target.value })} className="flex-1 p-2" placeholder={t("liveGoods.to")} />
-                  </div>
-                </td>
-                {/* (17) XUẤT HÓA ĐƠN */}
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <select value={row.invoiceType} onChange={(e) => updateItem(idx, { invoiceType: e.target.value })} className="w-full p-2">
-                    <option value="">{t("productGrid.choose")}</option>
-                    <option value="vat">{t("productGrid.invoiceVat")}</option>
-                    <option value="no_vat">{t("productGrid.invoiceNoVat")}</option>
-                  </select>
-                </td>
-                {/* (18) THANH TOÁN QUA NỀN TẢNG */}
-                <td className="border border-black px-2 py-1 text-center live-goods-col-fixed">
-                  <input type="checkbox" checked={row.paymentViaPlatform} onChange={(e) => updateItem(idx, { paymentViaPlatform: e.target.checked })} />
-                </td>
-                {/* (19) THỜI GIAN THANH TOÁN CHÍNH THỨC CHO CHỦ HÀNG SAU KHI NHẬN ĐƯỢC HÀNG */}
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="text" value={row.timeUserMustPayAfterDelivery} onChange={(e) => updateItem(idx, { timeUserMustPayAfterDelivery: e.target.value })} className="w-full p-2" />
-                </td>
-                {/* (20) YÊU CẦU ĐẶT CỌC, KÝ QUỸ (%) */}
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.depositRequirement} onChange={(e) => updateItem(idx, { depositRequirement: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.qtyMin} onChange={(e) => updateItem(idx, { qtyMin: e.target.value })} onDoubleClick={() => openMoney(idx, "qtyMin", t("productGrid.quantityMinimum"), row.qtyMin)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.qtySet} onChange={(e) => updateItem(idx, { qtySet: e.target.value })} onDoubleClick={() => openMoney(idx, "qtySet", t("liveGoods.setQuantity"), row.qtySet)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input value={row.unit} onChange={(e) => updateItem(idx, { unit: e.target.value })} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.unitMarketPrice} onChange={(e) => updateItem(idx, { unitMarketPrice: e.target.value })} onDoubleClick={() => openMoney(idx, "unitMarketPrice", t("productGrid.unitMarketPrice"), row.unitMarketPrice)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  {askChoiceColumn === "low" ? (
-                      <input type="number" value={row.unitAskingPriceLow} onChange={(e) => updateItem(idx, { unitAskingPriceLow: e.target.value })} onDoubleClick={() => openMoney(idx, "unitAskingPriceLow", t("productGrid.lowest"), row.unitAskingPriceLow)} className="w-full p-2" />
-                  ) : (
-                      <input type="number" value={row.unitAskingPriceHigh} onChange={(e) => updateItem(idx, { unitAskingPriceHigh: e.target.value })} onDoubleClick={() => openMoney(idx, "unitAskingPriceHigh", t("productGrid.highest"), row.unitAskingPriceHigh)} className="w-full p-2" />
-                  )}
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.setPrice} onChange={(e) => updateItem(idx, { setPrice: e.target.value })} onDoubleClick={() => openMoney(idx, "setPrice", t("productGrid.setPrice"), row.setPrice)} className="w-full p-2" />
-                </td>
-                <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <div className="w-28 text-right">{calcAmount(row)}</div>
+            {items.length === 0 ? (
+              <tr>
+                <td className="border border-black px-3 py-6 text-center" colSpan={canBid ? 15 : 10}>
+                  {t("aiLiveVideo.noProductItems", "Chưa có product item cho sản phẩm này.")}
                 </td>
               </tr>
-            ))}
+            ) : items.map((item, index) => {
+              const key = getItemKey(item, index)
+              const draft = drafts[key] || {}
+              const quantity = draft.quantity || ""
+              const unitPrice = draft.unitPrice || ""
+              const totalAmount = numberValue(quantity) * numberValue(unitPrice)
+              const latestBid = latestBidByItem[item.documentId] || latestBidByItem[item.id] || latestBidByItem[index]
+              const isSubmitting = submittingBidKey === key
+
+              return (
+                <tr key={key}>
+                  <td className="border border-black px-2 py-2 text-center">{item.rowIndex || index + 1}</td>
+                  <td className="border border-black px-2 py-2 font-semibold">{item.name || "-"}</td>
+                  <td className="border border-black px-2 py-2">{item.model || "-"}</td>
+                  <td className="border border-black px-2 py-2">{item.size || item.shape || "-"}</td>
+                  <td className="border border-black px-2 py-2">{item.color || "-"}</td>
+                  <td className="border border-black px-2 py-2 text-right">{item.quantityMinRequire || item.quantityMinimum || "-"}</td>
+                  <td className="border border-black px-2 py-2">{item.unit || "-"}</td>
+                  <td className="border border-black px-2 py-2 text-right">{formatMoney(item.unitMarketPrice)}</td>
+                  <td className="border border-black px-2 py-2 text-right">{formatMoney(item.unitAskingPrice || item.autoAcceptPriceLow || item.autoAcceptPrice)}</td>
+                  {canBid ? (
+                    <>
+                      <td className="border border-black px-2 py-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={quantity}
+                          onChange={(event) => updateDraft(key, { quantity: event.target.value })}
+                          className="w-full border border-gray-300 px-2 py-2 text-right"
+                        />
+                      </td>
+                      <td className="border border-black px-2 py-2">
+                        <input
+                          type="number"
+                          min="0"
+                          value={unitPrice}
+                          onChange={(event) => updateDraft(key, { unitPrice: event.target.value })}
+                          className="w-full border border-gray-300 px-2 py-2 text-right"
+                        />
+                      </td>
+                      <td className="border border-black px-2 py-2 text-right font-bold">{formatMoney(totalAmount)}</td>
+                      <td className="border border-black px-2 py-2">
+                        <input
+                          value={draft.note || ""}
+                          onChange={(event) => updateDraft(key, { note: event.target.value })}
+                          className="w-full border border-gray-300 px-2 py-2"
+                        />
+                      </td>
+                      <td className="border border-black px-2 py-2 text-center">
+                        <button
+                          type="button"
+                          disabled={isSubmitting || numberValue(quantity) <= 0 || numberValue(unitPrice) <= 0}
+                          onClick={() => confirmBid(item, index)}
+                          className="border border-black bg-cyan-200 px-3 py-2 font-bold disabled:cursor-not-allowed disabled:bg-gray-200"
+                        >
+                          {isSubmitting ? t("common.loading", "Đang tải...") : t("customerConfirm.title", "XÁC NHẬN")}
+                        </button>
+                      </td>
+                    </>
+                  ) : null}
+                  <td className="border border-black px-2 py-2">
+                    {latestBid ? (
+                      <div>
+                        <div className="font-bold">{formatMoney(latestBid.unitPrice)} x {latestBid.quantity}</div>
+                        <div>{latestBid.viewerName || t("aiLiveVideo.guest", "Khách")}</div>
+                      </div>
+                    ) : "-"}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
-      <MoneyInputModal
-        open={moneyOpen}
-        onClose={() => setMoneyOpen(false)}
-        title={moneyTitle}
-        initialValue={moneyInitial}
-        onConfirm={confirmMoney}
-      />
     </div>
   )
 }

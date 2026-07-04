@@ -206,21 +206,15 @@
 }
 
 .action-section-1-mobile>div {
-    padding: 12px;
+    padding: clamp(6px, 2vw, 12px);
     /* width: 100%; */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    box-sizing: border-box;
 }
 
 .action-section-1>div {
-    padding: 12px;
+    padding: clamp(6px, 1vw, 12px);
     /* width: 100%; */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    box-sizing: border-box;
 }
 
 @media screen and (max-width: 768px) {

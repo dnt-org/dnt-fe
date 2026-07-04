@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import "../styles/Login.css";
 import { useParams } from "react-router-dom";
-import { getProductById, updateProductPriceInfo } from "../services/productService";
+import { getProductById } from "../services/productService";
 import {
   Home as HomeIcon,
   KeyboardIcon as KeyboardIcon,
   Eye as EyeIcon,
-  EyeOff as EyeOffIcon,
   Forward as Share2Icon,
 } from "lucide-react";
 import ProductGrid from "../components/ProductGrid";
@@ -26,80 +25,9 @@ export default function DetailOfGoodsPage() {
   const [selectedCondition, setSelectedCondition] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [isVisible1, setIsVisible1] = useState(false);
-  const [isVisible2, setIsVisible2] = useState(false);
-  const [priceData, setPriceData] = useState({
-    setPrice: null,
-    depositRequirement: null,
-  });
-
-
-  const handlePriceUpdate = async () => {
-    const authToken = await localStorage.getItem("authToken");
-    try {
-      await updateProductPriceInfo(product.id, authToken, priceData);
-      alert(t('goods.priceUpdatedSuccess', 'Price updated successfully'));
-    } catch (error) {
-      alert(t('goods.priceUpdateError', 'Price update failed'));
-    }
-  };
-
-
   const navigate = useNavigate();
   const { id } = useParams(); // Get the ID from the URL parameter
-  const [product, setProduct] = useState({
-    id: 1,
-    documentId: "w940wbgafccoucy16evy21v4",
-    name: "Oil",
-    model: "M",
-    size: "120 KG",
-    color: "red",
-    price: 100000,
-    askingPrice: null,
-    displayPrice: true,
-    hidePrice: false,
-    location: "HCM",
-    address: null,
-    description: null,
-    estimatedValue: null,
-    deliveryDate: null,
-    depositRequirement: null,
-    autoAcceptPrice: null,
-    unit: null,
-    marketPrice: null,
-    lowUnitPrice: null,
-    lowestUnitAskingPrice: null,
-    highestUnitAskingPrice: null,
-    deliveryDays: null,
-    endPostTime: null,
-    lowestAmount: null,
-    highestAmount: null,
-    lowestAutoAcceptPrice: null,
-    highestAutoAcceptPrice: null,
-    contractDuration: null,
-    personInCharge: null,
-    phoneNumber: null,
-    email: null,
-    confirmOwnership: true,
-    eventFeePercentage: null,
-    livestreamFee: null,
-    advertisingAmount: null,
-    showOnMainPage: 0,
-    showOnVideo: 0,
-    advertisingUrl: null,
-    registerForAdvertising: false,
-    successFee: null,
-    totalFees: null,
-    createdAt: "2025-08-10T07:55:48.149Z",
-    updatedAt: "2025-08-10T07:55:48.149Z",
-    publishedAt: "2025-08-10T07:55:48.127Z",
-    listingType: null,
-    categoryType: null,
-    conditionType: null,
-    nation: null,
-    province: null
-  });
+  const [product, setProduct] = useState({});
 
   const categories = {
     sale: { vi: "HÀNG BÁN", en: "Sale" },
@@ -190,73 +118,57 @@ export default function DetailOfGoodsPage() {
     }
   };
 
-  // Load filter context from localStorage set on the home page and lock the UI controls
-  useEffect(() => {
-    const lsCategory = localStorage.getItem("category");
-    const lsSubcategory = localStorage.getItem("subcategory");
-    const lsCondition = localStorage.getItem("condition");
-    const lsNation = localStorage.getItem("nation");
-    const lsProvince = localStorage.getItem("province");
-    const lsDistrict = localStorage.getItem("district");
+  const normalizeProductItems = (nextProduct) => {
+    const rawItems = nextProduct?.productItems;
+    if (Array.isArray(rawItems)) return rawItems;
+    if (Array.isArray(rawItems?.data)) {
+      return rawItems.data.map((item) => ({
+        id: item.id,
+        documentId: item.documentId,
+        ...(item.attributes || item),
+      }));
+    }
+    return [];
+  };
 
-    setSelectedCategory((prev) => mapCategoryToKey(lsCategory) || prev);
-    setSelectedSubcategory((prev) => mapSubcategoryToKey(lsSubcategory) || prev);
-    setSelectedCondition((prev) => mapConditionToKey(lsCondition) || prev);
-    setSelectedCountry((prev) => lsNation || prev);
-    setSelectedProvince((prev) => lsProvince || prev);
-    setSelectedDistrict((prev) => lsDistrict || prev);
-  }, []);
+  const normalizeProduct = (rawProduct) => ({
+    id: rawProduct?.id,
+    documentId: rawProduct?.documentId,
+    ...(rawProduct?.attributes || rawProduct || {}),
+  });
 
   const fetchProductDetails = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await getProductById(id);
-      setProduct(response.data.data);
-      console.log(response.data.data);
-
-      // Ưu tiên giá trị từ localStorage (từ filter ở trang chủ), nếu không có thì dùng từ API
-      const lsCategory = localStorage.getItem("category");
-      const lsSubcategory = localStorage.getItem("subcategory");
-      const lsCondition = localStorage.getItem("condition");
-      const lsNation = localStorage.getItem("nation");
-      const lsProvince = localStorage.getItem("province");
-
-      if (lsCategory) {
-        setSelectedCategory(mapCategoryToKey(lsCategory));
-      } else if (response.data.data.listingType) {
-        // Map giá trị từ API về đúng format nếu cần
-        const apiCategory = response.data.data.listingType;
-        setSelectedCategory(mapCategoryToKey(apiCategory));
-      }
-
-      if (lsSubcategory) {
-        setSelectedSubcategory(mapSubcategoryToKey(lsSubcategory));
-      } else if (response.data.data.categoryType) {
-        const apiSubcategory = response.data.data.categoryType;
-        setSelectedSubcategory(mapSubcategoryToKey(apiSubcategory));
-      }
-
-      if (lsCondition) {
-        setSelectedCondition(mapConditionToKey(lsCondition));
-      } else if (response.data.data.conditionType) {
-        const apiCondition = response.data.data.conditionType;
-        setSelectedCondition(mapConditionToKey(apiCondition));
-      }
-
-      if (lsNation) {
-        setSelectedCountry(lsNation);
-      } else if (response.data.data.nation) {
-        setSelectedCountry(response.data.data.nation);
-      }
-
-      if (lsProvince) {
-        setSelectedProvince(lsProvince);
-      } else if (response.data.data.province) {
-        setSelectedProvince(response.data.data.province);
-      }
-    } catch (error) {
-      console.error("Error fetching product details:", error);
+      const nextProduct = normalizeProduct(response.data?.data || {});
+      setProduct(nextProduct);
+      setSelectedCategory(mapCategoryToKey(nextProduct.listingType));
+      setSelectedSubcategory(mapSubcategoryToKey(nextProduct.categoryType));
+      setSelectedCondition(mapConditionToKey(nextProduct.conditionType));
+      setSelectedCountry(nextProduct.nation || "");
+      setSelectedProvince(nextProduct.province || "");
+    } catch (err) {
+      console.error("Error fetching product details:", err);
+      setError(err.message || "Error fetching product details");
+    } finally {
+      setLoading(false);
     }
   };
+
+  const normalizedProductItems = normalizeProductItems(product);
+  const productItems = normalizedProductItems.length
+    ? normalizedProductItems
+    : [product];
+  const productEndDate = product.endPostDate || product.endPostTime;
+  const productAddress = product.goodsAddress || product.address || product.province || "";
+  const productDisplayId = product.custom_id || product.documentId || product.id || "";
+  const goodsLat = product.goodsLat ?? product.lat ?? product.latitude;
+  const goodsLng = product.goodsLng ?? product.lng ?? product.longitude;
+  const hasGoodsCoordinates = goodsLat !== undefined && goodsLat !== null && goodsLat !== "" && goodsLng !== undefined && goodsLng !== null && goodsLng !== "";
+  const aiLiveGoodsId = product.documentId || product.id || id;
+
   return (
     <div className="min-h-screen w-full">
       <div className="bg-transparent p-4 w-full">
@@ -301,7 +213,7 @@ export default function DetailOfGoodsPage() {
                 disabled
               >
                 <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(categories).map(([key, value]) => (
+                {Object.entries(categories).map(([key]) => (
                   <option key={key} value={key}>
                     {t(`detailOfGoods.category.${key}`)}
                   </option>
@@ -315,7 +227,7 @@ export default function DetailOfGoodsPage() {
                 disabled
               >
                 <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(subcategories).map(([key, value]) => (
+                {Object.entries(subcategories).map(([key]) => (
                   <option key={key} value={key}>
                     {t(`detailOfGoods.subcategory.${key}`)}
                   </option>
@@ -329,7 +241,7 @@ export default function DetailOfGoodsPage() {
                 disabled
               >
                 <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(conditions).map(([key, value]) => (
+                {Object.entries(conditions).map(([key]) => (
                   <option key={key} value={key}>
                     {t(`detailOfGoods.condition.${key}`)}
                   </option>
@@ -360,7 +272,7 @@ export default function DetailOfGoodsPage() {
           <label className="w-20 text-center font-bold">ID:</label>
           <div className="w-full p-2  border-gray-300 text-center grid grid-cols-12">
             <div className="col-span-11 text-left">
-              {product.custom_id}
+              {productDisplayId}
             </div>
             <div className="col-span-1 flex items-center gap-2 justify-end">
               <EyeIcon size={16} />
@@ -369,7 +281,9 @@ export default function DetailOfGoodsPage() {
 
           </div>
         </div>
-        <ProductGrid products={[product]} readOnly={true} />
+        {loading && <div className="p-2 text-center text-sm">{t("common.loading", "Đang tải...")}</div>}
+        {error && <div className="p-2 text-center text-sm text-red-600">{error}</div>}
+        <ProductGrid products={productItems} readOnly={true} />
 
         {/* Product Details Section */}
 
@@ -388,14 +302,14 @@ export default function DetailOfGoodsPage() {
               {t('detailOfGoods.endTime')}:
             </div>
             <div className="p-2 text-center border-l border-gray-300">
-              {product.endPostTime ? new Date(product.endPostTime).toLocaleDateString('vi-VN', {
+              {productEndDate ? new Date(productEndDate).toLocaleDateString('vi-VN', {
                 day: '2-digit',
                 month: '2-digit',
                 year: 'numeric'
               }) : ''}
             </div>
             <div className="p-2 text-center border-l border-gray-300">
-              {product.endPostTime ? new Date(product.endPostTime).toLocaleTimeString('vi-VN', {
+              {productEndDate ? new Date(productEndDate).toLocaleTimeString('vi-VN', {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false
@@ -406,10 +320,31 @@ export default function DetailOfGoodsPage() {
               {t('detailOfGoods.goodsAddress')}:
             </div>
             <div className="p-2 text-center border-l border-gray-300">
-              {product.address}
+              {productAddress}
             </div>
             <div className="p-2 text-center border-l border-gray-300">
-              #Map#
+              {hasGoodsCoordinates ? (
+                <div className="flex flex-col items-center gap-1">
+                  <iframe
+                    title="Google Maps"
+                    width="100%"
+                    height="120"
+                    loading="lazy"
+                    style={{ border: 0 }}
+                    src={`https://maps.google.com/maps?q=${goodsLat},${goodsLng}&z=16&output=embed`}
+                  />
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${goodsLat},${goodsLng}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-600 text-xs underline"
+                  >
+                    Mở Google Maps
+                  </a>
+                </div>
+              ) : (
+                "#Map#"
+              )}
             </div>
 
             {/* Column 1: XÁC MINH HÀNG HÓA */}
@@ -430,7 +365,11 @@ export default function DetailOfGoodsPage() {
             {/* Column 3: LIVESTREAM HÀNG HÓA */}
             <div className="p-2 text-center flex flex-col items-center justify-center border-l border-gray-300">
               <div className="font-bold">{t('detailOfGoods.goodsLivestream')}</div>
-              <button className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1">
+              <button
+                type="button"
+                onClick={() => navigate(`/ai-live/video-goods/${aiLiveGoodsId}`)}
+                className="bg-gray-200 hover:bg-gray-300 text-black px-2 py-1 rounded text-sm mt-1"
+              >
                 {t('detailOfGoods.clickToOpen')}
               </button>
             </div>

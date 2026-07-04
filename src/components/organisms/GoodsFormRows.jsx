@@ -283,7 +283,7 @@ export default function GoodsFormRows({
             <span className="ml-1 text-gray-700">%</span>
           </div>
           {goodsInfo.marketingLinkingFee > 0 && goodsInfo.marketingLinkingFee <= 0.1 && (
-            <small className="text-red-500 mt-1">Phải > 0.1%</small>
+            <small className="text-red-500 mt-1">{"Phải > 0.1%"}</small>
           )}
         </div>
       </div>
@@ -352,12 +352,12 @@ export default function GoodsFormRows({
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* (Tải video) LIVESTREAM HÀNG HÓA */}
             <div className="col-span-4 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="livestreamVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="livestreamVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamVideoFile} />
               <div className="text-[11px] leading-tight font-bold text-black">LIVESTREAM HÀNG HÓA</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="livestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="livestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -389,12 +389,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải video) QUẢNG CÁO */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="advertisingVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="advertisingVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingVideoFile} />
               <div className="text-[11px] leading-tight font-bold text-black">QUẢNG CÁO</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="advertisingCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="advertisingCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -434,12 +434,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regLivestreamProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regLivestreamProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamProductProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regLivestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regLivestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -478,12 +478,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regProductAdCompanyProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regProductAdCompanyProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCompanyProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO + Nền tảng hỗ trợ */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regProductAdCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regProductAdCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
               <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-1">
                 <input type="checkbox" name="regProductAdPlatformSupport" checked={goodsInfo.regProductAdPlatformSupport || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
@@ -523,12 +523,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regPersonalBrandProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regPersonalBrandProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandProductProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regPersonalBrandCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} />
+              <FileInput name="regPersonalBrandCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>

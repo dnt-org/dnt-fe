@@ -158,6 +158,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       timeUserMustPayAfterDelivery: "",
       depositRequirement: "",
       quantityMinimum: "",
+      quantityMinRequire: "",
       unit: "",
       unitMarketPrice: "",
       unitAskingPrice: "",
@@ -735,6 +736,14 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 className="w-full p-3 border-gray-300 text-right"
               />
             </div>
+            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
+              <NumberInput
+                name="quantityMinRequire"
+                value={item.quantityMinRequire}
+                onChange={(e) => handleItemChange(item.id, "quantityMinRequire", e.target.value)}
+                className="w-full p-3 border-gray-300 text-right"
+              />
+            </div>
             <input
               type="text"
               value={item.unit}
@@ -803,6 +812,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 onChange={(e) => handleItemChange(item.id, "autoAcceptPrice", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
+                isInput={true}
               />
             </div>
 
@@ -815,6 +825,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 onChange={(e) => handleItemChange(item.id, "autoRejectPrice", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
+                isInput={true}
               />
             </div>
 
@@ -827,6 +838,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 onChange={(e) => handleItemChange(item.id, "autoAcceptPriceLow", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
+                isInput={true}
               />
             </div>
 
@@ -839,6 +851,7 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 onChange={(e) => handleItemChange(item.id, "autoRejectPriceLow", e.target.value)}
                 placeholder={t("goods.enter")}
                 country={getUserCountry()}
+                isInput={true}
               />
             </div>
           </div>
