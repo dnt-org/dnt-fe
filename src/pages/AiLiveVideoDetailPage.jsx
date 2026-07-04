@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
-import { Eye, Flag, Handshake, UserCheck, ArrowRight, Save } from "lucide-react"
+import { Eye, Flag, Handshake, UserCheck, ArrowRight, Save, Share2 } from "lucide-react"
 import ContactListModal from "../components/molecules/ContactListModal.jsx"
 import ViolationReportModal from "../components/molecules/ViolationReportModal.jsx"
 import LiveGoodsTable from "../components/organisms/LiveGoodsTable.jsx"
@@ -43,6 +43,7 @@ export default function AiLiveVideoDetailPage() {
   const [confirmSeconds, setConfirmSeconds] = useState(300)
   const [locked, setLocked] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [shareCount, setShareCount] = useState(0)
   const [audioOn, setAudioOn] = useState(false)
   const [product, setProduct] = useState(null)
   const [videoUrl, setVideoUrl] = useState("")
@@ -239,6 +240,7 @@ export default function AiLiveVideoDetailPage() {
         if (!mounted) return
         const nextProduct = normalizeProduct(response.data?.data || {})
         setProduct(nextProduct)
+        setShareCount(nextProduct?.shareCount ?? nextProduct?.shares ?? 0)
         const nextVideoUrl = getProductVideoUrl(nextProduct)
         setVideoUrl(nextVideoUrl)
         if (!nextVideoUrl) {
@@ -260,6 +262,7 @@ export default function AiLiveVideoDetailPage() {
 
   const viewers = participantCount
   const reactions = bids.length
+  const shares = shareCount
   const firstItem = productItems[0] || {}
   const name = firstItem.name || product?.custom_id || `${t("aiLiveVideo.video", "VIDEO")} ${id}`
   const productId = product?.custom_id || product?.documentId || product?.id || id
@@ -348,6 +351,7 @@ export default function AiLiveVideoDetailPage() {
           <div className="absolute left-2 top-12 z-20 space-y-2 rounded bg-white/85 p-2 text-xs text-black backdrop-blur-sm">
             <div className="flex items-center gap-1"><Eye size={24} /><span>{viewers} {t("aiLiveVideo.participating", "đang tham gia")}</span></div>
             <div className="flex items-center gap-1"><Handshake size={24} /><span className="font-semibold">{reactions} {t("aiLiveVideo.bids", "lượt đặt giá")}</span></div>
+            <div className="flex items-center gap-1"><Share2 size={24} /><span className="font-semibold">{shares} {t("aiLiveVideo.shares", "lượt chia sẻ")}</span></div>
             {liveError ? <div className="max-w-[220px] text-red-700">{liveError}</div> : null}
           </div>
           <div className="absolute right-3 bottom-3 z-30 flex flex-col items-center gap-2">
@@ -433,7 +437,7 @@ export default function AiLiveVideoDetailPage() {
         contacts={contacts}
         open={showShare}
         onClose={() => setShowShare(false)}
-        onSend={() => setShowShare(false)}
+        onSend={() => { setShareCount((c) => c + 1); setShowShare(false) }}
       />
       <ViolationReportModal
         open={showReport}
