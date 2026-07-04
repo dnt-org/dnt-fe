@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
-import { useDispatch, useSelector } from "react-redux"
+import { useDispatch } from "react-redux"
 import { loginAction } from "../context/action/authActions"
 import { getCountries } from "../services/countries"
-import banksByCountry from "../constants/banksByCountry"
 import { verifyBankNumber } from "../services/authService"
 import { getBanks } from "../services/systemService"
 import { getBankAccountName } from "../services/bankAccountService"
@@ -12,7 +11,6 @@ import useRecaptcha from "./useRecaptcha"
 
 export default function useRegisterForm(t) {
   const dispatch = useDispatch()
-  const { isAuthenticated } = useSelector((state) => state.auth)
   const navigate = useNavigate()
 
   // reCAPTCHA v2 Invisible for the register form
@@ -36,13 +34,6 @@ export default function useRegisterForm(t) {
   const [contractError, setContractError] = useState("")
   const [isFetchingAccountName, setIsFetchingAccountName] = useState(false)
   const [accountNameError, setAccountNameError] = useState("")
-  const [recoveryCharacterValidation, setRecoveryCharacterValidation] = useState({
-    hasUppercase: false,
-    hasLowercase: false,
-    hasNumber: false,
-    hasSpecialChar: false,
-    isValid: false,
-  })
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -192,8 +183,6 @@ export default function useRegisterForm(t) {
     const updated = name === "bank_number" ? { ...formData, [name]: value.replace(/[^a-zA-Z0-9]/g, "") } : { ...formData, [name]: value }
     setFormData(updated)
     if (validationErrors[name]) setValidationErrors((prev) => ({ ...prev, [name]: "" }))
-
-    if (name === "recovery_character") setRecoveryCharacterValidation(validateRecoveryCharacter(value))
 
     if (SECURITY_FIELDS.includes(name)) {
       const securityErrors = getSecurityFieldErrors(updated)

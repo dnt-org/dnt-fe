@@ -1,9 +1,14 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-
-const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", leftButton, rightButton, title, titleClassName = "text-3xl" }) => {
-  const { t } = useTranslation();
-
+const PageHeaderWithOutColorPicker = ({
+  color,
+  onColorChange,
+  titlePrefix = "2",
+  leftButton,
+  rightButton,
+  rightButtonClassName = "right-0",
+  title,
+  titleClassName = "text-3xl",
+  compact = false,
+}) => {
   // If leftButton or rightButton are provided, use the flex layout with absolute positioned buttons
   if (leftButton || rightButton) {
     return (
@@ -24,7 +29,7 @@ const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", 
                 onChange={e=>onColorChange(e)}
                 className="w-10 h-8 cursor-pointer mt-1"
             />
-            <div className="text-center mb-4 relative">
+            <div className={`text-center ${compact ? "mb-0" : "mb-4"} relative`}>
                 <h1 className={`${titleClassName} font-bold text-black relative inline-block`}>
                     &nbsp;{titlePrefix ? `${titlePrefix} - ` : ""}  {title}
                 </h1>
@@ -33,7 +38,7 @@ const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", 
 
         {/* Right button - absolute positioned */}
         {rightButton && (
-          <div className="absolute right-0 top-1/2 transform -translate-y-1/2">
+          <div className={`absolute top-1/2 transform -translate-y-1/2 ${rightButtonClassName}`}>
             {rightButton}
           </div>
         )}
@@ -51,8 +56,8 @@ const PageHeaderWithOutColorPicker = ({color, onColorChange, titlePrefix = "2", 
         onChange={onColorChange}
         className="w-10 h-8 cursor-pointer mt-1"
       />
-      <div className="text-center mb-4 relative">
-        <h1 className="text-3xl font-bold text-black relative inline-block">
+      <div className={`text-center ${compact ? "mb-0" : "mb-4"} relative`}>
+        <h1 className={`${titleClassName} font-bold text-black relative inline-block`}>
           &nbsp;{titlePrefix} - {title}
         </h1>
       </div>

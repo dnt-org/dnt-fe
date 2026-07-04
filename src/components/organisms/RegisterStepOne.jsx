@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import { useState } from "react"
 import PropTypes from "prop-types"
 import { Eye, EyeOff, QrCode } from "lucide-react"
 import RegisterCountrySelect from "../molecules/RegisterCountrySelect"
@@ -50,7 +50,6 @@ SecureField.propTypes = {
 
 export default function RegisterStepOne({
   t,
-  error,
   countries,
   banks,
   selectedCountry,
@@ -64,7 +63,6 @@ export default function RegisterStepOne({
   handleBankNumberBlur,
   isFetchingAccountName,
   accountNameError,
-  handleContractDownload,
 }) {
   const [visibleFields, setVisibleFields] = useState({})
   const [isQrModalOpen, setIsQrModalOpen] = useState(false)
@@ -79,25 +77,10 @@ export default function RegisterStepOne({
     setIsQrModalOpen(false)
   }
 
-  const PASSWORD_COMPLEXITY_HINT = t(
-    "auth.passwordComplexityHint",
-    "Yêu cầu: ít nhất 1 chữ in hoa (A-Z), 1 chữ thường (a-z), 1 số (0-9) và 1 ký tự đặc biệt (~!@#$%^&*_.)."
-  )
-
   return (
-    <div className="mt-3">
-      {/* Fix H: "Xem hợp đồng" button at top-right of the form */}
-      <div className="flex justify-end mb-2">
-        <button
-          type="button"
-          onClick={handleContractDownload}
-          className="text-[13px] border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50"
-        >
-          {t("register.viewContract", "Xem hợp đồng")}
-        </button>
-      </div>
+    <div className="mt-0">
       {/* {error ? <p className="text-red-500">{error}</p> : null} */}
-      <div className="grid grid-cols-2 gap-2 mt-2">
+      <div className="grid grid-cols-2 gap-2 mt-0">
         <RegisterCountrySelect
           countries={countries}
           selectedCountry={selectedCountry}
@@ -117,7 +100,7 @@ export default function RegisterStepOne({
           error={validationErrors.account_type}
         />
       </div>
-      <div className="space-y-1.5 mt-2">
+      <div className="space-y-1.5 mt-1">
         <div className="grid grid-cols-1 items-center gap-4">
           <div className="relative w-full flex items-center">
             <input type="text" className="border py-1.5 px-2 rounded w-full text-[13px]" placeholder={t("register.accountNumberPlaceholder", "ID = SỐ TÀI KHOẢN NGÂN HÀNG")} name="bank_number" value={formData.bank_number} onChange={handleInputChange} onBlur={handleBankNumberBlur} />
@@ -155,6 +138,7 @@ export default function RegisterStepOne({
               disabled={isFetchingAccountName}
               onChange={() => {}}
             />
+            <span className="text-red-500 ml-2">*</span>
           </div>
           {accountNameError ? <p className="text-red-500 text-xs mt-0.5">{accountNameError}</p> : null}
         </div>
@@ -167,12 +151,6 @@ export default function RegisterStepOne({
           visible={!!visibleFields.password}
           onToggleVisible={() => toggleFieldVisible("password")}
         />
-        {!validationErrors.password && (
-          <>
-            <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
-            <p className="text-gray-400 text-xs -mt-2">(không hiển động chữ lúc này)</p>
-          </>
-        )}
         <SecureField
           name="repeat_password"
           value={formData.repeat_password}
@@ -209,9 +187,6 @@ export default function RegisterStepOne({
           visible={!!visibleFields.recovery_character}
           onToggleVisible={() => toggleFieldVisible("recovery_character")}
         />
-        {/* Fix G: helper text showing complexity requirements */}
-        <p className="text-gray-400 text-xs -mt-3">{PASSWORD_COMPLEXITY_HINT}</p>
-        <p className="text-gray-400 text-xs -mt-2">(không hiển động chữ lúc này)</p>
         <SecureField
           name="repeat_recovery_character"
           value={formData.repeat_recovery_character}
@@ -250,7 +225,6 @@ export default function RegisterStepOne({
 
 RegisterStepOne.propTypes = {
   t: PropTypes.func.isRequired,
-  error: PropTypes.string,
   countries: PropTypes.array.isRequired,
   banks: PropTypes.array,
   selectedCountry: PropTypes.object,
@@ -264,5 +238,4 @@ RegisterStepOne.propTypes = {
   handleBankNumberBlur: PropTypes.func.isRequired,
   isFetchingAccountName: PropTypes.bool,
   accountNameError: PropTypes.string,
-  handleContractDownload: PropTypes.func,
 }

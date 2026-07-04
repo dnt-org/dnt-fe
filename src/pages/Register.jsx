@@ -1,15 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "../styles/Register.css";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { getCountries } from "../services/countries";
-import Select from "react-select";
-import { useDispatch, useSelector } from 'react-redux';
-import { changePasswordAction } from "../context/action/authActions";
-import { uploadImageToCloudinary } from "../services/cloudinary";
-import { downloadContract } from "../services/contractService";
 import { useTranslation } from 'react-i18next';
-import { verifyBankNumber } from "../services/authService";
 import { renderAsync } from "docx-preview";
 import PageHeaderWithOutColorPicker from '../components/PageHeaderWithOutColorPicker';
 import useRegisterForm from "../hooks/useRegisterForm";
@@ -26,7 +17,6 @@ export default function RegisterPage() {
     selectedCountry,
     setSelectedCountry,
     validationErrors,
-    error,
     page,
     isVerifying,
     formData,
@@ -65,13 +55,29 @@ export default function RegisterPage() {
   }, [isContractModalOpen, isContractLoading, activeFile]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <div className="bg-transparent backdrop-blur-md px-6 py-4 rounded-lg w-full max-w-4xl mx-auto">
-        <PageHeaderWithOutColorPicker color={color} onColorChange={handleChangeColor} titlePrefix="1" title={t('register.registerTitle', 'ĐĂNG KÝ')} titleClassName="text-xl" />
+    <div className="flex justify-center items-start min-h-screen pt-2">
+      <div className="bg-transparent backdrop-blur-md px-6 py-2 rounded-lg w-full max-w-4xl mx-auto">
+        <PageHeaderWithOutColorPicker
+          color={color}
+          onColorChange={handleChangeColor}
+          titlePrefix="1"
+          title={t('register.registerTitle', 'ĐĂNG KÝ')}
+          titleClassName="text-3xl"
+          compact
+          rightButtonClassName="right-4"
+          rightButton={(
+            <button
+              type="button"
+              onClick={handleContractDownload}
+              className="text-[13px] border border-blue-600 text-blue-600 px-3 py-1 rounded hover:bg-blue-50"
+            >
+              {t("register.viewContract", "Xem hợp đồng")}
+            </button>
+          )}
+        />
         {page === 1 && (
           <RegisterStepOne
             t={t}
-            error={error}
             countries={countries}
             banks={banks}
             selectedCountry={selectedCountry}
@@ -85,7 +91,6 @@ export default function RegisterPage() {
             handleBankNumberBlur={handleBankNumberBlur}
             isFetchingAccountName={isFetchingAccountName}
             accountNameError={accountNameError}
-            handleContractDownload={handleContractDownload}
           />
         )}
         {page === 2 && (
