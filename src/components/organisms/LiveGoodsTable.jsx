@@ -21,11 +21,10 @@ export default function LiveGoodsTable({ initialItems = [] }) {
           handoverLocation: it.handoverLocation || "",
           contractDurationFrom: it.contractDurationFrom || "",
           contractDurationTo: it.contractDurationTo || "",
-          directPayment: !!it.directPayment,
-          directDepositRequirement: it.directDepositRequirement || "",
-          walletPayment: !!it.walletPayment,
-          walletDepositRequirement: it.walletDepositRequirement || "",
-          vat: !!it.vat,
+          invoiceType: it.invoiceType || "",
+          paymentViaPlatform: !!it.paymentViaPlatform,
+          timeUserMustPayAfterDelivery: it.timeUserMustPayAfterDelivery || "",
+          depositRequirement: it.depositRequirement || "",
           qtyMin: it.qtyMin || "",
           qtySet: it.qtySet || "",
           unit: it.unit || "",
@@ -51,11 +50,10 @@ export default function LiveGoodsTable({ initialItems = [] }) {
             handoverLocation: "",
             contractDurationFrom: "",
             contractDurationTo: "",
-            directPayment: false,
-            directDepositRequirement: "",
-            walletPayment: false,
-            walletDepositRequirement: "",
-            vat: false,
+            invoiceType: "",
+            paymentViaPlatform: false,
+            timeUserMustPayAfterDelivery: "",
+            depositRequirement: "",
             qtyMin: "",
             qtySet: "",
             unit: "",
@@ -116,11 +114,10 @@ export default function LiveGoodsTable({ initialItems = [] }) {
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.maxDeliveryDays")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.handoverLocation")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.contractDuration") }} /> *</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.directPayment")}</th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></th>
-              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.vat")} *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.invoiceType")} *</th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaPlatform") }} /></th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed"><span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} /></th>
+              <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.depositRequirement")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.quantityMinimum")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("liveGoods.setQuantity")} *</th>
               <th className="border border-black px-2 py-1 live-goods-col-fixed">{t("productGrid.unit")} *</th>
@@ -179,20 +176,25 @@ export default function LiveGoodsTable({ initialItems = [] }) {
                     <input value={row.contractDurationTo} onChange={(e) => updateItem(idx, { contractDurationTo: e.target.value })} className="flex-1 p-2" placeholder={t("liveGoods.to")} />
                   </div>
                 </td>
-                <td className="border border-black px-2 py-1 text-center live-goods-col-fixed">
-                  <input type="checkbox" checked={row.directPayment} onChange={(e) => updateItem(idx, { directPayment: e.target.checked })} />
-                </td>
+                {/* (17) XUẤT HÓA ĐƠN */}
                 <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.directDepositRequirement} onChange={(e) => updateItem(idx, { directDepositRequirement: e.target.value })} onDoubleClick={() => openMoney(idx, "directDepositRequirement", t("productGrid.depositRequirementDirect"), row.directDepositRequirement)} className="w-full p-2" />
+                  <select value={row.invoiceType} onChange={(e) => updateItem(idx, { invoiceType: e.target.value })} className="w-full p-2">
+                    <option value="">{t("productGrid.choose")}</option>
+                    <option value="vat">{t("productGrid.invoiceVat")}</option>
+                    <option value="no_vat">{t("productGrid.invoiceNoVat")}</option>
+                  </select>
                 </td>
+                {/* (18) THANH TOÁN QUA NỀN TẢNG */}
                 <td className="border border-black px-2 py-1 text-center live-goods-col-fixed">
-                  <input type="checkbox" checked={row.walletPayment} onChange={(e) => updateItem(idx, { walletPayment: e.target.checked })} />
+                  <input type="checkbox" checked={row.paymentViaPlatform} onChange={(e) => updateItem(idx, { paymentViaPlatform: e.target.checked })} />
                 </td>
+                {/* (19) THỜI GIAN THANH TOÁN CHÍNH THỨC CHO CHỦ HÀNG SAU KHI NHẬN ĐƯỢC HÀNG */}
                 <td className="border border-black px-2 py-1 live-goods-col-fixed">
-                  <input type="number" value={row.walletDepositRequirement} onChange={(e) => updateItem(idx, { walletDepositRequirement: e.target.value })} onDoubleClick={() => openMoney(idx, "walletDepositRequirement", t("productGrid.depositRequirementWallet"), row.walletDepositRequirement)} className="w-full p-2" />
+                  <input type="text" value={row.timeUserMustPayAfterDelivery} onChange={(e) => updateItem(idx, { timeUserMustPayAfterDelivery: e.target.value })} className="w-full p-2" />
                 </td>
-                <td className="border border-black px-2 py-1 text-center live-goods-col-fixed">
-                  <input type="checkbox" checked={row.vat} onChange={(e) => updateItem(idx, { vat: e.target.checked })} />
+                {/* (20) YÊU CẦU ĐẶT CỌC, KÝ QUỸ (%) */}
+                <td className="border border-black px-2 py-1 live-goods-col-fixed">
+                  <input type="number" value={row.depositRequirement} onChange={(e) => updateItem(idx, { depositRequirement: e.target.value })} className="w-full p-2" />
                 </td>
                 <td className="border border-black px-2 py-1 live-goods-col-fixed">
                   <input type="number" value={row.qtyMin} onChange={(e) => updateItem(idx, { qtyMin: e.target.value })} onDoubleClick={() => openMoney(idx, "qtyMin", t("productGrid.quantityMinimum"), row.qtyMin)} className="w-full p-2" />

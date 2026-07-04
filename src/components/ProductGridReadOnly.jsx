@@ -42,11 +42,9 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
       handoverLocation: "",
       contractDurationMultiplicity: "",
       contractDurationUnit: "",
-      directPayment: "",
-      depositRequirementDirect: "",
-      paymentViaWallet: "",
-      depositRequirementWallet: "",
-      vat: "",
+      invoiceType: "",
+      paymentViaPlatform: "",
+      depositRequirement: "",
       quantityMinimum: "",
       unit: "",
       unitMarketPrice: "",
@@ -134,21 +132,16 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
             <div>{t("productGrid.timeUnit")}</div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div>{t("productGrid.directPayment")}</div>
+            <div>{t("productGrid.invoiceType")} <span className="text-red-500">*</span></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementDirect") }} /></div>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaPlatform") }} /></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.paymentViaWallet") }} /></div>
+            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.timeUserMustPayAfterDelivery") }} /></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div><span dangerouslySetInnerHTML={{ __html: t("productGrid.depositRequirementWallet") }} /></div>
-          </div>
-          <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
-            <div>
-              {t("productGrid.vat")} <span className="text-red-500">*</span>
-            </div>
+            <div>{t("productGrid.depositRequirement")} <span className="text-red-500">*</span></div>
           </div>
           <div className="border-r border-b border-gray-300 p-2 text-center flex flex-col items-center justify-center">
             <div>
@@ -361,10 +354,25 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 <option value="year">{t("productGrid.year")}</option>
               </select>
 
+              {/* (17) XUẤT HÓA ĐƠN */}
               <select
-                value={item.directPayment}
+                value={item.invoiceType}
                 onChange={(e) =>
-                  handleItemChange(item.id, "directPayment", e.target.value)
+                  handleItemChange(item.id, "invoiceType", e.target.value)
+                }
+                className="w-full border-t border-b border-r border-gray-300 text-center"
+                disabled
+              >
+                <option value="">{t("productGrid.choose")}</option>
+                <option value="vat">{t("productGrid.invoiceVat")}</option>
+                <option value="no_vat">{t("productGrid.invoiceNoVat")}</option>
+              </select>
+
+              {/* (18) THANH TOÁN QUA NỀN TẢNG */}
+              <select
+                value={item.paymentViaPlatform}
+                onChange={(e) =>
+                  handleItemChange(item.id, "paymentViaPlatform", e.target.value)
                 }
                 className="w-full border-t border-b border-r border-gray-300 text-center"
                 disabled
@@ -374,13 +382,14 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 <option value="no">{t("productGrid.no")}</option>
               </select>
 
+              {/* (19) THỜI GIAN THANH TOÁN CHÍNH THỨC CHO CHỦ HÀNG SAU KHI NHẬN ĐƯỢC HÀNG */}
               <input
                 type="text"
-                value={item.depositRequirementDirect}
+                value={item.timeUserMustPayAfterDelivery}
                 onChange={(e) =>
                   handleItemChange(
                     item.id,
-                    "depositRequirementDirect",
+                    "timeUserMustPayAfterDelivery",
                     e.target.value
                   )
                 }
@@ -389,45 +398,17 @@ export default function ProductGridReadOnly({ products = [], onItemsChange }) {
                 disabled
               />
 
-              <select
-                value={item.paymentViaWallet}
+              {/* (20) YÊU CẦU ĐẶT CỌC, KÝ QUỸ (%) */}
+              <input
+                type="text"
+                value={item.depositRequirement}
                 onChange={(e) =>
-                  handleItemChange(item.id, "paymentViaWallet", e.target.value)
+                  handleItemChange(item.id, "depositRequirement", e.target.value)
                 }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
+                className="w-full border-t border-b border-r border-gray-300"
+                placeholder=""
                 disabled
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
-              
-              <select
-                value={item.depositRequirementWallet}
-                onChange={(e) =>
-                  handleItemChange(item.id, "depositRequirementWallet", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-                disabled
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
-
-             
-              <select
-                value={item.vat}
-                onChange={(e) =>
-                  handleItemChange(item.id, "vat", e.target.value)
-                }
-                className="w-full border-t border-b border-r border-gray-300 text-center"
-                disabled
-              >
-                <option value="">{t("productGrid.choose")}</option>
-                <option value="yes">{t("productGrid.yes")}</option>
-                <option value="no">{t("productGrid.no")}</option>
-              </select>
+              />
               <input
                 type="number"
                 min="0"
