@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
 import RowNumberCell from "../atoms/RowNumberCell"
@@ -12,6 +12,7 @@ import FileInput from "../atoms/FileInput"
 import ProductGrid from "../ProductGrid"
 import TwoLineUnitInput from "../atoms/TwoLineUnitInput"
 import Select from "../atoms/Select"
+import { calculateTaxPercent, isTaxRequired } from "../../utils/taxCalculator"
 
 export default function GoodsFormRows({
   selectedType,
@@ -33,8 +34,15 @@ export default function GoodsFormRows({
   onGoodsInfoChange,
   goodsItems,
   onItemsChange,
+  accountType = "ca_nhan", // Default: tài khoản cá nhân (can be passed from parent)
 }) {
   const { t } = useTranslation()
+  const [accountTypeState, setAccountTypeState] = useState(accountType)
+
+  // Tính tax % tự động dựa trên loại tài khoản + loại giao dịch + phân loại
+  const calculatedTaxPercent = useMemo(() => {
+    return calculateTaxPercent(accountTypeState, selectedType, selectedCategory)
+  }, [accountTypeState, selectedType, selectedCategory])
 
   // Reverse-geocode toạ độ -> địa chỉ dạng chữ bằng Nominatim (OpenStreetMap, free, ko cần key)
   const reverseGeocode = async (latitude, longitude) => {
@@ -237,19 +245,46 @@ export default function GoodsFormRows({
           <div>{t("goods.taxVatAndPit", "NỘP HỘ THUẾ VAT + TNCN")}</div>
         </div>
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center justify-end">
-          <span className="font-medium">0</span>
+          <span className="font-medium">{calculatedTaxPercent}</span>
           <span className="ml-1 text-gray-700">%</span>
         </div>
+        {isTaxRequired(accountTypeState) && calculatedTaxPercent > 0 && (
+          <div className="col-span-17 border-r border-gray-300 p-2 flex items-center text-xs text-gray-500">
+            <small>({accountTypeState === "ho_kinh_doanh" ? "Hộ kinh doanh" : "Cá nhân"})</small>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={9} className="col-span-1 p-2" />
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
-          <div>{t("goods.marketingLinkingFee", "PHÍ TIẾP THỊ LIÊN KẾT")}</div>
+          <div>
+            {t("goods.marketingLinkingFee", "PHÍ TIẾP THỊ LIÊN KẾT")}
+            <span className="text-red-500 ml-1">*</span>
+          </div>
         </div>
-        <div className="col-span-12 border-r border-gray-300 p-2 flex items-center">
-          <NumberInput name="marketingLinkingFee" value={goodsInfo.marketingLinkingFee || ""} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
-          <span className="ml-1 text-gray-700">%</span>
+        <div className="col-span-12 border-r border-gray-300 p-2 flex flex-col">
+          <div className="flex items-center">
+            <NumberInput
+              name="marketingLinkingFee"
+              value={goodsInfo.marketingLinkingFee || ""}
+              onChange={(e) => {
+                onGoodsInfoChange(e);
+                // Validate: phải > 0.1%
+                const val = parseFloat(e.target.value || 0);
+                if (val > 0 && val <= 0.1) {
+                  console.warn("PHÍ TIẾP THỊ phải > 0.1%");
+                }
+              }}
+              className="w-full border-gray-300 p-1 text-right"
+              placeholder={t("goods.enter")}
+              min="0.1"
+            />
+            <span className="ml-1 text-gray-700">%</span>
+          </div>
+          {goodsInfo.marketingLinkingFee > 0 && goodsInfo.marketingLinkingFee <= 0.1 && (
+            <small className="text-red-500 mt-1">Phải > 0.1%</small>
+          )}
         </div>
       </div>
 
@@ -389,11 +424,11 @@ export default function GoodsFormRows({
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* AI / Người thực */}
             <div className="col-span-1 border-r border-gray-300 p-2 flex flex-col gap-1 justify-center">
-              <label className="flex items-center gap-1 text-[10px] cursor-pointer">
+              <label className="flex items-center gap-1 text-sm cursor-pointer font-medium">
                 <input type="checkbox" name="regLivestreamGoodsAI" checked={goodsInfo.regLivestreamGoodsAI || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
                 <span>AI</span>
               </label>
-              <label className="flex items-center gap-1 text-[10px] cursor-pointer">
+              <label className="flex items-center gap-1 text-sm cursor-pointer font-medium">
                 <input type="checkbox" name="regLivestreamGoodsPerson" checked={goodsInfo.regLivestreamGoodsPerson || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
                 <span>Người thực</span>
               </label>
