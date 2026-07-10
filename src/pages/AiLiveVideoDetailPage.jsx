@@ -55,6 +55,8 @@ export default function AiLiveVideoDetailPage() {
   const [submittingBidKey, setSubmittingBidKey] = useState(null)
   const [ownerDecision] = useState("none")
   const [minimized, setMinimized] = useState(false)
+  const [posterTableOpen, setPosterTableOpen] = useState(true)
+  const [joinerTableOpen, setJoinerTableOpen] = useState(true)
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api"
   const FILE_BASE_URL = API_URL.replace(/\/api\/?$/, "")
@@ -387,13 +389,16 @@ export default function AiLiveVideoDetailPage() {
         </div>
       ) : null}
 
-      <LiveGoodsTable
-        items={productItems}
-        bids={bids}
-        onConfirmBid={handleConfirmBid}
-        submittingBidKey={submittingBidKey}
-        mode={isPoster ? "poster" : "joiner"}
-      />
+      {(isPoster ? posterTableOpen : hasJoined && joinerTableOpen) && (
+        <LiveGoodsTable
+          items={productItems}
+          bids={bids}
+          onConfirmBid={handleConfirmBid}
+          submittingBidKey={submittingBidKey}
+          mode={isPoster ? "poster" : "joiner"}
+          onClose={() => (isPoster ? setPosterTableOpen(false) : setJoinerTableOpen(false))}
+        />
+      )}
       {isPoster ? (
         <div className="mt-3 border border-black">
           <div className="bg-gray-100 px-3 py-2 text-sm font-bold">{t("aiLiveVideo.realtimeFeedback", "Phản hồi realtime cho chủ bài đăng")}</div>
@@ -412,7 +417,7 @@ export default function AiLiveVideoDetailPage() {
           </div>
         </div>
       ) : null}
-      {!isPoster ? (
+      {!isPoster && hasJoined ? (
         <div className="flex items-center justify-center mt-2">
           {ownerDecision === "none" ? (
             <div className="p-4 text-center font-bold" style={{ backgroundColor: "#e0f2fe", color: "#1e3a8a" }}>

@@ -46,7 +46,7 @@ const colorForCustomer = (name, palette) => {
  *    và 1 nút XÁC NHẬN -> OTP ở dưới cùng.
  *  - poster (chủ bài đăng): HỒ SƠ ĐÁP ỨNG + cột XÁC NHẬN với 2 nút ĐỒNG Ý / TỪ CHỐI.
  */
-export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mode = "joiner" }) {
+export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mode = "joiner", onClose }) {
   const { t } = useTranslation()
   const [decisions, setDecisions] = useState({})
   const [seconds, setSeconds] = useState({})
@@ -182,7 +182,17 @@ export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mo
       },
     ]
     return (
-      <div className="mt-4">
+      <div className="relative mt-4">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close", "Đóng")}
+            className="absolute -top-2 -right-2 z-10 bg-red-600 text-white w-6 h-6 flex items-center justify-center font-bold leading-none"
+          >
+            X
+          </button>
+        )}
         <ProductGridReadOnly products={items} extraColumns={extraColumns} rowStyle={rowStyle} />
       </div>
     )
@@ -238,7 +248,17 @@ export default function LiveGoodsTable({ items = [], bids = [], onConfirmBid, mo
   }
 
   return (
-    <div className="mt-4">
+    <div className="relative mt-4">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t("common.close", "Đóng")}
+          className="absolute -top-2 -right-2 z-10 bg-red-600 text-white w-6 h-6 flex items-center justify-center font-bold leading-none"
+        >
+          X
+        </button>
+      )}
       <ProductGridReadOnly products={items} onItemsChange={setLiveItems} extraColumns={joinerExtraColumns} />
       {/* XÁC NHẬN cần nhập OTP */}
       <div className="flex items-center justify-center mt-3">
