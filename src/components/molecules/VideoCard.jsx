@@ -1,7 +1,8 @@
 import React, { useState } from "react"
 import PropTypes from "prop-types"
-import { Eye, Handshake, Share2, Play, Globe } from "lucide-react"
+import { Eye, Handshake, Share2, Play } from "lucide-react"
 import OtpModal from "./OtpModal"
+import platformLogo from "../../assets/planet.jpg"
 
 export default function VideoCard({ index, name, productId, viewers, saves, shares, hasPlatformLogo, selected, onClick, onPlay, avatar }) {
   const [showOtp, setShowOtp] = useState(false)
@@ -24,7 +25,7 @@ export default function VideoCard({ index, name, productId, viewers, saves, shar
           <span className="text-xs font-bold text-blue-800 truncate">{name} <span className="text-blue-700">{productId}</span></span>
         </div>
         {hasPlatformLogo && (
-          <Globe className="w-6 h-6 text-blue-500 shrink-0" title="Logo nền tảng" />
+          <img src={platformLogo} alt="Logo nền tảng" title="Logo nền tảng" className="w-6 h-6 rounded-full object-cover shrink-0" />
         )}
       </div>
 
