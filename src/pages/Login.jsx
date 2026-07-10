@@ -633,10 +633,10 @@ export default function LoginPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-sm mx-4">
             <h3 className="text-xl font-bold mb-4 text-center">
-              {t('forgotPassword.otpTitle', 'XÁC THỰC OTP')}
+              {t('forgotPassword.otpTitle', 'XÁC THỰC MẬT MÃ OTP')}
             </h3>
             <p className="text-gray-600 mb-4 text-center text-sm">
-              {t('forgotPassword.otpDescription', 'Vui lòng nhập mã OTP đã được gửi đến kênh đăng ký của bạn.')}
+              {t('forgotPassword.otpDescription', 'Vui lòng nhập mật mã OTP đã được gửi đến kênh đăng ký của bạn.')}
             </p>
             {errorMessage && (
               <div className="text-red-500 text-sm text-center mb-4">

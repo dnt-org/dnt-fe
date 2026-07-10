@@ -146,10 +146,10 @@ export default function useRegisterForm(t) {
       errors.repeat_password = t("auth.passwordMismatch", "Mật khẩu không khớp")
     }
 
-    if (!data.otp) errors.otp = t("auth.otpRequired", "Vui lòng nhập mã OTP")
-    if (!data.repeat_otp) errors.repeat_otp = t("auth.repeatOtpRequired", "Vui lòng nhập lại mã OTP")
+    if (!data.otp) errors.otp = t("auth.otpRequired", "Vui lòng nhập mật mã OTP")
+    if (!data.repeat_otp) errors.repeat_otp = t("auth.repeatOtpRequired", "Vui lòng nhập lại mật mã OTP")
     if (data.otp && data.repeat_otp && data.otp !== data.repeat_otp) {
-      errors.repeat_otp = t("auth.otpMismatch", "Mã OTP không khớp")
+      errors.repeat_otp = t("auth.otpMismatch", "Mật mã OTP không khớp")
     }
 
     if (!data.recovery_character) {

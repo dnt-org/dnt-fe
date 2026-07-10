@@ -135,7 +135,7 @@ export default function CreateGroupPanel({ isOpen, onClose, friends, existingGro
         ) : (
           <>
             <p className="text-sm text-gray-600 mb-3">
-              Vui lòng nhập mã OTP của chủ tài khoản để xác nhận {existingGroup ? "cập nhật" : "tạo"} nhóm.
+              Vui lòng nhập mật mã OTP của chủ tài khoản để xác nhận {existingGroup ? "cập nhật" : "tạo"} nhóm.
             </p>
             <input
               type="text"

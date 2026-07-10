@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
 
   // UI states
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.");
   const [successMessage, setSuccessMessage] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [tempBlockedUntil, setTempBlockedUntil] = useState(null); // Date or null — 10-minute lock after 5 wrong recovery attempts
@@ -206,7 +206,7 @@ export default function ForgotPasswordPage() {
         setTempBlockedUntil(new Date(errorData.tempBlockedUntil));
         setErrorMessage(t(
           'forgotPassword.blockedWarning',
-          'Tài khoản đã bị khóa do nhập sai ký tự khôi phục quá 5 lần. Bạn chỉ còn cơ hội cuối cùng lấy lại tài khoản của mình bằng việc nhập ký tự khôi phục tài khoản của mình sau 10 phút.'
+          'Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.'
         ));
         return;
       }
@@ -538,6 +538,7 @@ export default function ForgotPasswordPage() {
                     type="text"
                     className="border p-3 rounded w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-center text-2xl tracking-widest"
                     value={otp}
+                    placeholder={t('forgotPassword.otpPlaceholder', 'Nhập mật mã OTP')}
                     onChange={(e) => setOtp(e.target.value)}
                     disabled={isLoading}
                   />
@@ -554,7 +555,7 @@ export default function ForgotPasswordPage() {
                   >
                     {isLoading
                       ? t('common.loading', 'Đang xử lý...')
-                      : t('forgotPassword.verifyOtpButton', 'XÁC NHẬN MẬT MÃ')}
+                      : t('forgotPassword.verifyButton', 'XÁC NHẬN MẬT MÃ OTP')}
                   </button>
                 </div>
 
@@ -695,11 +696,7 @@ export default function ForgotPasswordPage() {
             )}
 
             {/* Error Message */}
-            {errorMessage && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-center">
-                {errorMessage}
-              </div>
-            )}
+            
 
             {/* Success Message
             {successMessage && (

@@ -92,7 +92,7 @@ export default function GuideRulesPage() {
                         {t('guideRules.heading', 'Lấy lại tài khoản qua 3 bước')}
                     </h2>
 
-                    <p className="text-gray-600 max-w-2xl mx-auto mb-8">
+                    <p className="text-gray-600 mx-auto mb-8">
                         {t('guideRules.intro', 'Nếu bạn không thể truy cập tài khoản, hãy làm theo các bước hướng dẫn dưới đây để được hỗ trợ khôi phục.')}
                     </p>
                 </div>
