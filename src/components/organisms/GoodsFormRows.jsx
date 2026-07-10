@@ -282,9 +282,10 @@ export default function GoodsFormRows({
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="successFee" value={goodsInfo.successFee} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
               <span className="text-gray-700">%</span>
-              <span className="text-red-500 font-bold ml-1">*</span>
             </div>
-            <div className="col-span-16 p-2 flex items-center" />
+            <div className="col-span-16 p-2 flex items-center">
+              <span className="text-red-500 font-bold ml-2">*</span>
+            </div>
           </div>
 
           {/* PHÍ HIỂN THỊ TRÊN TRANG CHỦ */}
