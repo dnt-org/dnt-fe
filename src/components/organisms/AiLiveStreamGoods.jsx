@@ -278,7 +278,7 @@ export default function AiLiveStreamGoods() {
                         { key: 'shared', Icon: Share2, top: '1122 ID', bottom: '345 video' },
                         { key: 'violations', Icon: FlagOff, top: '22 ID', bottom: '5 báo cáo' },
                         { key: 'reports', Icon: Flag, top: '11 ID', bottom: '6 báo cáo' },
-                    ].filter(({ key }) => activeTab === null || activeTab === key).map(({ key, Icon, top, bottom, danger }) => (
+                    ].map(({ key, Icon, top, bottom, danger }) => (
                         <div key={key} className="flex flex-col items-center min-w-0">
                             {/* SL ở trên */}
                             <span className="text-[10px] text-gray-600 leading-tight mb-0.5 whitespace-nowrap">{top}</span>
