@@ -444,22 +444,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 >
                   Chụp hình
                 </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id={`image-${item.id}`}
-                  onChange={(e) =>
-                    handleItemChange(item.id, "image", e.target.files?.[0] || null)
-                  }
-                  className="sr-only"
-                />
-                <label
-                  htmlFor={`image-${item.id}`}
-                  className="inline-block bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500 cursor-pointer text-xs"
-                  title="Hoặc chọn file từ thiết bị"
-                >
-                  …
-                </label>
                 {item.image && (
                   <div className="text-xs truncate max-w-[120px]" title={item.image.name}>{item.image.name}</div>
                 )}
@@ -476,22 +460,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 >
                   Quay phim
                 </button>
-                <input
-                  type="file"
-                  accept="video/*"
-                  id={`videoFile-${item.id}`}
-                  onChange={(e) =>
-                    handleItemChange(item.id, "videoFile", e.target.files?.[0] || null)
-                  }
-                  className="sr-only"
-                />
-                <label
-                  htmlFor={`videoFile-${item.id}`}
-                  className="inline-block bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500 cursor-pointer text-xs"
-                  title="Hoặc chọn file từ thiết bị"
-                >
-                  …
-                </label>
                 {item.videoFile && (
                   <div className="text-xs truncate max-w-[120px]" title={item.videoFile.name}>{item.videoFile.name}</div>
                 )}
