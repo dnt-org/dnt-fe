@@ -613,7 +613,7 @@ export default function ForgotPasswordPage() {
                 )}
 
                 {/* Password requirements */}
-                {newPassword && (
+                {newPassword && !passwordValidation.isValid && (
                   <div className="text-xs space-y-1 bg-gray-50 p-3 rounded">
                     <div className={`flex items-center ${passwordValidation.minLength ? 'text-green-600' : 'text-red-600'}`}>
                       <span className="mr-2">{passwordValidation.minLength ? '✓' : '✗'}</span>
