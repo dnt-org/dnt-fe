@@ -68,6 +68,46 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
     }
   };
 
+  // #11: Lúc chụp/quay mới lấy địa chỉ + thời gian để đặt tên file
+  const sanitizeForFilename = (s) =>
+    (s || "")
+      .normalize("NFC")
+      .replace(/[/\\?%*:|"<>]/g, " ")
+      .replace(/\s+/g, "_")
+      .slice(0, 80);
+
+  const getGeoAddress = () =>
+    new Promise((resolve) => {
+      if (typeof navigator === "undefined" || !navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&accept-language=vi`,
+              { headers: { Accept: "application/json" } }
+            );
+            const data = await res.json();
+            resolve(data?.display_name || `${latitude},${longitude}`);
+          } catch {
+            resolve(`${latitude},${longitude}`);
+          }
+        },
+        () => resolve(null),
+        { timeout: 8000, enableHighAccuracy: true }
+      );
+    });
+
+  // Tên file = <địa chỉ>_<thời gian chụp>.<ext>; nếu không lấy được vị trí thì chỉ dùng thời gian
+  const buildCaptureFilename = async (ext) => {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const addr = await getGeoAddress();
+    const base = addr ? `${sanitizeForFilename(addr)}_${ts}` : ts;
+    return `${base}.${ext}`;
+  };
+
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const ctx = canvasRef.current.getContext("2d");
@@ -75,8 +115,9 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       canvasRef.current.height = videoRef.current.videoHeight;
       ctx.drawImage(videoRef.current, 0, 0);
 
-      canvasRef.current.toBlob((blob) => {
-        const file = new File([blob], `image_${Date.now()}.jpg`, { type: "image/jpeg" });
+      canvasRef.current.toBlob(async (blob) => {
+        const filename = await buildCaptureFilename("jpg");
+        const file = new File([blob], filename, { type: "image/jpeg" });
         handleItemChange(cameraModal.itemId, "image", file);
         closeCamera();
       }, "image/jpeg", 0.95);
@@ -94,9 +135,10 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
       const chunks = [];
 
       mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-      mediaRecorder.onstop = () => {
+      mediaRecorder.onstop = async () => {
         const blob = new Blob(chunks, { type: "video/webm" });
-        const file = new File([blob], `video_${Date.now()}.webm`, { type: "video/webm" });
+        const filename = await buildCaptureFilename("webm");
+        const file = new File([blob], filename, { type: "video/webm" });
         handleItemChange(cameraModal.itemId, "videoFile", file);
         closeCamera();
       };
@@ -395,6 +437,13 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {/* Col 6: HÌNH ẢNH - Camera capture button */}
             <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
               <div className="flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => openCamera("photo", item.id)}
+                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  Chụp hình
+                </button>
                 <input
                   type="file"
                   accept="image/*"
@@ -420,6 +469,13 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {/* Col 7: QUAY PHIM - Video recording button */}
             <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
               <div className="flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => openCamera("video", item.id)}
+                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap text-sm"
+                >
+                  Quay phim
+                </button>
                 <input
                   type="file"
                   accept="video/*"
