@@ -44,6 +44,19 @@ export default function GoodsFormRows({
     return calculateTaxPercent(accountTypeState, selectedType, selectedCategory)
   }, [accountTypeState, selectedType, selectedCategory])
 
+  // TỔNG PHÍ NỀN TẢNG = cộng tất cả phí ở trên (cột % và cột số tiền)
+  const sumFields = (fields) => fields.reduce((acc, key) => acc + (parseFloat(goodsInfo[key]) || 0), 0)
+  const totalPlatformPercent = useMemo(
+    () => sumFields(["successFee", "eventPercentFee", "livestreamPercentFee", "advertisingPercent", "regLivestreamGoodsPercent", "regProductAdPercent", "regPersonalBrandPercent"]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [goodsInfo]
+  )
+  const totalPlatformAmount = useMemo(
+    () => sumFields(["eventFee", "livestreamFee", "advertisingFee", "regLivestreamGoodsFee", "regProductAdFee", "regPersonalBrandFee"]),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [goodsInfo]
+  )
+
   // Reverse-geocode toạ độ -> địa chỉ dạng chữ bằng Nominatim (OpenStreetMap, free, ko cần key)
   const reverseGeocode = async (latitude, longitude) => {
     try {
@@ -242,7 +255,7 @@ export default function GoodsFormRows({
       <div className="grid grid-cols-30 border-b border-gray-300">
         <RowNumberCell number={8} className="col-span-1 p-2" />
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
-          <div>{t("goods.taxVatAndPit", "NỘP HỘ THUẾ VAT + TNCN")}</div>
+          <div>{t("goods.taxGtgtAndPit", "NỘP HỘ THUẾ GTGT + TNCN")}</div>
         </div>
         <div className="col-span-6 border-r border-gray-300 p-2 flex items-center justify-end">
           <span className="font-medium">{calculatedTaxPercent}</span>
@@ -253,39 +266,6 @@ export default function GoodsFormRows({
             <small>({accountTypeState === "ho_kinh_doanh" ? "Hộ kinh doanh" : "Cá nhân"})</small>
           </div>
         )}
-      </div>
-
-      <div className="grid grid-cols-30 border-b border-gray-300">
-        <RowNumberCell number={9} className="col-span-1 p-2" />
-        <div className="col-span-6 border-r border-gray-300 p-2 flex items-center">
-          <div>
-            {t("goods.marketingLinkingFee", "PHÍ TIẾP THỊ LIÊN KẾT")}
-            <span className="text-red-500 ml-1">*</span>
-          </div>
-        </div>
-        <div className="col-span-12 border-r border-gray-300 p-2 flex flex-col">
-          <div className="flex items-center">
-            <NumberInput
-              name="marketingLinkingFee"
-              value={goodsInfo.marketingLinkingFee || ""}
-              onChange={(e) => {
-                onGoodsInfoChange(e);
-                // Validate: phải > 0.1%
-                const val = parseFloat(e.target.value || 0);
-                if (val > 0 && val <= 0.1) {
-                  console.warn("PHÍ TIẾP THỊ phải > 0.1%");
-                }
-              }}
-              className="w-full border-gray-300 p-1 text-right"
-              placeholder={t("goods.enter")}
-              min="0.1"
-            />
-            <span className="ml-1 text-gray-700">%</span>
-          </div>
-          {goodsInfo.marketingLinkingFee > 0 && goodsInfo.marketingLinkingFee <= 0.1 && (
-            <small className="text-red-500 mt-1">{"Phải > 0.1%"}</small>
-          )}
-        </div>
       </div>
 
       <div id="row10" className="grid grid-cols-30 border-b border-gray-300">
@@ -352,12 +332,12 @@ export default function GoodsFormRows({
             <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-center"><span>{t("goods.prepay")}</span></div>
             {/* (Tải video) LIVESTREAM HÀNG HÓA */}
             <div className="col-span-4 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="livestreamVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamVideoFile} />
+              <FileInput name="livestreamVideoFile" label={<span className="text-black text-[11px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamVideoFile} />
               <div className="text-[11px] leading-tight font-bold text-black">LIVESTREAM HÀNG HÓA</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="livestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamCertFile} />
+              <FileInput name="livestreamCertFile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.livestreamCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -389,12 +369,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải video) QUẢNG CÁO */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="advertisingVideoFile" label={<span className="text-black text-[10px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingVideoFile} />
+              <FileInput name="advertisingVideoFile" label={<span className="text-black text-[11px]">(Tải video)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingVideoFile} />
               <div className="text-[11px] leading-tight font-bold text-black">QUẢNG CÁO</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="advertisingCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingCertFile} />
+              <FileInput name="advertisingCertFile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.advertisingCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -405,8 +385,9 @@ export default function GoodsFormRows({
             <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regLivestreamGoods" checked={goodsInfo.regLivestreamGoods} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div className="leading-tight font-medium">
-                <span>ĐĂNG KÝ LÀM VIDEO </span>
-                <span className="text-black font-bold">LIVESTREAM HÀNG HÓA</span>
+                <span>ĐĂNG KÝ LÀM VIDEO</span>
+                <br />
+                <span className="text-red-600 font-bold">LIVESTREAM HÀNG HÓA</span>
               </div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
@@ -434,12 +415,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regLivestreamProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamProductProfile} />
+              <FileInput name="regLivestreamProductProfile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamProductProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regLivestreamCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamCertFile} />
+              <FileInput name="regLivestreamCertFile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regLivestreamCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -449,8 +430,9 @@ export default function GoodsFormRows({
             <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regProductAdVideo" checked={goodsInfo.regProductAdVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <div className="leading-tight font-medium">
-                <span>ĐĂNG KÝ LÀM VIDEO </span>
-                <span className="text-black font-bold">QUẢNG CÁO SẢN PHẨM</span>
+                <span>ĐĂNG KÝ LÀM VIDEO</span>
+                <br />
+                <span className="text-red-600 font-bold">QUẢNG CÁO SẢN PHẨM</span>
               </div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
@@ -478,12 +460,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regProductAdCompanyProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCompanyProfile} />
+              <FileInput name="regProductAdCompanyProfile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCompanyProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ NGƯỜI ĐĂNG BÀI</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO + Nền tảng hỗ trợ */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regProductAdCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCertFile} />
+              <FileInput name="regProductAdCertFile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regProductAdCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
               <label className="flex items-center gap-1 text-[10px] cursor-pointer mt-1">
                 <input type="checkbox" name="regProductAdPlatformSupport" checked={goodsInfo.regProductAdPlatformSupport || false} onChange={onGoodsInfoChange} className="w-3 h-3" />
@@ -496,7 +478,11 @@ export default function GoodsFormRows({
           <div className="grid grid-cols-24 border-b border-gray-300">
             <div className="col-span-6 border-r border-gray-300 p-2 flex items-start gap-2">
               <Checkbox name="regPersonalBrandVideo" checked={goodsInfo.regPersonalBrandVideo} onChange={onGoodsInfoChange} className="w-4 h-4 mt-0.5 flex-shrink-0" />
-              <div className="leading-tight font-medium">{t("goods.registerPersonalBrandVideo", "ĐĂNG KÝ LÀM VIDEO THƯƠNG HIỆU BẢN THÂN")}</div>
+              <div className="leading-tight font-medium">
+                <span>ĐĂNG KÝ LÀM VIDEO</span>
+                <br />
+                <span className="text-red-600 font-bold">THƯƠNG HIỆU BẢN THÂN</span>
+              </div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center">
               <NumberInput name="regPersonalBrandPercent" value={goodsInfo.regPersonalBrandPercent} onChange={onGoodsInfoChange} className="w-full border-gray-300 p-1 text-right" placeholder={t("goods.enter")} />
@@ -523,12 +509,12 @@ export default function GoodsFormRows({
             </div>
             {/* (Tải lên) HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM */}
             <div className="col-span-2 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regPersonalBrandProductProfile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandProductProfile} />
+              <FileInput name="regPersonalBrandProductProfile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandProductProfile} />
               <div className="text-[11px] leading-tight font-bold text-black">HỒ SƠ ĐẦY ĐỦ CỦA SẢN PHẨM</div>
             </div>
             {/* (Tải lên) GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO */}
             <div className="col-span-3 border-r border-gray-300 p-2 flex flex-col items-center justify-center gap-1 text-center">
-              <FileInput name="regPersonalBrandCertFile" label={<span className="text-black text-[10px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandCertFile} />
+              <FileInput name="regPersonalBrandCertFile" label={<span className="text-black text-[11px]">(Tải lên)</span>} onChange={onGoodsInfoChange} selectedFile={goodsInfo.regPersonalBrandCertFile} />
               <div className="text-[11px] leading-tight font-bold text-black">GIẤY XÁC NHẬN NỘI DUNG QUẢNG CÁO</div>
             </div>
           </div>
@@ -536,17 +522,15 @@ export default function GoodsFormRows({
           {/* TỔNG PHÍ NỀN TẢNG */}
           <div className="grid grid-cols-24">
             <div className="col-span-6 border-r border-gray-300 p-2 flex flex-col justify-center">
-              <div className="font-semibold text-black">{t("goods.totalPlatformFee", "TỔNG PHÍ NỀN TẢNG")}</div>
+              <div className="font-bold text-red-600">{t("goods.totalPlatformFee", "TỔNG PHÍ NỀN TẢNG")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-end">
-              <span className="text-[10px] text-gray-400 mr-1">(a)</span>
-              <span className="font-medium">0</span>
-              <span className="ml-1 text-gray-700">%</span>
+              <span className="font-bold text-red-600">{Number.isInteger(totalPlatformPercent) ? totalPlatformPercent : totalPlatformPercent.toFixed(2)}</span>
+              <span className="ml-1 text-red-600">%</span>
             </div>
             <div className="col-span-1 border-r border-gray-300 px-0 py-2 flex items-center justify-center">+</div>
-            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center">
-              <span className="text-[10px] text-gray-400 mr-1">(b)</span>
-              <div className="w-full p-1 text-right font-medium">0</div>
+            <div className="col-span-3 border-r border-gray-300 p-2 flex items-center justify-end">
+              <div className="w-full p-1 text-right font-bold text-red-600">{totalPlatformAmount.toLocaleString("vi-VN")}</div>
             </div>
             <div className="col-span-2 border-r border-gray-300 p-2 flex items-center justify-center">
               <TwoLineUnitInput centerOnly={true} />

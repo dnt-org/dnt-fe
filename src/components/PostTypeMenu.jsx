@@ -23,7 +23,7 @@ export default function PostTypeMenu({ activeType }) {
   };
 
   return (
-    <div className="flex justify-center items-center ">
+    <div className="flex justify-center items-center border-b-2 border-gray-400">
       <div
         className={` tab border border-gray-300 p-2 cursor-pointer flex-1  ${
           activeType === "goods" ? "bg-blue-600 text-white " : ""

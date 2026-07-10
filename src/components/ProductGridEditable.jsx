@@ -335,41 +335,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
           </div>
 
           <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-          {(category === "SALE" || category === "FOR RENT") && (
-              <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestLOWAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (28) <span dangerouslySetInnerHTML={{ __html: t("productGrid.lowestHighestAutoAccept") }} />{" "}<span className="text-red-500">*</span></div>
-            )}
-            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
-              <>
-                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
-                  <option value="1">(28) Tự động chấp nhận - thấp</option>
-                  <option value="2">(28) Tự động chấp nhận - cao</option>
-                </select>
-              </>
-            )}
-
-          </div>
-         <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
-          {(category === "SALE" || category === "FOR RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricelow") }} />{" "}<span className="text-red-500">*</span></div>
-            )}
-            {(category === "BUY" || category === "RENT") && (
-              <div> (29) <span dangerouslySetInnerHTML={{ __html: t("productGrid.autoRejectPricehigh") }} />{" "}<span className="text-red-500">*</span></div>
-            )}
-            {(category === "PROVIDE SERVICES" || category === "USE SERVICES" || !category) && (
-              <>
-                <select className="w-full border-r border-b border-gray-300 p-1 text-sm">
-                  <option value="1">(29) Tự động từ chối - thấp</option>
-                  <option value="2">(29) Tự động từ chối - cao</option>
-                </select>
-              </>
-            )}
-
-          </div>
-
-          <div className="p-2 text-center border-r border-b border-gray-300 flex flex-col items-center justify-center">
             <div> (30) {t("productGrid.autoAcceptPriceLow", "ĐƠN GIÁ THẤP NHẤT TỰ ĐỘNG DUYỆT CHO SL YÊU CẦU ÍT NHẤT")} <span className="text-red-500">*</span></div>
           </div>
 
@@ -430,13 +395,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {/* Col 6: HÌNH ẢNH - Camera capture button */}
             <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => openCamera("photo", item.id)}
-                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap text-sm"
-                >
-                  Chụp hình
-                </button>
                 <input
                   type="file"
                   accept="image/*"
@@ -462,13 +420,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
             {/* Col 7: QUAY PHIM - Video recording button */}
             <div className="border-r border-t border-b border-gray-300 p-2 flex items-center justify-center">
               <div className="flex items-center justify-center gap-2 flex-wrap">
-                <button
-                  type="button"
-                  onClick={() => openCamera("video", item.id)}
-                  className="inline-block bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer whitespace-nowrap text-sm"
-                >
-                  Quay phim
-                </button>
                 <input
                   type="file"
                   accept="video/*"
@@ -682,18 +633,10 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
               <option value="no_vat">{t("productGrid.invoiceNoVat")}</option>
             </select>
 
-            {/* (18) THANH TOÁN QUA NỀN TẢNG (Trước khi giao hàng) */}
-            <select
-              value={item.paymentViaPlatform}
-              onChange={(e) =>
-                handleItemChange(item.id, "paymentViaPlatform", e.target.value)
-              }
-              className="w-full border-t border-b border-r border-gray-300 text-center"
-            >
-              <option value="">{t("productGrid.choose")}</option>
-              <option value="yes">{t("productGrid.yes")}</option>
-              <option value="no">{t("productGrid.no")}</option>
-            </select>
+            {/* (18) THANH TOÁN QUA NỀN TẢNG (Trước khi giao hàng) — nội dung cố định */}
+            <div className="w-full border-t border-b border-r border-gray-300 p-2 flex items-center justify-center text-center text-red-600 text-sm">
+              Theo điểm b, khoản 6, Điều 14 Luật Thương mại điện tử
+            </div>
 
             {/* (19) THỜI GIAN THANH TOÁN CHÍNH THỨC CHO CHỦ HÀNG SAU KHI NHẬN ĐƯỢC HÀNG */}
             <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
@@ -800,32 +743,6 @@ export default function ProductGridEditable({ products = [], category, onItemsCh
                 type="number"
                 value=""
                 country={getUserCountry()}
-              />
-            </div>
-
-            {/* Col 32: autoAcceptPrice */}
-            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <TwoLineUnitInput
-                name="autoAcceptPrice"
-                type="number"
-                value={item.autoAcceptPrice}
-                onChange={(e) => handleItemChange(item.id, "autoAcceptPrice", e.target.value)}
-                placeholder={t("goods.enter")}
-                country={getUserCountry()}
-                isInput={true}
-              />
-            </div>
-
-            {/* Col 33: autoRejectPrice */}
-            <div className="w-full border-t border-b border-r border-gray-300 text-right flex items-center">
-              <TwoLineUnitInput
-                name="autoRejectPrice"
-                type="number"
-                value={item.autoRejectPrice}
-                onChange={(e) => handleItemChange(item.id, "autoRejectPrice", e.target.value)}
-                placeholder={t("goods.enter")}
-                country={getUserCountry()}
-                isInput={true}
               />
             </div>
 
