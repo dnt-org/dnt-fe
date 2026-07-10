@@ -481,7 +481,7 @@
     "quantityMinimum": "SỐ LƯỢNG CÓ ÍT NHẤT",
     "desiredUnitPriceLow": "ĐƠN GIÁ MONG MUỐN THẤP NHẤT CHO SỐ LƯỢNG YÊU CẦU ÍT NHẤT",
     "desiredUnitPriceHigh": "ĐƠN GIÁ MONG MUỐN CAO NHẤT CHO SỐ LƯỢNG YÊU CẦU ÍT NHẤT",
-    "totalAmountandvat": "THÀNH TIỀN PHÍ + THUẾ (không tính phần trả trước) MONG MUỐN TRẢ CHO NỀN TẢNG",
+    "totalAmountandvat": "TIỀN THUẾ GTGT + TNCN",
     "quantitymax": "SỐ LƯỢNG CẦN NHIỀU NHẤT",
     "timeUserMustPayAfterDelivery": "THỜI GIAN THANH TOÁN CHÍNH THỨC CHO CHỦ HÀNG SAU KHI NHẬN ĐƯỢC HÀNG",
     "timeUserMustPayAfterDeliveryEn": "Time user must pay after delivery",

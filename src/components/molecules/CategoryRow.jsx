@@ -33,17 +33,17 @@ export default function CategoryRow({ selectedType,
   
   return (
     <div className="grid grid-cols-4 border-b border-gray-300">
-      <div className="border-r border-gray-300 p-2">
+      <div className="p-2">
         <div className="text-center">
           <Select value={selectedType} onChange={onTypeChange} options={categoryOptions} className="w-full border border-gray-300 p-1" />
         </div>
       </div>
-      <div className="border-r border-gray-300 p-2">
+      <div className="p-2">
         <div className="text-center">
           <Select value={selectedCategory} onChange={onCategoryChange} options={subcategoryOptions} className="w-full border border-gray-300 p-1" />
         </div>
       </div>
-      <div className="border-r border-gray-300 p-2">
+      <div className="p-2">
         <div className="text-center">
           <Select value={selectedCondition} onChange={onConditionChange} options={conditionOptions} className="w-full border border-gray-300 p-1" />
         </div>

@@ -246,7 +246,7 @@ export default function GoodsFormRows({
         </div>
         <div className="col-span-12 border-r border-gray-300 p-2">
            <div className="flex items-center gap-2">
-              <Select value={selectedCountry} onChange={onCountryChange} options={[{ label: "Tất cả", value: "" }, ...countryOptions]} className="w-full border border-gray-300 p-1 mb-2" />
+              <Select value={selectedCountry} onChange={onCountryChange} options={countryOptions} className="w-full border border-gray-300 p-1 mb-2" />
               <Select value={selectedProvince} onChange={onProvinceChange} options={[{ label: "Tất cả", value: "" }, ...provinceOptions]} className="w-full border border-gray-300 p-1 mb-2" />
             </div>
         </div>
