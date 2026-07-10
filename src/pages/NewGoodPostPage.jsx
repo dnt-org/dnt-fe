@@ -164,7 +164,7 @@ export default function NewGoodPostPage() {
             <div className="flex items-start gap-3">
               <input type="checkbox" name="agreeTerms" checked={goodsInfo.agreeTerms || false} onChange={onGoodsInfoChange} className="w-4 h-4 mt-1 flex-shrink-0" required />
               <div className="text-justify text-sm">
-                <div className="mb-2">{t("goods.termsAgreement")}</div>
+                <div className="mb-2 whitespace-pre-line">{t("goods.termsAgreement")}</div>
               </div>
             </div>
           </div>
