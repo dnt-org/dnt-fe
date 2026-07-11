@@ -302,5 +302,5 @@ const submitLiveGoodsBid = async (productId, bidData, authToken = null) => {
   }
 };
 
-export { createProduct, getProducts, getProductById, updateProduct, deleteProduct, 
+export { createProduct, getProducts, getProductById, updateProduct, deleteProduct,
   filterProducts, updateProductPriceInfo, getLiveGoodsSession, joinLiveGoodsSession, submitLiveGoodsBid };

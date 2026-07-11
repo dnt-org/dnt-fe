@@ -25,3 +25,13 @@ export function getUserCountry() {
   }
 }
 
+/**
+ * Đọc URL avatar từ field `avt` của user, bất kể backend trả về dạng string
+ * (getMe/updateUser) hay object media populate `{ url }` (login).
+ */
+export function getAvatarUrl(avt) {
+  if (!avt) return null;
+  if (typeof avt === 'string') return avt;
+  return avt.url || avt.data?.attributes?.url || null;
+}
+

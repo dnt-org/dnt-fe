@@ -1,35 +1,20 @@
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import PropTypes from "prop-types"
-import { QrCode, Download, ScanLine } from "lucide-react"
-import QRCode from "qrcode"
+import { QrCode, ScanLine } from "lucide-react"
 import QRModalComponent from "../QRModalComponent"
+import QrCodeDisplay from "../molecules/QrCodeDisplay"
 
 // Shared QR flow for both "add friend" (#C-06) and "join group" (#C-09):
 // toggle between scanning someone else's QR and showing/downloading your own.
 // `myPayload` is the identity object encoded into the QR (e.g. { userId, name }
 // for add-friend) — the scanning side (handleAddFriendScanResult /
 // handleJoinGroupScanResult) parses it back out as JSON.
+// Hiển thị "QR của tôi" dùng chung component QrCodeDisplay với QR đăng nhập ở
+// header (đồng bộ UI/thư viện) — dữ liệu mã hoá vẫn tách biệt vì khác mục đích bảo mật.
 export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabel, myPayload }) {
   const [mode, setMode] = useState("scan") // 'scan' | 'mine'
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-    if (mode !== "mine" || !canvasRef.current || !myPayload) return
-    QRCode.toCanvas(canvasRef.current, JSON.stringify(myPayload), { width: 220, margin: 1 }, (err) => {
-      if (err) console.error("Error rendering QR code:", err)
-    })
-  }, [mode, myPayload])
 
   if (!isOpen) return null
-
-  const handleDownload = () => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const link = document.createElement("a")
-    link.download = "my-qr.png"
-    link.href = canvas.toDataURL("image/png")
-    link.click()
-  }
 
   const handleClose = () => {
     setMode("scan")
@@ -60,19 +45,7 @@ export default function ContactQrModal({ isOpen, onClose, onScanResult, myQrLabe
         <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/50 p-4">
           <div className="relative bg-white rounded-lg p-6 w-full max-w-md flex flex-col items-center">
             <button className="absolute top-1 right-2 text-gray-600 hover:text-black" onClick={handleClose}>✕</button>
-            <p className="text-sm text-gray-600 mb-3 mt-4 text-center">{myQrLabel}</p>
-            {myPayload ? (
-              <canvas ref={canvasRef} width={220} height={220} className="border rounded" />
-            ) : (
-              <p className="text-sm text-red-500 py-8">Không thể tạo mã QR — thiếu thông tin.</p>
-            )}
-            <button
-              onClick={handleDownload}
-              disabled={!myPayload}
-              className="flex items-center gap-2 px-4 py-2 mt-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download size={16} /> Tải ảnh QR
-            </button>
+            <QrCodeDisplay payload={myPayload} label={myQrLabel} className="mt-4" downloadFileName="my-qr.png" />
           </div>
         </div>
       )}

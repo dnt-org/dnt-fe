@@ -19,19 +19,12 @@ export default function useAiLivePost() {
   const [allowAdMovie, setAllowAdMovie] = useState(false)
   const [allowAdLive, setAllowAdLive] = useState(false)
 
-  const [videoData, setVideoData] = useState({
-    name: "Product Intro",
-    savelocation: "/videos/product-intro.mp4",
-    allowAdvertising: true,
-    showAd: 15,
-    insertAd: 45,
-    startFromTime: 5,
-    startFromView: 250,
-    source: "https://www.youtube.com/watch?v=1234567890",
-    confirmCopyright: true,
-  })
+  // Sản phẩm mà video sẽ gắn vào (bắt buộc cho luồng video livestream hàng hóa)
+  const [videoProductId, setVideoProductId] = useState(null)
+  const [videoSubmitting, setVideoSubmitting] = useState(false)
+  const [videoSubmitStatus, setVideoSubmitStatus] = useState(null) // { type: 'success' | 'error', message }
 
-  const [movieData, setMovieData] = useState({
+  const [movieData] = useState({
     name: "",
     filename: "",
     watchPrice: 0,
@@ -44,7 +37,7 @@ export default function useAiLivePost() {
     adContent: "https://example.com/live/launch",
   })
 
-  const [liveData, setLiveData] = useState({
+  const [liveData] = useState({
     name: "Live Tech Talk: Future of AI",
     expectedAiringTime: "2025-08-10T20:00:00.000Z",
     filename: "ai_tech_talk_2025.mp4",
@@ -67,7 +60,7 @@ export default function useAiLivePost() {
     setUser(token)
   }, [])
 
-  const handleSubmitMovie = async (t) => {
+  const handleSubmitMovie = async () => {
     try {
       const response = await createMovie("token", movieData)
       console.log("Movie uploaded successfully:", response.data)
@@ -76,16 +69,45 @@ export default function useAiLivePost() {
     }
   }
 
-  const handleSubmitVideo = async (t) => {
+  // Tạo video livestream gắn với sản phẩm. File upload trực tiếp qua Strapi.
+  const handleSubmitVideo = async (productId = videoProductId) => {
+    setVideoSubmitStatus(null)
+
+    if (!productId) {
+      const status = { type: "error", message: "Thiếu sản phẩm để gắn video" }
+      setVideoSubmitStatus(status)
+      return status
+    }
+    if (!(videoFile instanceof File)) {
+      const status = { type: "error", message: "Vui lòng chọn file video" }
+      setVideoSubmitStatus(status)
+      return status
+    }
+
+    const token = localStorage.getItem("authToken")
+    setVideoSubmitting(true)
     try {
-      const response = await createVideo("token", videoData)
-      console.log("Video uploaded successfully:", response.data)
+      const payload = {
+        name: videoName || videoFile.name,
+        source: videoFile, // File -> upload qua Strapi (multipart)
+        product: productId,
+        allowAdvertising: allowAdVideo,
+        confirmCopyright: true,
+      }
+      const response = await createVideo(token, payload)
+      const status = { type: "success", message: "Đăng video thành công" }
+      setVideoSubmitStatus(status)
+      return { ...status, data: response.data }
     } catch (error) {
-      console.error("Error uploading video:", error.message)
+      const status = { type: "error", message: error.message || "Đăng video thất bại" }
+      setVideoSubmitStatus(status)
+      return status
+    } finally {
+      setVideoSubmitting(false)
     }
   }
 
-  const handleSubmitLive = async (t) => {
+  const handleSubmitLive = async () => {
     try {
       const response = await createLive("token", liveData)
       console.log("Live uploaded successfully:", response.data)
@@ -122,6 +144,10 @@ export default function useAiLivePost() {
     setAllowAdMovie,
     allowAdLive,
     setAllowAdLive,
+    videoProductId,
+    setVideoProductId,
+    videoSubmitting,
+    videoSubmitStatus,
     handleSubmitMovie,
     handleSubmitVideo,
     handleSubmitLive,

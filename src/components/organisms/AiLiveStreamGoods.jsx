@@ -18,6 +18,7 @@ import {
 import VideoCard from "../molecules/VideoCard.jsx";
 import CategorySelect from "../CategorySelect.jsx";
 import { getCountries, getCountryByCode } from "../../services/countries";
+import { getGoodsVideoFolders } from "../../services/videoService";
 
 
 
@@ -53,7 +54,10 @@ export default function AiLiveStreamGoods() {
     const [reports, setReports] = useState([])
     const [activeTab, setActiveTab] = useState(null)
     const [goodsGroups, setGoodsGroups] = useState([])
+    const [goodsLoading, setGoodsLoading] = useState(false)
+    const [goodsError, setGoodsError] = useState("")
     const [isExpend, setIsExpend] = useState(false)
+    const authToken = typeof window !== "undefined" ? localStorage.getItem("authToken") : null
     // Số video livestream đăng mới mà mình chưa xem
     const [unseenCount] = useState(98765)
     useEffect(() => {
@@ -72,21 +76,7 @@ export default function AiLiveStreamGoods() {
             }))
         )
 
-        // Nhóm video theo "Tên hàng hóa – ID hàng hóa" (accordion sổ xuống)
-        const makeGoodsVideos = (gid) => Array.from({ length: 5 }, (_, i) => ({
-            id: `${gid}-${i + 1}`,
-            name: "Tên hàng hóa",
-            productId: "ID",
-            viewers: [743646, 632833, 443235, 34567, 1678][i],
-            saves: [35143, 28632, 12457, 8765, 543][i],
-            shares: [424652, 23223, 12455, 7654, 345][i],
-            hasPlatformLogo: i === 0, // Logo nền tảng -> nằm đầu ID hàng hóa
-            avatar: `https://i.pravatar.cc/60?u=${gid}${i}`,
-        }))
-        setGoodsGroups([
-            { id: "G1", name: "Tên hàng hóa – ID hàng hóa 1", videos: makeGoodsVideos("G1") },
-            { id: "G2", name: "Tên hàng hóa – ID hàng hóa 2", videos: makeGoodsVideos("G2") },
-        ])
+        // goodsGroups & productFolders lấy từ dữ liệu thật (xem effect fetchLiveGoods bên dưới)
 
         setFollowedUsers([
             { id: 1, name: "A", avatar: "https://i.pravatar.cc/100?u=1", streams: makeStreams(3) },
@@ -107,21 +97,6 @@ export default function AiLiveStreamGoods() {
             hasPlatformLogo: i === 0,
             avatar: `https://i.pravatar.cc/60?u=${prefix}${i}`,
         }))
-
-        setProductFolders([
-            {
-                id: "PRD-101",
-                name: "Tên hàng hóa – ID hàng hóa 1",
-                registeredAt: now - 86_400_000 * 2,
-                videos: makeFolderVideos(1010, 2),
-            },
-            {
-                id: "PRD-102",
-                name: "Tên hàng hóa – ID hàng hóa 2",
-                registeredAt: now - 86_400_000,
-                videos: makeFolderVideos(2010, 1),
-            },
-        ])
 
         setCompletedFolders([
             {
@@ -149,6 +124,42 @@ export default function AiLiveStreamGoods() {
             { id: "PRD-888", note: "Báo cáo spam tại phút 1:23", videos: [{ id: 88801, title: "Video" }] },
         ])
     }, [t])
+
+    // Thư mục ID hàng hóa (productFolders) + nhóm video (goodsGroups) lấy từ dữ liệu thật:
+    // các sản phẩm có video livestream đã tải lên (hiện luôn, không phụ thuộc phiên live).
+    useEffect(() => {
+        let cancelled = false
+        const handle = setTimeout(async () => {
+            setGoodsLoading(true)
+            setGoodsError("")
+            try {
+                const { folders } = await getGoodsVideoFolders(
+                    { page: 1, pageSize: 20, search: searchText.trim() },
+                    authToken
+                )
+                const mapped = folders.map((f, idx) => ({
+                    id: f.id,
+                    name: f.name,
+                    registeredAt: idx, // giữ thứ tự trả về từ server sau khi sortedFolders sắp xếp tăng dần
+                    videos: f.videos,
+                }))
+                if (cancelled) return
+                setProductFolders(mapped)
+                // goodsGroups: chỉ hiển thị các thư mục có video livestream
+                setGoodsGroups(mapped.filter((g) => g.videos.length > 0))
+            } catch (err) {
+                if (!cancelled) {
+                    setProductFolders([])
+                    setGoodsGroups([])
+                    setGoodsError(err.message || "Không tải được danh sách hàng hóa livestream")
+                }
+            } finally {
+                if (!cancelled) setGoodsLoading(false)
+            }
+        }, searchText ? 350 : 0)
+
+        return () => { cancelled = true; clearTimeout(handle) }
+    }, [searchText, authToken])
 
     const sortedFollowed = useMemo(() => {
         return [...followedUsers].sort((a, b) => {
@@ -185,6 +196,11 @@ export default function AiLiveStreamGoods() {
     const confirmAndOpen = (videoId) => {
         navigate(`/ai-live/video/${videoId}`)
     }
+
+    // Mở video livestream của hàng hóa: điều hướng theo ID sản phẩm (trang detail load product)
+    const openGoodsVideo = useCallback((v) => {
+        navigate(`/ai-live/video-goods/${v.productId || v.id}`)
+    }, [navigate])
 
     const onTouchStart = (e) => {
         swipeStartY.current = e.touches[0].clientY
@@ -374,8 +390,8 @@ export default function AiLiveStreamGoods() {
                                                 shares={v.shares}
                                                 hasPlatformLogo={v.hasPlatformLogo}
                                                 avatar={v.avatar}
-                                                onClick={() => navigate(`/ai-live/video-goods/${v.id}`)}
-                                                onPlay={() => confirmAndOpen(v.id)}
+                                                onClick={() => openGoodsVideo(v)}
+                                                onPlay={() => openGoodsVideo(v)}
                                             />
                                         ))}
                                     </div>
@@ -475,11 +491,20 @@ export default function AiLiveStreamGoods() {
                     </div>
                 </div>
             )}
-            {/* Danh sách livestream nhóm theo ID hàng hóa (luôn hiển thị 5 card/hàng) */}
-            <div className="mt-2 space-y-3">
-                {goodsGroups.map(g => (
-                    <div key={g.id} className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                        {g.videos.map((v, idx) => (
+            {/* Danh sách livestream của các ID hàng hóa, gộp thành 1 lưới ngang (5 card/hàng) */}
+            <div className="mt-2">
+                {goodsLoading && (
+                    <div className="py-6 text-center text-sm text-gray-500">Đang tải video livestream...</div>
+                )}
+                {!goodsLoading && goodsError && (
+                    <div className="py-6 text-center text-sm text-red-500">{goodsError}</div>
+                )}
+                {!goodsLoading && !goodsError && goodsGroups.length === 0 && (
+                    <div className="py-6 text-center text-sm text-gray-500">Chưa có video livestream hàng hóa</div>
+                )}
+                {!goodsLoading && !goodsError && goodsGroups.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        {goodsGroups.flatMap(g => g.videos).map((v, idx) => (
                             <VideoCard
                                 key={v.id}
                                 index={idx + 1}
@@ -490,12 +515,12 @@ export default function AiLiveStreamGoods() {
                                 shares={v.shares}
                                 hasPlatformLogo={v.hasPlatformLogo}
                                 avatar={v.avatar}
-                                onClick={() => navigate(`/ai-live/video-goods/${v.id}`)}
-                                onPlay={() => confirmAndOpen(v.id)}
+                                onClick={() => openGoodsVideo(v)}
+                                onPlay={() => openGoodsVideo(v)}
                             />
                         ))}
                     </div>
-                ))}
+                )}
             </div>
         </div>
     )

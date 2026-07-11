@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Webcam from 'react-webcam';
 import { BrowserMultiFormatReader } from '@zxing/library';
+import QrCodeDisplay from './molecules/QrCodeDisplay';
 
 const QRModalComponent = ({ 
     isOpen, 
@@ -168,13 +169,7 @@ const QRModalComponent = ({
 
                 {/* QR Code Display - Only show when authenticated and not scanning */}
                 {!isLoading && !isScanning && isAuthenticated && qrDataUrl && (
-                    <div className="flex flex-col items-center">
-                        <img 
-                            src={qrDataUrl} 
-                            alt="QR Code" 
-                            className="w-64 h-64 object-contain border" 
-                        />
-                    </div>
+                    <QrCodeDisplay dataUrl={qrDataUrl} size={256} downloadFileName="login-qr.png" />
                 )}
 
                 {/* Camera Scanner Section */}

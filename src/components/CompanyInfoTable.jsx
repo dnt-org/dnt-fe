@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2 } from 'lucide-react';
-import { getMe } from '../services/authService';
+import { Building2, Camera } from 'lucide-react';
+import { getMe, updateAvatarFile } from '../services/authService';
 import { downloadContract } from '../services/contractService';
+import { getAvatarUrl } from '../utils/user';
 import planetImage from '../assets/planet.jpg';
 
 const DEFAULT_AVATAR = 'https://th.bing.com/th/id/OIP.aqzvZTh44zgk38UdpdE1KQHaHa?rs=1&pid=ImgDetMain';
@@ -13,6 +14,8 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dlLoading, setDlLoading] = useState({ contract: false });
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef(null);
 
   const countryData = {
     vi: {
@@ -79,6 +82,46 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     }
   };
 
+  const handleAvatarClick = () => {
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // cho phép chọn lại cùng 1 file lần sau
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn file ảnh');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ảnh tối đa 5MB');
+      return;
+    }
+
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      alert('Vui lòng đăng nhập để cập nhật avatar');
+      return;
+    }
+
+    setAvatarUploading(true);
+    try {
+      const response = await updateAvatarFile(authToken, file);
+      const updated = response.data;
+      setUserData((prev) => ({ ...prev, ...updated }));
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        localStorage.setItem('user', JSON.stringify({ ...JSON.parse(storedUser), ...updated }));
+      }
+    } catch (err) {
+      alert('Cập nhật avatar thất bại: ' + err.message);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -111,11 +154,34 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-blue-700 shadow-lg"
           />
 
-          {/* User avatar — small, round, centered below logo */}
-          <img
-            src={userData?.avt?.url || DEFAULT_AVATAR}
-            alt="avatar"
-            className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-blue-700 mt-4"
+          {/* User avatar — small, round, centered below logo. Ấn vào để đổi avatar. */}
+          <button
+            type="button"
+            onClick={handleAvatarClick}
+            disabled={avatarUploading}
+            className="relative mt-4 rounded-full group disabled:opacity-70"
+            title="Đổi avatar"
+          >
+            <img
+              src={getAvatarUrl(userData?.avt) || DEFAULT_AVATAR}
+              alt="avatar"
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-blue-700"
+            />
+            <span className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/30 flex items-center justify-center transition-colors">
+              <Camera size={16} className="text-white opacity-0 group-hover:opacity-100" />
+            </span>
+            {avatarUploading && (
+              <span className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center text-white text-[10px]">
+                ...
+              </span>
+            )}
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
           />
 
           {/* User name — centered, uppercase */}

@@ -235,6 +235,23 @@ const updateAvatar = async (avatarUrl) => {
     return response;
 };
 
+/**
+ * Cập nhật avatar bằng cách upload file thật qua Strapi (multipart).
+ * @param {string} token - The authentication token
+ * @param {File} file - File ảnh avatar
+ * @returns {Promise<Object>} - The response from the API (user đã cập nhật, avt là URL string)
+ */
+const updateAvatarFile = async (token, file) => {
+    const fd = new FormData();
+    fd.append('avt', file, file.name);
+    const response = await axios.put(
+        `${API_URL}/auth/update`,
+        fd,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    return response;
+};
+
 const recoverLogin = async (cccd, recoveryCharacter) => {
     const response = await axios.post(
         `${API_URL}/auth/verify-recovery-character`,
@@ -523,7 +540,7 @@ const verifyRecoveryCccd = async (accountId, fullName, idNumber) => {
 
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
-    updateUser, updateAvatar, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
+    updateUser, updateAvatar, updateAvatarFile, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
     verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp,
     verifyRecoveryAccount, verifyRecoveryKey, verifyRecoveryOtpStep, verifyRecoveryBalance, verifyRecoveryCccd,
     setRecoveryString
