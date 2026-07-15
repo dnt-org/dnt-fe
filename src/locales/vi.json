@@ -95,7 +95,7 @@
     "otpTitle": "XÁC THỰC MẬT MÃ OTP",
     "loginFailureWarning": "Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.",
     "recoveryRequiredMessage": "Tài khoản của bạn đã được mở khóa. Vui lòng xác thực KÝ TỰ KHÔI PHỤC TÀI KHOẢN để tiếp tục.",
-    "blockedWarning": "Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.",
+    "blockedWarning": "Tài khoản này đang bị TẠM KHÓA do nhập sai KÝ TỰ KHÔI PHỤC TÀI KHOẢN quá 05 lần. Tài khoản này chỉ còn 01 lần cuối cùng để nhập đúng KÝ TỰ KHÔI PHỤC TÀI KHOẢN sau 10 phút nữa. Nếu vẫn nhập sai KÝ TỰ KHÔI PHỤC TÀI KHOẢN thì tài khoản này sẽ bị KHÓA VĨNH VIỄN.",
     "verifyDescription": "Nhập số tài khoản ngân hàng và ký tự khôi phục tài khoản để xác thực tài khoản của bạn.",
     "otpDescription": "Vui lòng nhập mật mã OTP của bạn.",
     "otpDescriptionHint": "(mật mã OTP này do bạn tự đặt ở trang đăng ký, hệ thống không gửi tin nhắn)",

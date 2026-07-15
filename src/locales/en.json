@@ -95,7 +95,7 @@
     "otpTitle": "CODE VERIFICATION",
     "loginFailureWarning": "You have failed login 5 times. Please verify to recover your account.",
     "recoveryRequiredMessage": "Your account has been unlocked. Please verify your RECOVERY STRING to continue.",
-    "blockedWarning": "Account has been blocked due to too many recovery failures. This is your last chance to recover your account by entering the recovery string within 10 minutes.  ",
+    "blockedWarning": "This account is TEMPORARILY LOCKED after 05 failed attempts to enter the ACCOUNT RECOVERY STRING. You have 01 last attempt to enter it correctly, available again in 10 minutes. If you enter it incorrectly again, this account will be PERMANENTLY LOCKED.",
     "verifyDescription": "Enter your bank account number and recovery string to verify your account.",
     "otpDescription": "Please enter your code.",
     "otpDescriptionHint": "(this code was set by you on the registration page — we do not send any message)",

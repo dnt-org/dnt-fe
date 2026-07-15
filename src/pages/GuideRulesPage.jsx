@@ -34,7 +34,7 @@ export default function GuideRulesPage() {
             iconBg: "bg-blue-100",
             badge: "bg-blue-600",
             title: t('guideRules.step1.title', 'Đăng nhập vào nền tảng bằng một tài khoản khác'),
-            description: t('guideRules.step1.description', 'Sử dụng một tài khoản khác (của người thân, bạn bè) có chức năng liên lạc, đã được xác thực và có số dư Ví > 0, để đăng nhập vào hệ thống.'),
+            description: t('guideRules.step1.description', 'Sử dụng một tài khoản khác (của người thân, bạn bè) có chức năng liên lạc, đã được xác thực và có số dư Ví > 0, để đăng nhập vào nền tảng.'),
             action: t('guideRules.step1.action', 'Đến trang Đăng nhập'),
             onAction: () => navigate('/login'),
         },
@@ -144,7 +144,7 @@ export default function GuideRulesPage() {
                     <div className="flex items-start gap-3">
                         <CheckCircle2 size={24} className="text-green-600 flex-shrink-0 mt-0.5" />
                         <p className="text-green-800 leading-relaxed">
-                            {t('guideRules.note', 'Lưu ý: Khi liên hệ với quản trị viên, vui lòng cung cấp đầy đủ, đúng các thông tin tài khoản đang bị khóa vĩnh viễn theo đúng yêu cầu của hệ thống (hoặc theo đúng yêu cầu từ nền tảng) để có thể được hỗ trợ.')}
+                            {t('guideRules.note', 'Lưu ý: Khi liên hệ với quản trị viên, vui lòng cung cấp đầy đủ, đúng các thông tin tài khoản đang bị khóa vĩnh viễn theo đúng yêu cầu của nền tảng để có thể được hỗ trợ.')}
                         </p>
                     </div>
                 </div>

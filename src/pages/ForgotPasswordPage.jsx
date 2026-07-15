@@ -33,7 +33,7 @@ export default function ForgotPasswordPage() {
 
   // UI states
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("Bạn đã đăng nhập sai quá 5 lần. Vui lòng xác thực để khôi phục tài khoản.");
+  const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const [tempBlockedUntil, setTempBlockedUntil] = useState(null); // Date or null — 10-minute lock after 5 wrong recovery attempts
@@ -498,6 +498,10 @@ export default function ForgotPasswordPage() {
                   </button>
                 </div>
 
+                {errorMessage && !isBlocked && (
+                  <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+                )}
+
                 <div className="text-center mt-6">
                   {/* reCAPTCHA v2 Checkbox — placed above the action button */}
                   <div className="flex justify-center my-2">
@@ -543,6 +547,10 @@ export default function ForgotPasswordPage() {
                     disabled={isLoading}
                   />
                 </div>
+
+                {errorMessage && (
+                  <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+                )}
 
                 <div className="text-center mt-6">
                   <button
@@ -672,6 +680,10 @@ export default function ForgotPasswordPage() {
                   </div>
                 )}
 
+                {errorMessage && (
+                  <p className="text-red-500 text-sm text-center">{errorMessage}</p>
+                )}
+
                 <div className="text-center mt-6">
                   {/* reCAPTCHA for the auto-login call right after a successful reset — above the button */}
                   <div className="flex justify-center my-2">
@@ -694,9 +706,6 @@ export default function ForgotPasswordPage() {
                 
               </>
             )}
-
-            {/* Error Message */}
-            
 
             {/* Success Message
             {successMessage && (
