@@ -50,24 +50,30 @@ jobs:
           script: |
             set -e
             IMAGE="${{ steps.tag.outputs.TAG }}"
+            IMAGE_REPO="${{ secrets.DOCKERHUB_USERNAME }}/dnt-fe"
 
             echo "========================================="
             echo "Starting Frontend Docker deployment..."
             echo "Image: $IMAGE"
             echo "========================================="
 
-            # Pull the new image from Docker Hub
-            echo "Pulling image..."
-            docker pull "$IMAGE"
-            echo "✓ Image pulled"
-
-            # Stop and remove existing container if it exists
+            # Stop and remove existing container first (frees old image for removal)
             if docker inspect dnt-fe > /dev/null 2>&1; then
               echo "Stopping existing frontend container..."
               docker stop dnt-fe || true
               docker rm dnt-fe || true
               echo "✓ Old container removed"
             fi
+
+            # Clear all old images of this repo (all tags/SHAs) before pulling the new one
+            echo "Removing old images for $IMAGE_REPO..."
+            docker images "$IMAGE_REPO" -q | xargs -r docker rmi -f || true
+            echo "✓ Old images removed"
+
+            # Pull the new image from Docker Hub
+            echo "Pulling image..."
+            docker pull "$IMAGE"
+            echo "✓ Image pulled"
 
             # Start new container
             echo "Starting new container on port 3000..."
