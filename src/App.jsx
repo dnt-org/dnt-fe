@@ -1,7 +1,7 @@
 import './App.css'
 import './styles/body.css'
 import { useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import HomePage from './pages/Home.jsx'
 import RegisterPage from './pages/Register.jsx'
 import LoginPage from './pages/Login.jsx'
@@ -23,7 +23,10 @@ import AdminControlPage from './pages/AdminControlPage.jsx'
 import RewardListPage from './pages/RewardListPage.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 import HomeWrapper from './pages/HomeWrapper.jsx'
-import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import ForgotPasswordFlow from './pages/forgot-password/ForgotPasswordFlow.jsx'
+import VerifyRecoveryStep from './pages/forgot-password/VerifyRecoveryStep.jsx'
+import VerifyOtpStep from './pages/forgot-password/VerifyOtpStep.jsx'
+import ResetPasswordStep from './pages/forgot-password/ResetPasswordStep.jsx'
 import AccountBlockedPage from './pages/AccountBlockedPage.jsx'
 import ContactAdminPage from './pages/ContactAdminPage.jsx'
 import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
@@ -56,7 +59,12 @@ function App() {
         <Route exact path={import.meta.env.VITE_REACT_APP_QRLOGIN_PATH || '/qr-login'} element={<LoginPage />} />
         <Route exact path="/register" element={<RegisterPage />} />
         <Route exact path="/login" element={<LoginPage />} />
-        <Route exact path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordFlow />}>
+          <Route index element={<Navigate to="verify" replace />} />
+          <Route path="verify" element={<VerifyRecoveryStep />} />
+          <Route path="otp" element={<VerifyOtpStep />} />
+          <Route path="reset" element={<ResetPasswordStep />} />
+        </Route>
         <Route exact path="/account-blocked" element={<AccountBlockedPage />} />
         <Route exact path="/contact" element={<ContactAdminPage />} />
         <Route exact path="/cookie-policy" element={<CookiePolicyPage />} />
