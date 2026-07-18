@@ -32,7 +32,6 @@ import {
   UsersRound,
   MoreVertical,
   MapPin,
-  Share2,
   Sun,
   Moon,
   Megaphone,
@@ -584,6 +583,66 @@ function BotChatPanel({ onVideoCalls, onGoLogin }) {
 // ─── Normal Chat Panel (Zalo-like Chat Interface) ────────────────────────────
 const BUBBLE_COLORS = ['#2563eb', '#16a34a', '#9333ea', '#db2777', '#ea580c'];
 
+// Strapi media host = API base without the trailing /api. Uploaded files are
+// served from <host>/uploads/... and come back as relative paths.
+const MEDIA_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:1337/api').replace(/\/api\/?$/, '');
+
+// Resolve an avatar value into a usable <img src>. Handles the shapes the API
+// returns it in: a plain URL string (register) or a populated media object
+// (login: { url }), and prefixes the host for relative /uploads paths.
+const resolveAvatarUrl = (val) => {
+  const url = typeof val === 'string'
+    ? val
+    : (val?.url || val?.data?.attributes?.url || '');
+  if (!url) return '';
+  return /^(https?:)?\/\//i.test(url) ? url : `${MEDIA_BASE}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+// Builds the JSON payload stored in a `contact`-type message's content field.
+const buildContactCardPayload = (friend) => JSON.stringify({
+  userId: friend.otherUserId || null,
+  name: friend.name || friend.displayName || 'Người dùng',
+  bankNumber: friend.bankNumber || null,
+  avt: friend.avatar || null,
+});
+
+// Renders a `contact`-type message as a shared business card (avatar + name + STK).
+// Falls back to the raw text if the content isn't the expected JSON payload.
+function ContactCardBubble({ raw, isMe, isDark, pending, failed }) {
+  let card = null;
+  try { card = JSON.parse(raw); } catch { /* legacy / malformed — fall back to text */ }
+
+  if (!card || typeof card !== 'object') {
+    return (
+      <div
+        className={`px-3 py-2 rounded-2xl text-sm break-words ${isMe
+          ? 'text-white rounded-br-none'
+          : `${isDark ? 'bg-gray-700 border-gray-600 text-red-400' : 'bg-white border-gray-100 text-red-600'} rounded-bl-none border`}`}
+      >
+        {raw}
+      </div>
+    );
+  }
+
+  const avatar = resolveAvatarUrl(card.avt) || `https://i.pravatar.cc/80?u=${card.userId || card.name || 'x'}`;
+  return (
+    <div
+      className={`w-60 max-w-full rounded-2xl border overflow-hidden ${isMe ? 'rounded-br-none' : 'rounded-bl-none'} ${isDark ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} ${pending ? 'opacity-60' : ''} ${failed ? 'ring-2 ring-red-400' : ''}`}
+    >
+      <div className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide bg-blue-50 text-blue-700 border-b border-blue-100">
+        Danh thiếp
+      </div>
+      <div className="flex items-center gap-3 p-3">
+        <img src={avatar} alt={card.name || 'avatar'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+        <div className="min-w-0 text-left">
+          <div className={`font-bold text-sm truncate ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{card.name || 'Người dùng'}</div>
+          {card.bankNumber && <div className="text-[11px] text-gray-400 truncate">STK: {card.bankNumber}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Maps a backend message (api::message.message) into the shape NormalChatPanel renders.
 const toChatMessage = (msg, currentUserId) => ({
   id: msg.id,
@@ -619,7 +678,8 @@ const mapConversation = (convo) => ({
   otherUserId: convo.other_user?.id,
   name: convo.other_user?.full_name || 'Người dùng',
   displayName: getNickname(convo.id) || convo.other_user?.full_name || 'Người dùng',
-  avatar: convo.other_user?.avt || 'https://via.placeholder.com/150',
+  bankNumber: convo.other_user?.bank_number || null,
+  avatar: resolveAvatarUrl(convo.other_user?.avt) || `https://i.pravatar.cc/150?u=${convo.other_user?.id || convo.id}`,
   lastMessage: convo.last_message || 'Chưa có tin nhắn',
   updatedAt: convo.last_message_at || new Date().toISOString(),
   unread: convo.unread_count || 0,
@@ -745,6 +805,8 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage, pee
                     >
                       <img src={msg.imageUrl} alt={msg.text || 'Hình ảnh'} className="max-w-full h-auto object-cover" />
                     </a>
+                  ) : msg.type === 'contact' ? (
+                    <ContactCardBubble raw={msg.text} isMe={isMe} isDark={isDark} pending={msg.pending} failed={msg.failed} />
                   ) : (
                     <div
                       style={isMe ? { backgroundColor: bubbleColor } : undefined}
@@ -1034,7 +1096,7 @@ export default function ContactAdminPage() {
       setFriendRequests((data.incoming_friend_requests || []).map(r => ({
         id: r.id,
         name: r.from_user?.full_name || 'Người dùng',
-        avatar: r.from_user?.avt || 'https://via.placeholder.com/150'
+        avatar: resolveAvatarUrl(r.from_user?.avt) || `https://i.pravatar.cc/150?u=${r.from_user?.id || r.id}`
       })));
 
       if (convId) {
@@ -1180,8 +1242,9 @@ export default function ContactAdminPage() {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
 
-  // #C-10: chat header "more actions" menu (Gửi vị trí / Chia sẻ trực tiếp)
-  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState(false);
+  // #C-14: "gửi danh thiếp" — pick one of my friends and send their card into the chat
+  const [isContactPickerOpen, setIsContactPickerOpen] = useState(false);
+
 
   // inline panel: replaces popup modals for invite/scan-result lists
   const [inlinePanelType, setInlinePanelType] = useState(null); // 'friendRequests' | 'groupInvites' | 'scannedFriend' | 'scannedGroup'
@@ -1424,6 +1487,13 @@ export default function ContactAdminPage() {
     }
   };
 
+  // #C-14: send the selected friend's business card into the current chat
+  const handleSendContactCard = (friend) => {
+    if (!activeContactId || !friend) return;
+    handleSendMessage(buildContactCardPayload(friend), 'contact');
+    setIsContactPickerOpen(false);
+  };
+
   const handleRenameConversation = (id, type) => {
     if (type === 'group') {
       // Groups get the full owner-only edit panel (#C-08), not a plain rename
@@ -1618,7 +1688,11 @@ export default function ContactAdminPage() {
         <div className="p-2 border-b border-gray-200">
           <div className="flex justify-between px-2 text-xs font-semibold mb-2">
             <div className="w-12 h-12 rounded-full border-2  flex items-center justify-center bg-gray-100 cursor-pointer relative">
-              <span className="text-xs">Avatar</span>
+              {resolveAvatarUrl(currentUser?.avt) ? (
+                <img src={resolveAvatarUrl(currentUser.avt)} alt="avatar" className="absolute inset-0 w-full h-full object-cover rounded-full" />
+              ) : (
+                <span className="text-xs">Avatar</span>
+              )}
               <div style={{ top: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">{friends.length}</div>
               <div style={{ bottom: 0, left: '100%' }} className="absolute z-10 text-blue-800 ml-1 text-left">5</div>
 
@@ -1691,7 +1765,7 @@ export default function ContactAdminPage() {
               ) : (
                 searchResults.map(u => (
                   <div key={u.id} className="flex items-center gap-3 px-3 py-2 hover:bg-blue-50">
-                    <img src={u.avt || `https://i.pravatar.cc/40?u=${u.id}`} alt={u.full_name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                    <img src={resolveAvatarUrl(u.avt) || `https://i.pravatar.cc/40?u=${u.id}`} alt={u.full_name} className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-blue-900 text-sm truncate">{u.full_name || 'Người dùng'}</div>
                       {u.bank_number && <div className="text-[11px] text-gray-400 truncate">STK: {u.bank_number}</div>}
@@ -1717,7 +1791,7 @@ export default function ContactAdminPage() {
         </div>
 
         {/* Conversation List — #C-03 */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
           {listItems.map((item) => {
             const isGroup = activeTab === 'group';
             const isActive = activeContactId === item.id && activeContactType === (isGroup ? 'group' : 'friend');
@@ -1805,34 +1879,40 @@ export default function ContactAdminPage() {
           })}
         </div>
 
-        {/* #C-13: ad banner — covered for 5s, then an X appears to close it for the session */}
-        {showAdBanner && (
-          <div className="relative bg-blue-50 border-t border-blue-100 px-3 py-2.5 flex items-center gap-2 text-blue-900">
-            <Megaphone size={16} className="flex-shrink-0" />
-            <span className="text-xs flex-1">Khuyến mãi đặc biệt dành cho thành viên mới!</span>
-            {canCloseAdBanner && (
-              <button
-                type="button"
-                onClick={handleCloseAdBanner}
-                className="text-blue-400 hover:text-blue-800 flex-shrink-0"
-              >
-                <XCircle size={16} />
-              </button>
+        {/* Bottom company button — the promo banner overlays and blocks it until
+            closed (#C-13), so users must dismiss the ad before they can tap it. */}
+        <div className="relative flex-shrink-0">
+          {/* Company button — click to open bot (disabled while the ad covers it) */}
+          <div
+            onClick={showAdBanner ? undefined : handleSelectCompany}
+            className={`p-4 border-t border-gray-200 text-center transition-colors ${showAdBanner ? 'cursor-default' : 'cursor-pointer'} ${isBotMode ? 'bg-blue-50' : (!showAdBanner ? 'hover:bg-gray-50' : '')}`}
+          >
+            <div className={`font-bold uppercase text-sm flex items-center justify-center gap-2 ${isBotMode ? 'text-blue-800' : 'text-blue-800 hover:text-blue-900'}`}>
+              {isBotMode && <ShieldAlert size={14} className="text-blue-800" />}
+              CÔNG TY TNHH ĐẠI NGHĨA TÍN
+            </div>
+            {!isBotMode && (
+              <div className="text-[10px] text-gray-400 mt-0.5">Nhấn để xác minh tài khoản bị khóa</div>
             )}
           </div>
-        )}
 
-        {/* Bottom Banner — click to open bot */}
-        <div
-          onClick={handleSelectCompany}
-          className={`p-4 border-t border-gray-200 text-center cursor-pointer transition-colors ${isBotMode ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
-        >
-          <div className={`font-bold uppercase text-sm flex items-center justify-center gap-2 ${isBotMode ? 'text-blue-800' : 'text-blue-800 hover:text-blue-900'}`}>
-            {isBotMode && <ShieldAlert size={14} className="text-blue-800" />}
-            CÔNG TY TNHH ĐẠI NGHĨA TÍN
-          </div>
-          {!isBotMode && (
-            <div className="text-[10px] text-gray-400 mt-0.5">Nhấn để xác minh tài khoản bị khóa</div>
+          {/* #C-13: promo overlay — sits on top of the company button so it can't
+              be clicked; after 5s an X appears to close the ad for the session,
+              which reveals and re-enables the button underneath. */}
+          {showAdBanner && (
+            <div className="absolute inset-0 z-20 bg-blue-50 border-t border-blue-100 px-3 flex items-center gap-2 text-blue-900">
+              <Megaphone size={16} className="flex-shrink-0" />
+              <span className="text-xs flex-1">Khuyến mãi đặc biệt dành cho thành viên mới!</span>
+              {canCloseAdBanner && (
+                <button
+                  type="button"
+                  onClick={handleCloseAdBanner}
+                  className="text-blue-400 hover:text-blue-800 flex-shrink-0"
+                >
+                  <XCircle size={16} />
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -1892,27 +1972,16 @@ export default function ContactAdminPage() {
                 >
                   <MapPin size={18} />
                 </button>
-                <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
-                  <User size={18} />
-                </div>
+                {/* #C-14: share a friend's business card into this chat */}
                 <button
                   type="button"
-                  onClick={() => setIsHeaderMenuOpen((v) => !v)}
-                  className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500"
+                  onClick={() => setIsContactPickerOpen(true)}
+                  title="Gửi danh thiếp một người bạn"
+                  disabled={isBotMode}
+                  className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <MoreVertical size={18} />
+                  <User size={18} />
                 </button>
-                {isHeaderMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 z-30 bg-white border border-gray-200 rounded-lg shadow-lg w-48 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setIsHeaderMenuOpen(false)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-blue-900 hover:bg-blue-50 text-left"
-                    >
-                      <Share2 size={15} /> Chia sẻ trực tiếp
-                    </button>
-                  </div>
-                )}
               </div>
             </>
           ) : (
@@ -2006,6 +2075,50 @@ export default function ContactAdminPage() {
         existingGroup={editingGroup}
         onSave={handleSaveGroup}
       />
+
+      {/* #C-14: pick one of my friends to send their business card into the chat */}
+      {isContactPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4"
+          onClick={() => setIsContactPickerOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-sm max-h-[80vh] flex flex-col overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+              <div className="font-bold text-blue-900">Gửi danh thiếp</div>
+              <button
+                type="button"
+                onClick={() => setIsContactPickerOpen(false)}
+                className="text-gray-400 hover:text-gray-700 text-xl leading-none px-1"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {sortedFriends.length === 0 ? (
+                <div className="p-6 text-center text-sm text-gray-400">Bạn chưa có người bạn nào để gửi danh thiếp.</div>
+              ) : (
+                sortedFriends.map((friend) => (
+                  <button
+                    key={friend.id}
+                    type="button"
+                    onClick={() => handleSendContactCard(friend)}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 text-left"
+                  >
+                    <img src={friend.avatar} alt={friend.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-blue-900 truncate">{friend.displayName || friend.name}</div>
+                      {friend.bankNumber && <div className="text-[11px] text-gray-400 truncate">STK: {friend.bankNumber}</div>}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
