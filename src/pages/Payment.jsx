@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   getFavoriteWallets,
+  getMyLedger,
   getWalletFromToken,
+  internalTransfer,
+  transferFunds,
 } from "../services/walletService";
 import { data, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -395,6 +398,13 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const [Page, setPage] = useState(null);
   const [user, setUser] = useState(null);
+  const [transferAmount, setTransferAmount] = useState("");
+  const [goodsAmount, setGoodsAmount] = useState("");
+  const [freelancerAmount, setFreelancerAmount] = useState("");
+  const [aiLiveAmount, setAiLiveAmount] = useState("");
+  const [ledger, setLedger] = useState([]);
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [wallet, setWallet] = useState({
     total: 0,
@@ -415,6 +425,64 @@ const PaymentPage = () => {
     favorites[0]
   );
 
+  const formatNumber = (value) => Number(value || 0).toLocaleString("vi-VN");
+
+  const loadWalletData = async (token = localStorage.getItem("authToken")) => {
+    if (!token) return;
+
+    const [walletRes, ledgerRes] = await Promise.all([
+      getWalletFromToken(token),
+      getMyLedger(token, { limit: 20 }),
+    ]);
+
+    setWallet(walletRes.data);
+    setLedger(ledgerRes.data?.entries || []);
+  };
+
+  const runWalletAction = async (action, successText) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setMessage("Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      setMessage("");
+      await action(token);
+      await loadWalletData(token);
+      setMessage(successText);
+      return true;
+    } catch (error) {
+      setMessage(error.response?.data?.error?.message || error.message || "Thao tác thất bại.");
+      return false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleExternalTransfer = () => {
+    const selectedWalletId = Number(favoriteWalletSelected?.id || favoriteWalletSelected);
+    if (!selectedWalletId || selectedWalletId <= 0) {
+      setMessage("Vui lòng chọn ví nhận.");
+      return;
+    }
+
+    runWalletAction(
+      (token) => transferFunds(token, selectedWalletId, Number(transferAmount)),
+      "Chuyển tiền thành công."
+    );
+  };
+
+  const handleInternalTransfer = (accountType, amount, resetAmount) => {
+    runWalletAction(
+      (token) => internalTransfer(token, accountType, Number(amount)),
+      "Chuyển nội bộ thành công."
+    ).then((success) => {
+      if (success) resetAmount("");
+    });
+  };
+
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
     setColor(newColor);
@@ -434,16 +502,10 @@ const PaymentPage = () => {
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     setUser(token);
-    getWalletFromToken(token)
-      .then((res) => {
-        setWallet(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    loadWalletData(token).catch((err) => console.log(err));
     getFavoriteWallets(token)
       .then((res) => {
-        setFavorites([...favorites, ...res.data?.wallets]);
+        setFavorites((prev) => [...prev, ...(res.data?.wallets || [])]);
         console.log(res.data?.wallets);
       })
       .catch((err) => {
@@ -504,7 +566,7 @@ const PaymentPage = () => {
                 {t("payment.wallet")}
               </div>
               <div className="col-span-2 row-span-4 border p-2 flex flex-col items-center justify-center">
-                {wallet?.total}
+                {formatNumber(wallet?.total)}
               </div>
               <div className="col-span-1 row-span-4 border p-2 flex flex-col items-center justify-center">
                 VNĐ
@@ -522,6 +584,8 @@ const PaymentPage = () => {
                 <input
                   type="number"
                   min={0}
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
                   placeholder={t("payment.enterAmountPlaceholder")}
                   className="w-20 h-10 text-center"
                   pattern="[0-9]*"
@@ -542,9 +606,12 @@ const PaymentPage = () => {
                 {/* <div className="border p-2">(danh bạ)</div> */}
                 <select
                   className="border p-2"
-                  value={favoriteWalletSelected.id}
+                  value={favoriteWalletSelected?.id || favoriteWalletSelected}
                   defaultValue={0}
-                  onChange={(e) => setFavoriteWalletSelected(e.target.value)}
+                  onChange={(e) => {
+                    const wallet = favorites.find((item) => String(item.id) === e.target.value);
+                    setFavoriteWalletSelected(wallet || e.target.value);
+                  }}
                 >
                   {favorites?.map((wallet) => (
                     <option key={wallet.id} value={wallet.id}>
@@ -555,9 +622,14 @@ const PaymentPage = () => {
                 {/* <div className="border p-2">(quét QR)</div> */}
               </div>
 
-              <div className="col-span-1 row-span-4 border p-2 font-bold flex flex-col items-center justify-center text-center">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={handleExternalTransfer}
+                className="col-span-1 row-span-4 border p-2 font-bold flex flex-col items-center justify-center text-center disabled:opacity-50"
+              >
                 {t("payment.accept")}
-              </div>
+              </button>
 
               {/* Hàng 2: Tài khoản HÀNG HÓA */}
               <div className="col-span-1 border p-2 flex flex-col items-center">
@@ -567,6 +639,8 @@ const PaymentPage = () => {
                 <input
                   type="number"
                   min={0}
+                  value={goodsAmount}
+                  onChange={(e) => setGoodsAmount(e.target.value)}
                   placeholder={t("payment.enterAmountPlaceholder")}
                   className="w-20 h-10 text-center"
                   pattern="[0-9]*"
@@ -602,9 +676,14 @@ const PaymentPage = () => {
               <div className="col-span-1 border p-2 font-bold">
                 {t("payment.to")}
               </div>
-              <div className="col-span-2 border p-2">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => handleInternalTransfer("account_of_goods", goodsAmount, setGoodsAmount)}
+                className="col-span-2 border p-2 disabled:opacity-50"
+              >
                 {t("payment.accountOfGoods")}
-              </div>
+              </button>
 
               {/* Hàng 3: Tài khoản CÔNG VIỆC TỰ DO */}
               <div className="col-span-1 border p-2 flex flex-col items-center">
@@ -614,6 +693,8 @@ const PaymentPage = () => {
                 <input
                   type="number"
                   min={0}
+                  value={freelancerAmount}
+                  onChange={(e) => setFreelancerAmount(e.target.value)}
                   placeholder={t("payment.enterAmountPlaceholder")}
                   className="w-20 h-10 text-center"
                   onKeyDown={(e) => {
@@ -635,9 +716,14 @@ const PaymentPage = () => {
               <div className="col-span-1 border p-2 font-bold">
                 {t("payment.to")}
               </div>
-              <div className="col-span-2 border p-2">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => handleInternalTransfer("account_of_freelancer", freelancerAmount, setFreelancerAmount)}
+                className="col-span-2 border p-2 disabled:opacity-50"
+              >
                 {t("payment.accountOfFreelancer")}
-              </div>
+              </button>
 
               {/* Hàng 4: Tài khoản Ai LIVE */}
               <div className="col-span-1 border p-2 flex flex-col items-center">
@@ -647,6 +733,8 @@ const PaymentPage = () => {
                 <input
                   type="number"
                   min={0}
+                  value={aiLiveAmount}
+                  onChange={(e) => setAiLiveAmount(e.target.value)}
                   placeholder={t("payment.enterAmountPlaceholder")}
                   className="w-20 h-10 text-center"
                   onKeyDown={(e) => {
@@ -668,11 +756,29 @@ const PaymentPage = () => {
               <div className="col-span-1 border p-2 font-bold">
                 {t("payment.to")}
               </div>
-              <div className="col-span-2 border p-2">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => handleInternalTransfer("account_of_ailive", aiLiveAmount, setAiLiveAmount)}
+                className="col-span-2 border p-2 disabled:opacity-50"
+              >
                 {t("payment.accountOfAiLive")}
-              </div>
+              </button>
             </div>
           </div>
+
+          <div className="grid grid-cols-4 gap-2 mt-3 text-sm">
+            <div className="border p-2 font-bold">Goods: {formatNumber(wallet?.account_of_goods)} VNĐ</div>
+            <div className="border p-2 font-bold">Freelancer: {formatNumber(wallet?.account_of_freelancer)} VNĐ</div>
+            <div className="border p-2 font-bold">AI Live: {formatNumber(wallet?.account_of_ailive)} VNĐ</div>
+            <div className="border p-2 font-bold">Pending: {formatNumber(wallet?.pending_amount)} VNĐ</div>
+          </div>
+
+          {message && (
+            <div className="mt-3 border border-black p-2 text-center font-bold">
+              {message}
+            </div>
+          )}
 
           <div>
             {/* First Row */}
@@ -917,6 +1023,28 @@ const PaymentPage = () => {
           </div> */}
           {Page === "goods" ? <GoodsPaymentPage /> : null}
           {Page === "freelancer" ? <FreelancerPaymentPage /> : null}
+          <div className="mt-6 border border-black">
+            <div className="grid grid-cols-5 font-bold border-b border-black text-sm">
+              <div className="p-2">Thời gian</div>
+              <div className="p-2">Loại</div>
+              <div className="p-2">Hướng</div>
+              <div className="p-2">Số tiền</div>
+              <div className="p-2">Số dư sau</div>
+            </div>
+            {ledger.length === 0 ? (
+              <div className="p-2 text-center text-sm">Chưa có lịch sử giao dịch</div>
+            ) : (
+              ledger.map((entry) => (
+                <div key={entry.id} className="grid grid-cols-5 border-b border-black text-sm">
+                  <div className="p-2">{entry.created_at ? new Date(entry.created_at).toLocaleString("vi-VN") : ""}</div>
+                  <div className="p-2">{entry.type}</div>
+                  <div className="p-2">{entry.direction}</div>
+                  <div className="p-2 text-right">{formatNumber(entry.amount)}</div>
+                  <div className="p-2 text-right">{formatNumber(entry.balance_after)}</div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

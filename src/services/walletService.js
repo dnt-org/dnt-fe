@@ -3,6 +3,19 @@ import axios from "axios";
 // Base URL for API calls
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
 
+const createIdempotencyKey = (prefix = "wallet") => {
+  const randomPart = window.crypto?.randomUUID?.() || Math.random().toString(36).slice(2);
+  return `${prefix}_${Date.now()}_${randomPart}`;
+};
+
+const authHeaders = (authToken = localStorage.getItem("authToken"), idempotencyKey = null) => {
+  const headers = {
+    Authorization: `Bearer ${authToken}`,
+  };
+  if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
+  return headers;
+};
+
 
 const getWalletFromToken = async (authToken=localStorage.getItem("authToken")) => {
   try {
@@ -39,16 +52,18 @@ const getFavoriteWallets = async (authToken) => {
  */
 const transferFunds = async (authToken, toWalletId, amount) => {
   try {
+    const idempotencyKey = createIdempotencyKey("transfer");
     const response = await axios.post(
-      `${API_URL}/wallet/transfer`,
+      `${API_URL}/wallets/transfer`,
       {
         toWalletId: toWalletId,
-        amount: amount
+        amount: amount,
+        idempotencyKey,
       },
       {
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
+          ...authHeaders(authToken, idempotencyKey),
         }
       }
     );
@@ -68,4 +83,77 @@ const transferFunds = async (authToken, toWalletId, amount) => {
   }
 };
 
-export { getWalletFromToken, getFavoriteWallets, transferFunds };
+const internalTransfer = async (authToken, accountType, amount) => {
+  const idempotencyKey = createIdempotencyKey("internal");
+  const response = await axios.post(
+    `${API_URL}/wallets/internal-transfer`,
+    { accountType, amount, idempotencyKey },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(authToken, idempotencyKey),
+      },
+    }
+  );
+  return response;
+};
+
+const getMyLedger = async (authToken = localStorage.getItem("authToken"), params = {}) => {
+  const response = await axios.get(`${API_URL}/wallets/my-ledger`, {
+    headers: authHeaders(authToken),
+    params,
+  });
+  return response;
+};
+
+const createDeposit = async ({ authToken = localStorage.getItem("authToken"), wallet, amount, bill }) => {
+  const idempotencyKey = createIdempotencyKey("deposit");
+  const data = {
+    cccd: wallet?.cccd,
+    full_name: wallet?.name,
+    amount,
+  };
+
+  const formData = new FormData();
+  formData.append("data", JSON.stringify(data));
+  if (bill) formData.append("files.bill", bill, bill.name);
+
+  const response = await axios.post(`${API_URL}/additional-transactions`, formData, {
+    headers: authHeaders(authToken, idempotencyKey),
+  });
+
+  return response;
+};
+
+const createWithdrawal = async ({ authToken = localStorage.getItem("authToken"), wallet, amount, note = "" }) => {
+  const idempotencyKey = createIdempotencyKey("withdraw");
+  const response = await axios.post(
+    `${API_URL}/with-drawth-transactions`,
+    {
+      data: {
+        cccd: wallet?.cccd,
+        full_name: wallet?.name,
+        amount,
+        note,
+      },
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(authToken, idempotencyKey),
+      },
+    }
+  );
+
+  return response;
+};
+
+export {
+  getWalletFromToken,
+  getFavoriteWallets,
+  transferFunds,
+  internalTransfer,
+  getMyLedger,
+  createDeposit,
+  createWithdrawal,
+};
