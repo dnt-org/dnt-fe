@@ -18,3 +18,8 @@ export const getBanks = async () => {
         return [];
     }
 };
+
+export const getMicroblinkLicense = async () => {
+    const response = await axios.get(`${API_URL}/system-configuration/microblink-license`);
+    return response.data?.data?.licenseKey || "";
+};

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home as HomeIcon, Keyboard as KeyboardIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, RefreshCw, ScanLine, X } from "lucide-react";
+import { extractSideDocumentImage, extractSideInputImage } from "@microblink/blinkid";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
+import useBlinkIdScanner from "../components/MicrolinkIDScanner";
 import { useTranslation } from 'react-i18next';
 import { getSessions, toggleSessionStatus } from "../services/authService";
 import { createOrUpdateBusiness, getMyBusiness, uploadDocumentToStrapi, getMyDocuments, verifyMyBusiness } from "../services/businessService";
@@ -10,14 +12,36 @@ import useLocationSelection from "../hooks/useLocationSelection";
 
 const MOCK_VERIFICATION = String(import.meta.env.VITE_MOCK_VERIFICATION || "false").toLowerCase() === "true";
 
-const dataUrlToFile = (dataUrl, filename) => {
-  const arr = dataUrl.split(',');
-  const mime = arr[0].match(/:(.*?);/)[1];
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) u8arr[n] = bstr.charCodeAt(n);
-  return new File([u8arr], filename, { type: mime });
+const ADMIN_BLINK_SCANNING_SETTINGS = {
+  returnInputImages: true,
+  scanCroppedDocumentImage: true,
+  croppedImageSettings: {
+    returnDocumentImage: true,
+    returnFaceImage: true,
+    returnSignatureImage: true,
+  },
+};
+
+const ADMIN_BLINK_FEEDBACK_OPTIONS = {
+  showOnboardingGuide: false,
+  showHelpButton: true,
+};
+
+const imageDataToDataUrl = (imageData) => {
+  if (!imageData) return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = imageData.width;
+  canvas.height = imageData.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.putImageData(imageData, 0, 0);
+  return canvas.toDataURL("image/png");
+};
+
+const getBlinkStringValue = (field) => {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field.latin?.value || field.cyrillic?.value || field.greek?.value || field.arabic?.value || "";
 };
 
 function DeviceRow({ item, actionLabel, onActionClick }) {
@@ -135,6 +159,10 @@ export default function AdminControlPage() {
   const [cccdFrontFileId, setCccdFrontFileId] = useState(null);
   const [cccdBackFileId, setCccdBackFileId] = useState(null);
   const [hasIdCaptured, setHasIdCaptured] = useState(false);
+  const [showIdScanner, setShowIdScanner] = useState(false);
+  const [scannerStarting, setScannerStarting] = useState(false);
+  const [scannerError, setScannerError] = useState("");
+  const [cccdScanInfo, setCccdScanInfo] = useState(null);
 
   // Business registration document state
   const [businessRegDataUrl, setBusinessRegDataUrl] = useState(null);
@@ -159,6 +187,63 @@ export default function AdminControlPage() {
   const [businessLoading, setBusinessLoading] = useState(false);
   const [businessSaving, setBusinessSaving] = useState(false);
 
+  const closeIdScanner = useCallback(async () => {
+    await idScannerDestroyRef.current?.();
+    setShowIdScanner(false);
+    setScannerStarting(false);
+  }, []);
+
+  const handleBlinkIdResult = useCallback(async (result) => {
+    const frontImage = extractSideDocumentImage(result, "first") || extractSideInputImage(result, "first");
+    const backImage = extractSideDocumentImage(result, "second") || extractSideInputImage(result, "second");
+    const frontDataUrl = imageDataToDataUrl(frontImage);
+    const backDataUrl = imageDataToDataUrl(backImage);
+
+    if (!frontDataUrl || !backDataUrl) {
+      setScannerError("Chưa lấy được đủ ảnh CCCD hai mặt. Vui lòng quét lại và làm theo hướng dẫn lật thẻ.");
+      return;
+    }
+
+    setCccdFrontDataUrl(frontDataUrl);
+    setCccdBackDataUrl(backDataUrl);
+    setHasIdCaptured(true);
+    setCccdScanInfo({
+      fullName: getBlinkStringValue(result.fullName),
+      idNumber: getBlinkStringValue(result.personalIdNumber) || getBlinkStringValue(result.documentNumber),
+    });
+
+    await Promise.all([
+      uploadCapturedPhoto(frontDataUrl, "cccd_front"),
+      uploadCapturedPhoto(backDataUrl, "cccd_back"),
+    ]);
+    await closeIdScanner();
+  }, [closeIdScanner]);
+
+  const handleBlinkIdError = useCallback((error) => {
+    console.error("BlinkID scan error:", error);
+    setScannerError("Không thể quét CCCD. Vui lòng thử lại hoặc kiểm tra quyền camera/license.");
+    setScannerStarting(false);
+  }, []);
+
+  const {
+    containerRef: idScannerContainerRef,
+    initialize: initializeIdScanner,
+    destroy: destroyIdScanner,
+    isReady: isIdScannerReady,
+  } = useBlinkIdScanner({
+    onResult: handleBlinkIdResult,
+    onError: handleBlinkIdError,
+    scanningMode: "automatic",
+    scanningSettings: ADMIN_BLINK_SCANNING_SETTINGS,
+    feedbackUiOptions: ADMIN_BLINK_FEEDBACK_OPTIONS,
+  });
+
+  const idScannerDestroyRef = useRef(destroyIdScanner);
+
+  useEffect(() => {
+    idScannerDestroyRef.current = destroyIdScanner;
+  }, [destroyIdScanner]);
+
   // Set video srcObject after camera modal mounts
   useEffect(() => {
     if (showCamera && cameraStream && videoRef.current) {
@@ -174,6 +259,12 @@ export default function AdminControlPage() {
     setCccdFrontFileId(1);
     setCccdBackFileId(2);
     setHasIdCaptured(true);
+  };
+
+  const openIdScanner = () => {
+    setScannerError("");
+    setShowIdScanner(true);
+    setScannerStarting(true);
   };
 
   const mockBusinessRegCapture = () => {
@@ -211,7 +302,7 @@ export default function AdminControlPage() {
     try {
       await video.play();
       setPreviewBlocked(false);
-    } catch (_) {
+    } catch {
       setPreviewBlocked(true);
     }
   };
@@ -227,6 +318,20 @@ export default function AdminControlPage() {
       console.error(`Upload ${type} error:`, error);
     }
   };
+
+  useEffect(() => {
+    if (!showIdScanner) return;
+    const timeoutId = window.setTimeout(async () => {
+      try {
+        await initializeIdScanner();
+      } catch (error) {
+        handleBlinkIdError(error);
+      } finally {
+        setScannerStarting(false);
+      }
+    }, 100);
+    return () => window.clearTimeout(timeoutId);
+  }, [showIdScanner, initializeIdScanner, handleBlinkIdError]);
 
   const capturePhoto = () => {
     if (!videoRef.current) return;
@@ -592,25 +697,29 @@ export default function AdminControlPage() {
                 if (MOCK_VERIFICATION) {
                   mockIdCapture();
                 } else if (!cccdFrontDataUrl) {
-                  openCamera('cccd_front');
+                  openIdScanner();
                 } else if (!cccdBackDataUrl) {
-                  openCamera('cccd_back');
+                  openIdScanner();
                 } else {
                   setCccdFrontDataUrl(null);
                   setCccdBackDataUrl(null);
                   setCccdFrontFileId(null);
                   setCccdBackFileId(null);
                   setHasIdCaptured(false);
-                  openCamera('cccd_front');
+                  setCccdScanInfo(null);
+                  openIdScanner();
                 }
               }}
             >
-              {t('adminControl.idVerification')}
+              <span className="inline-flex items-center justify-center gap-2">
+                <ScanLine size={20} />
+                {t('adminControl.idVerification')}
+              </span>
               <br />
               {t('adminControl.forPersonalAccounts')}
               {cccdFrontDataUrl && !cccdBackDataUrl && (
                 <div className="text-sm text-yellow-600 mt-1 normal-case font-normal">
-                  Đã chụp mặt trước • Bấm để chụp mặt sau
+                  Đã chụp mặt trước - Bấm để quét lại đủ hai mặt
                 </div>
               )}
               {hasIdCaptured && (
@@ -700,6 +809,13 @@ export default function AdminControlPage() {
                   <div className="text-[10px] text-gray-500 mt-0.5">Giấy ĐKKD</div>
                 </div>
               )}
+            </div>
+          )}
+
+          {cccdScanInfo && (
+            <div className="mt-2 max-w-[520px] border-2 border-black bg-white/70 px-3 py-2 text-xs leading-tight">
+              {cccdScanInfo.fullName && <div><span className="font-bold">Họ tên:</span> {cccdScanInfo.fullName}</div>}
+              {cccdScanInfo.idNumber && <div><span className="font-bold">Số CCCD:</span> {cccdScanInfo.idNumber}</div>}
             </div>
           )}
         </section>
@@ -860,6 +976,39 @@ export default function AdminControlPage() {
             </button>
           </div>
         </div>
+      </div>
+    )}
+
+    {/* BlinkID CCCD Scanner Modal */}
+    {showIdScanner && (
+      <div className="admin-id-scanner-modal fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black/90 p-4">
+        <button
+          type="button"
+          onClick={closeIdScanner}
+          className="absolute right-4 top-4 z-10 rounded bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Đóng quét CCCD"
+        >
+          <X size={28} />
+        </button>
+        <div className="mb-3 max-w-[900px] px-12 text-center text-white">
+          <h2 className="text-2xl font-bold leading-tight">Quét CCCD hai mặt</h2>
+          <p className="mt-1 text-base leading-snug text-gray-300">Đưa CCCD vào khung, giữ rõ nét, rồi lật mặt sau khi hệ thống yêu cầu.</p>
+        </div>
+        <div
+          ref={idScannerContainerRef}
+          className="admin-id-scanner-host flex w-full flex-col items-center"
+        />
+        {(scannerStarting || !isIdScannerReady) && !scannerError && (
+          <div className="mt-4 flex items-center gap-3 text-sm text-white">
+            <RefreshCw className="animate-spin" size={22} />
+            Đang khởi động camera...
+          </div>
+        )}
+        {scannerError && (
+          <div className="mt-3 w-full max-w-[960px] border-2 border-red-500 bg-red-50 px-3 py-2 text-center text-sm font-bold text-red-700">
+            {scannerError}
+          </div>
+        )}
       </div>
     )}
   </>

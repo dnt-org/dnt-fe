@@ -55,7 +55,8 @@ export default function NewPostPage() {
         const checkCccdVerification = async () => {
             try {
                 const res = await getMyBusiness();
-                if (res?.data?.verified) {
+                const business = res?.data?.data;
+                if (res?.data?.verified || business?.status === "verified") {
                     // Business already verified – skip capture steps entirely
                     navigate("/new-good-post", { replace: true });
                 } else {

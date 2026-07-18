@@ -55,9 +55,8 @@ const getMyBusiness = async () => {
             throw new Error("No authentication token found");
         }
 
-        const response = await axios.post(
-            `${API_URL}/business/verify`,
-            {},
+        const response = await axios.get(
+            `${API_URL}/business/me`,
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

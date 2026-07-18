@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createBlinkId } from "@microblink/blinkid";
+import { getMicroblinkLicense } from "../services/systemService";
+
+let cachedMicroblinkLicense = "";
+
+const resolveMicroblinkLicense = async (licenseKey) => {
+  if (licenseKey) return licenseKey;
+  if (cachedMicroblinkLicense) return cachedMicroblinkLicense;
+
+  cachedMicroblinkLicense = await getMicroblinkLicense();
+  return cachedMicroblinkLicense;
+};
 
 // Hook: useBlinkIdScanner
 // Encapsulates BlinkID setup, mounting to a container node via ref,
@@ -10,28 +21,36 @@ export default function useBlinkIdScanner(options = {}) {
   const [isReady, setIsReady] = useState(false);
 
   const {
-    licenseKey = import.meta.env.VITE_LICENSE_KEY,
+    licenseKey,
     // Serve resources from your app's public folder (vite moves them to /public/resources)
     cameraManagerUiOptions,
     feedbackUiOptions,
     scanningSettings,
     scanningMode,
     microblinkProxyUrl,
+    resourcesLocation,
     wasmVariant,
     useLightweightBuild,
     userId,
     onResult,
+    onSuccess,
     onError,
   } = options;
 
   const initialize = useCallback(async () => {
     if (blinkid) return blinkid;
 
+    const resolvedLicenseKey = await resolveMicroblinkLicense(licenseKey);
+    if (!resolvedLicenseKey) {
+      throw new Error("Microblink license key is not configured");
+    }
+
     const instance = await createBlinkId({
-      licenseKey,
+      licenseKey: resolvedLicenseKey,
       cameraManagerUiOptions,
       feedbackUiOptions,
       microblinkProxyUrl,
+      resourcesLocation,
       wasmVariant,
       useLightweightBuild,
       userId,
@@ -46,13 +65,17 @@ export default function useBlinkIdScanner(options = {}) {
           returnFaceImage: true,
           returnSignatureImage: true,
         },
+        ...scanningSettings,
       },
     });
 
 
 
-    if (typeof onResult === "function") {
-      instance.addOnResultCallback(onResult);
+    if (typeof onResult === "function" || typeof onSuccess === "function") {
+      instance.addOnResultCallback((result) => {
+        onResult?.(result);
+        onSuccess?.(result);
+      });
     }
 
     if (typeof onError === "function") {
@@ -70,10 +93,12 @@ export default function useBlinkIdScanner(options = {}) {
     scanningSettings,
     scanningMode,
     microblinkProxyUrl,
+    resourcesLocation,
     wasmVariant,
     useLightweightBuild,
     userId,
     onResult,
+    onSuccess,
     onError,
   ]);
 
