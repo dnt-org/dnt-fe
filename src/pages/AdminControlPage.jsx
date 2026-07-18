@@ -206,16 +206,16 @@ export default function AdminControlPage() {
 
     setCccdFrontDataUrl(frontDataUrl);
     setCccdBackDataUrl(backDataUrl);
-    setHasIdCaptured(true);
     setCccdScanInfo({
       fullName: getBlinkStringValue(result.fullName),
       idNumber: getBlinkStringValue(result.personalIdNumber) || getBlinkStringValue(result.documentNumber),
     });
 
-    await Promise.all([
+    const [frontOk, backOk] = await Promise.all([
       uploadCapturedPhoto(frontDataUrl, "cccd_front"),
       uploadCapturedPhoto(backDataUrl, "cccd_back"),
     ]);
+    if (frontOk && backOk) setHasIdCaptured(true);
     await closeIdScanner();
   }, [closeIdScanner]);
 
@@ -308,14 +308,17 @@ export default function AdminControlPage() {
   };
 
   const uploadCapturedPhoto = async (dataUrl, type) => {
-    if (MOCK_VERIFICATION) return;
+    if (MOCK_VERIFICATION) return true;
     try {
       const uploaded = await uploadDocumentToStrapi(dataUrl, type);
       if (type === 'cccd_front') setCccdFrontFileId(uploaded.id);
       else if (type === 'cccd_back') setCccdBackFileId(uploaded.id);
       else if (type === 'business_reg') setBusinessRegFileId(uploaded.id);
+      return true;
     } catch (error) {
       console.error(`Upload ${type} error:`, error);
+      alert(t('adminControl.uploadError', 'Tải ảnh lên thất bại. Vui lòng thử lại.'));
+      return false;
     }
   };
 
@@ -333,7 +336,7 @@ export default function AdminControlPage() {
     return () => window.clearTimeout(timeoutId);
   }, [showIdScanner, initializeIdScanner, handleBlinkIdError]);
 
-  const capturePhoto = () => {
+  const capturePhoto = async () => {
     if (!videoRef.current) return;
     const video = videoRef.current;
     const canvas = document.createElement("canvas");
@@ -346,17 +349,17 @@ export default function AdminControlPage() {
 
     if (cameraMode === 'cccd_front') {
       setCccdFrontDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'cccd_front');
+      await uploadCapturedPhoto(dataUrl, 'cccd_front');
       closeCamera();
     } else if (cameraMode === 'cccd_back') {
       setCccdBackDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'cccd_back');
-      setHasIdCaptured(true);
+      const ok = await uploadCapturedPhoto(dataUrl, 'cccd_back');
+      if (ok) setHasIdCaptured(true);
       closeCamera();
     } else if (cameraMode === 'business_reg') {
       setBusinessRegDataUrl(dataUrl);
-      uploadCapturedPhoto(dataUrl, 'business_reg');
-      setHasBusinessVideo(true);
+      const ok = await uploadCapturedPhoto(dataUrl, 'business_reg');
+      if (ok) setHasBusinessVideo(true);
       closeCamera();
     }
   };

@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from 'react-i18next';
-import useNotifications from "../custom-hooks/useNotifications";
-import markAsRead from "../services/notificationService";
+import useSupabaseRealtimeAuth from "../custom-hooks/useSupabaseRealtimeAuth";
+import useInboxChannel from "../custom-hooks/useInboxChannel";
 import { QrCode } from "lucide-react";
+
+const getCurrentUserId = () => {
+    try {
+        return JSON.parse(localStorage.getItem('user') || '{}')?.id || null;
+    } catch {
+        return null;
+    }
+};
 
 const HeaderComponent = ({
     color,
@@ -14,11 +22,31 @@ const HeaderComponent = ({
     className = ""
 }) => {
     const { t, i18n } = useTranslation();
-    const notifications = useNotifications(17);
+    const currentUserId = getCurrentUserId();
+    const { isAuthReady } = useSupabaseRealtimeAuth(isUserLoggedIn && !!currentUserId);
+    const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [showBgMenu, setShowBgMenu] = useState(false);
     const dropdownRef = useRef();
+    const bellRef = useRef();
     const bgMenuRef = useRef();
+
+    useInboxChannel({
+        userId: currentUserId,
+        enabled: isUserLoggedIn && isAuthReady,
+        onNotification: (payload) => {
+            setNotifications(prev => [
+                { id: `${payload.pushDate}_${payload.transactionId || prev.length}`, ...payload },
+                ...prev,
+            ].slice(0, 20));
+        },
+    });
+
+    const markNotificationRead = (id) => {
+        setNotifications(prev => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    };
+
+    const unreadCount = notifications.filter((n) => !n.read).length;
 
     const colors = [
         { name: "VN", value: "vi" },
@@ -41,7 +69,9 @@ const HeaderComponent = ({
 
     useEffect(() => {
         function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+            const clickedBell = bellRef.current && bellRef.current.contains(event.target);
+            const clickedDropdown = dropdownRef.current && dropdownRef.current.contains(event.target);
+            if (!clickedBell && !clickedDropdown) {
                 setIsNotificationOpen(false);
             }
             if (bgMenuRef.current && !bgMenuRef.current.contains(event.target)) {
@@ -225,13 +255,23 @@ const HeaderComponent = ({
                 </div>
 
                 <div
+                    ref={bellRef}
+                    onClick={() => setIsNotificationOpen(prev => !prev)}
                     className="cursor-pointer flex border-b border-black border-r justify-center items-center min-h-6"
                 >
-                    <div className="table-cell flex items-center font-bold py-1 px-1 text-center">
+                    <div style={{ position: "relative" }} className="table-cell flex items-center font-bold py-1 px-1 text-center">
                         <i
                             style={{ fontSize: "clamp(10px, 1vw, 20px)" }}
                             className="fa-solid fa-bell"
                         ></i>
+                        {unreadCount > 0 && (
+                            <span
+                                style={{ fontSize: "9px", lineHeight: 1 }}
+                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full px-1 py-0.5"
+                            >
+                                {unreadCount}
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -246,10 +286,10 @@ const HeaderComponent = ({
                     <div className="px-1">
                         <ul className="max-h-50 overflow-y-auto">
                             {notifications.length > 0 ? (
-                                notifications.slice(0, 5).map((note, idx) => (
+                                notifications.slice(0, 5).map((note) => (
                                     <li
-                                        onMouseEnter={() => !note.read && markAsRead(17, note.id)}
-                                        key={idx}
+                                        onMouseEnter={() => !note.read && markNotificationRead(note.id)}
+                                        key={note.id}
                                         className="text-sm px-1 hover:bg-gray-100 cursor-pointer"
                                     >
                                         {!note.read ? (
