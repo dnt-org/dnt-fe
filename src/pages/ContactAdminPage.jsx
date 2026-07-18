@@ -76,6 +76,7 @@ import ContactAvatarMenu from '../components/contact/ContactAvatarMenu';
 import PendingListModal from '../components/contact/PendingListModal';
 import ContactQrModal from '../components/contact/ContactQrModal';
 import CreateGroupPanel from '../components/contact/CreateGroupPanel';
+import MapPickerModal from '../components/contact/MapPickerModal';
 
 // ─── Chat mode ────────────────────────────────────────────────────────────────
 // mode = null    → no chat selected
@@ -807,6 +808,45 @@ function NormalChatPanel({ contact, t, messages, onSendMessage, onSendImage, pee
                     </a>
                   ) : msg.type === 'contact' ? (
                     <ContactCardBubble raw={msg.text} isMe={isMe} isDark={isDark} pending={msg.pending} failed={msg.failed} />
+                  ) : msg.type === 'location' ? (
+                    <div
+                      style={isMe ? { backgroundColor: bubbleColor } : undefined}
+                      className={`px-3 py-2.5 rounded-2xl text-sm relative break-words transition-opacity border ${isMe
+                        ? 'text-white border-transparent rounded-br-none'
+                        : `${isDark ? 'bg-gray-700 border-gray-600 text-red-400' : 'bg-white border-gray-100 text-red-600'} rounded-bl-none`
+                        } ${msg.pending ? 'opacity-60' : ''} ${msg.failed ? 'ring-2 ring-red-400' : ''}`}
+                    >
+                      <div className="flex flex-col gap-1.5 min-w-[200px]">
+                        <div className="flex items-center gap-1.5 font-bold text-xs uppercase tracking-wide">
+                          <MapPin size={14} className={isMe ? 'text-white' : 'text-red-500'} />
+                          <span>Vị trí chia sẻ</span>
+                        </div>
+                        {msg.text.includes('\n') ? (
+                          <>
+                            <div className={`text-xs opacity-90 font-medium ${isMe ? 'text-blue-100' : 'text-gray-600 dark:text-gray-300'}`}>
+                              {msg.text.split('\n')[1]}
+                            </div>
+                            <a
+                              href={msg.text.split('\n')[2]}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={`text-xs font-bold underline ${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:text-blue-700'}`}
+                            >
+                              Xem trên bản đồ ➔
+                            </a>
+                          </>
+                        ) : (
+                          <a
+                            href={msg.text.replace('📍 Vị trí của tôi: ', '').replace('📍 Vị trí đã chia sẻ: ', '')}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={`text-xs font-bold underline ${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:text-blue-700'}`}
+                          >
+                            Xem trên bản đồ ➔
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   ) : (
                     <div
                       style={isMe ? { backgroundColor: bubbleColor } : undefined}
@@ -1245,6 +1285,9 @@ export default function ContactAdminPage() {
   // #C-14: "gửi danh thiếp" — pick one of my friends and send their card into the chat
   const [isContactPickerOpen, setIsContactPickerOpen] = useState(false);
 
+  // Map selection modal for location sharing
+  const [isMapPickerOpen, setIsMapPickerOpen] = useState(false);
+
 
   // inline panel: replaces popup modals for invite/scan-result lists
   const [inlinePanelType, setInlinePanelType] = useState(null); // 'friendRequests' | 'groupInvites' | 'scannedFriend' | 'scannedGroup'
@@ -1471,20 +1514,15 @@ export default function ContactAdminPage() {
     }
   };
 
-  // Chat header: send current location as a message into the active conversation
-  const handleSendLocation = () => {
+  // Chat header: send selected location (coordinates & address) as a message
+  const handleSendLocation = (lat, lng, address) => {
     if (!activeContactId) return;
-    const sendLoc = (lat, lng) =>
-      handleSendMessage(`📍 Vị trí của tôi: https://maps.google.com/?q=${lat},${lng}`, 'location');
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => sendLoc(pos.coords.latitude.toFixed(6), pos.coords.longitude.toFixed(6)),
-        () => handleSendMessage('📍 Không thể lấy vị trí (đã bị từ chối hoặc không khả dụng).'),
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    } else {
-      handleSendMessage('📍 Thiết bị không hỗ trợ định vị.');
-    }
+    const formattedLat = typeof lat === 'number' ? lat.toFixed(6) : lat;
+    const formattedLng = typeof lng === 'number' ? lng.toFixed(6) : lng;
+    const text = address
+      ? `📍 Vị trí đã chia sẻ:\n${address}\nhttps://maps.google.com/?q=${formattedLat},${formattedLng}`
+      : `📍 Vị trí đã chia sẻ: https://maps.google.com/?q=${formattedLat},${formattedLng}`;
+    handleSendMessage(text, 'location');
   };
 
   // #C-14: send the selected friend's business card into the current chat
@@ -1963,10 +2001,10 @@ export default function ContactAdminPage() {
                 <div className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500">
                   <Video size={18} />
                 </div>
-                {/* Location — sends current position into the chat */}
+                {/* Location — select from map or send current position */}
                 <button
                   type="button"
-                  onClick={handleSendLocation}
+                  onClick={() => setIsMapPickerOpen(true)}
                   title="Gửi vị trí"
                   className="w-8 h-8 rounded border border-blue-600 flex items-center justify-center cursor-pointer text-white hover:bg-blue-500"
                 >
@@ -2074,6 +2112,13 @@ export default function ContactAdminPage() {
         friends={friends}
         existingGroup={editingGroup}
         onSave={handleSaveGroup}
+      />
+
+      {/* Map selection modal to select and send locations */}
+      <MapPickerModal
+        isOpen={isMapPickerOpen}
+        onClose={() => setIsMapPickerOpen(false)}
+        onSendLocation={handleSendLocation}
       />
 
       {/* #C-14: pick one of my friends to send their business card into the chat */}
