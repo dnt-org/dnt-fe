@@ -4,8 +4,7 @@ import { useSystemInfos } from "../custom-hooks/useSystemInfos"
 
 const DataTableComponent = () => {
   const { t } = useTranslation()
-  const infos = useSystemInfos()
-  const metric = Array.isArray(infos) ? (infos[0] || {}) : (infos || {})
+  const { infos: metric } = useSystemInfos()
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return "0";
@@ -23,7 +22,7 @@ const DataTableComponent = () => {
           {t("metrics.listedValue", "GIÁ TRỊ LÊN SÀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.listed_value)}</strong>
+          <strong>{formatNumber(metric.listedValue)}</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.transactions", "LƯỢT GIAO DỊCH")}:

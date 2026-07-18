@@ -1,56 +1,38 @@
 import { useEffect, useState } from "react"
-import { supabase } from "../config/supabase-client"
+import { getMetric } from "../services/metricService"
+
+const POLL_INTERVAL_MS = 5000
 
 const useSystemInfos = () => {
-  const [infos, setInfos] = useState([])
+  const [infos, setInfos] = useState({})
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    let channel = null
     let mounted = true
+    let intervalId = null
 
-    const init = async () => {
-      console.log("init")
-      if (!supabase) return
-
-      const { data, error } = await supabase.schema("public").from('system_infos').select("*")
-      if (!error && mounted) setInfos(Array.isArray(data) ? data : [])
-
-      channel = supabase
-        .channel("public-system-infos")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "system_infos" },
-          (payload) => {
-            console.log("postgres_changes", payload)
-            const next = payload?.new ?? payload?.old
-            if (!next) return
-            setInfos((prev) => {
-              const id = next.id ?? next.documentId
-              if (id == null) return prev
-              const idx = prev.findIndex((r) => (r.id ?? r.documentId) === id)
-              if (idx >= 0) {
-                const copy = prev.slice()
-                copy[idx] = next
-                return copy
-              }
-              return [next, ...prev]
-            })
-          }
-        )
-        .subscribe()
+    const fetchInfos = async () => {
+      try {
+        const data = await getMetric()
+        if (!mounted) return
+        setInfos(data || {})
+        setError(null)
+      } catch (err) {
+        if (!mounted) return
+        setError(err)
+      }
     }
 
-    init()
+    fetchInfos()
+    intervalId = window.setInterval(fetchInfos, POLL_INTERVAL_MS)
 
     return () => {
       mounted = false
-      try {
-        if (channel) supabase?.removeChannel(channel)
-      } catch {}
+      if (intervalId) window.clearInterval(intervalId)
     }
   }, [])
 
-  return infos
+  return { infos, error }
 }
 
 export { useSystemInfos }

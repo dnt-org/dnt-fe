@@ -33,8 +33,11 @@ import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
 import CookiePolicyPage from './pages/CookiePolicyPage.jsx'
 import GuideRulesPage from './pages/GuideRulesPage.jsx'
 import SetupNewSecurityPage from './pages/SetupNewSecurityPage.jsx'
+import { useAlive } from './custom-hooks/useAlive.js'
 
 function App() {
+  useAlive();
+
   // Restore background (image or color) from localStorage on every page load/navigation
   useEffect(() => {
     const root = document.getElementById("root");
