@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { Home as HomeIcon, KeyboardIcon as KeyboardIconIcon } from 'lucide-react';
-import { createDeposit, getWalletFromToken } from "../services/walletService";
+import {
+  createDeposit,
+  createSePayDepositIntent,
+  getWalletFromToken,
+} from "../services/walletService";
 
 const AdditionalPaymentPage = () => {
   const { t } = useTranslation();
@@ -13,6 +17,7 @@ const AdditionalPaymentPage = () => {
   const [bill, setBill] = useState(null);
   const [message, setMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [depositIntent, setDepositIntent] = useState(null);
   const navigate = useNavigate();
   
   const handleChangeColor = (e) => {
@@ -32,7 +37,7 @@ const AdditionalPaymentPage = () => {
     }
   }, [color]);
 
-  const handleSubmit = async () => {
+  const handleCreateQr = async () => {
     if (!user) {
       setMessage("Vui lòng đăng nhập lại.");
       return;
@@ -41,20 +46,38 @@ const AdditionalPaymentPage = () => {
       setMessage("Vui lòng nhập số tiền hợp lệ.");
       return;
     }
+    try {
+      setIsSubmitting(true);
+      setMessage("");
+      const response = await createSePayDepositIntent({
+        authToken: user,
+        amount: Number(amount),
+      });
+      setDepositIntent(response.data?.data);
+      setMessage("Quét QR và giữ nguyên nội dung chuyển khoản. Ví sẽ được cộng tự động.");
+    } catch (error) {
+      setMessage(error.response?.data?.error?.message || error.message || "Không tạo được mã nạp tiền.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!user || !amount || Number(amount) <= 0) {
+      setMessage("Vui lòng đăng nhập và nhập số tiền hợp lệ.");
+      return;
+    }
     if (!bill) {
       setMessage("Vui lòng tải biên lai.");
       return;
     }
-
     try {
       setIsSubmitting(true);
-      setMessage("");
       await createDeposit({ authToken: user, wallet, amount: Number(amount), bill });
-      setAmount("");
       setBill(null);
-      setMessage("Đã gửi yêu cầu nạp tiền.");
+      setMessage("Đã gửi biên lai để quản trị viên kiểm tra.");
     } catch (error) {
-      setMessage(error.response?.data?.error?.message || error.message || "Không tạo được yêu cầu nạp tiền.");
+      setMessage(error.response?.data?.error?.message || error.message || "Không gửi được biên lai.");
     } finally {
       setIsSubmitting(false);
     }
@@ -93,8 +116,31 @@ const AdditionalPaymentPage = () => {
 
       {/* Mã QR */}
       <div className=" p-2 mt-2 flex items-center">
-        <span className="ml-2 font-bold">{t('payment.qr')}</span>
+        <span className="ml-2 font-bold">{t('payment.qr')} SePay</span>
       </div>
+
+      {depositIntent && (
+        <div className="border border-black rounded p-4 mt-2 text-center">
+          <img
+            src={depositIntent.qrUrl}
+            alt="Mã QR nạp tiền SePay"
+            className="mx-auto max-w-full w-80"
+          />
+          <div className="mt-3 font-bold">{Number(depositIntent.amount).toLocaleString("vi-VN")} VNĐ</div>
+          <div>{depositIntent.bank} — {depositIntent.accountNumber}</div>
+          {depositIntent.accountHolder && <div>{depositIntent.accountHolder}</div>}
+          <div className="mt-2">
+            Nội dung: <strong>{depositIntent.description}</strong>
+          </div>
+          <button
+            type="button"
+            className="border border-black rounded px-3 py-1 mt-2"
+            onClick={() => navigator.clipboard?.writeText(depositIntent.description)}
+          >
+            Sao chép nội dung
+          </button>
+        </div>
+      )}
 
       {/* Bảng thông tin */}
       <div className=" mt-2">
@@ -147,7 +193,16 @@ const AdditionalPaymentPage = () => {
         </div>
       </div>
 
-      {/* Tải biên lai */}
+      <button
+        type="button"
+        disabled={isSubmitting}
+        onClick={handleCreateQr}
+        className="w-full border border-black p-3 mt-2 text-center font-bold rounded disabled:opacity-50"
+      >
+        {isSubmitting ? "Đang tạo..." : "Tạo mã QR nạp tiền tự động"}
+      </button>
+
+      <div className="mt-5 font-bold">Không nhận được tiền tự động? Gửi biên lai để kiểm tra</div>
       <label className="block border border-black p-3 mt-2 text-center font-bold rounded cursor-pointer">
         {t('additionalPayment.uploadReceipt')}
         <input
@@ -159,14 +214,13 @@ const AdditionalPaymentPage = () => {
         {bill && <div className="text-sm font-normal mt-2">{bill.name}</div>}
       </label>
 
-      {/* Chấp nhận */}
       <button
         type="button"
         disabled={isSubmitting}
-        onClick={handleSubmit}
+        onClick={handleManualSubmit}
         className="w-full border border-black p-3 mt-2 text-center font-bold rounded disabled:opacity-50"
       >
-        {t('additionalPayment.accept')}
+        Gửi biên lai thủ công
       </button>
 
       {message && <div className="border border-black p-2 mt-2 text-center font-bold">{message}</div>}

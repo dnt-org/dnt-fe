@@ -125,6 +125,23 @@ const createDeposit = async ({ authToken = localStorage.getItem("authToken"), wa
   return response;
 };
 
+const createSePayDepositIntent = async ({
+  authToken = localStorage.getItem("authToken"),
+  amount,
+}) => {
+  const response = await axios.post(
+    `${API_URL}/payment/deposit-intent/sepay`,
+    { amount: Number(amount) },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders(authToken),
+      },
+    }
+  );
+  return response;
+};
+
 const createWithdrawal = async ({ authToken = localStorage.getItem("authToken"), wallet, amount, note = "" }) => {
   const idempotencyKey = createIdempotencyKey("withdraw");
   const response = await axios.post(
@@ -155,5 +172,6 @@ export {
   internalTransfer,
   getMyLedger,
   createDeposit,
+  createSePayDepositIntent,
   createWithdrawal,
 };
