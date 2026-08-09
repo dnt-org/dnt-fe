@@ -156,6 +156,19 @@ function HeroHeader({
                             "MỤC TIÊU: CÔNG CỤ THƯƠNG MẠI CỦA MỖI QUỐC GIA"
                         )}
                     </h3>
+                    <Link
+                        to="/terms-and-conditions"
+                        style={{
+                            display: "inline-block",
+                            fontSize: "clamp(8px, 1vw, 13px)",
+                            color: "#1a56db",
+                            textDecoration: "underline",
+                            fontWeight: "bold",
+                            marginTop: "2px",
+                        }}
+                    >
+                        HỢP ĐỒNG VÀ CÁC ĐIỀU KHOẢN
+                    </Link>
 
                     {/* Buttons positioned relative to the subtitle */}
                 </div>

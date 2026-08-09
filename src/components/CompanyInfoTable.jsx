@@ -135,8 +135,8 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
 
   const bankName = userData?.bank_name || 'VIETINBANK';
   const bankLabel = currentLang === 'vi'
-    ? `TÀI KHOẢN ĐỊNH DANH TẠI NGÂN HÀNG ${bankName}`
-    : `IDENTITY ACCOUNT AT BANK ${bankName}`;
+    ? `SỐ TÀI KHOẢN VIETINBANK: ${userData?.bank_account_number || '108873456789'}`
+    : `VIETINBANK ACCOUNT NO: ${userData?.bank_account_number || '108873456789'}`;
 
   const companyLogo = userData?.company_logo?.url || planetImage;
 
@@ -197,7 +197,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
               {/* Header — Company name */}
               <tr>
                 <td colSpan={3} className="border-2 border-black p-2 text-center">
-                  <span className="font-bold text-sm sm:text-base text-blue-700">
+                  <span className="font-bold text-base sm:text-lg text-blue-700">
                     {userData?.company_name || fallback.companyName}
                   </span>
                 </td>
@@ -209,7 +209,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
                   {currentLang === 'vi' ? 'Số ĐKKD:' : 'Business Reg. No.:'}
                 </td>
                 <td className="border-2 border-black px-2 py-1.5 text-center font-bold align-middle">
-                  {userData?.cccd || fallback.mst}
+                  3702678200
                 </td>
                 <td className="border-2 border-black px-2 py-1.5 text-center align-middle w-px">
                   <button

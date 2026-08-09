@@ -7,20 +7,41 @@ const FooterComponent = () => {
 
     return (
         <>
-            {/* Reward List Link */}
+            {/* Reward List + Restricted Transactions Links */}
             <div
-                onClick={() => navigate("/reward-list")}
                 style={{
                     display: "flex",
-                    cursor: "pointer",
-                    justifyContent: "center", 
-                    alignItems: "center", 
-                    height: 50, 
-                    borderBottom: '1px solid', 
-                    fontWeight: 'bold'
+                    borderBottom: '1px solid',
+                    fontWeight: 'bold',
                 }}
             >
-                <p>{t('common.updateNotice', 'DANH SÁCH THƯỞNG')}</p>
+                <div
+                    onClick={() => navigate("/reward-list")}
+                    style={{
+                        flex: 1,
+                        display: "flex",
+                        cursor: "pointer",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: 50,
+                        borderRight: '1px solid',
+                    }}
+                >
+                    <p>{t('common.updateNotice', 'DANH SÁCH NHẬN GIẢM GIÁ')}</p>
+                </div>
+                <div
+                    onClick={() => navigate("/restricted-transactions")}
+                    style={{
+                        flex: 1,
+                        display: "flex",
+                        cursor: "pointer",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: 50,
+                    }}
+                >
+                    <p>DANH SÁCH HẠN CHẾ GIAO DỊCH</p>
+                </div>
             </div>
 
             {/* Company Information */}

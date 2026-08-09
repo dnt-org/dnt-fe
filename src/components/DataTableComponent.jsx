@@ -22,7 +22,7 @@ const DataTableComponent = () => {
           {t("metrics.listedValue", "GIÁ TRỊ LÊN SÀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.listedValue)}</strong>
+          <strong>{formatNumber(metric.listedValue)} D</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.transactions", "LƯỢT GIAO DỊCH")}:
@@ -50,13 +50,13 @@ const DataTableComponent = () => {
           {t("metrics.amount", "SỐ TIỀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.amount)}</strong>
+          <strong>{formatNumber(metric.amount)} D</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.duration", "THỜI LƯỢNG")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>{formatNumber(metric.duration)}</strong>
+          <strong>1x10^14 S</strong>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ const DataTableComponent = () => {
           {t("metrics.deposited", "ĐÃ GỬI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.deposited)}</strong>
+          <strong>{formatNumber(metric.deposited)} D</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.videoViews", "LƯỢT XEM VIDEO")}:
@@ -95,7 +95,7 @@ const DataTableComponent = () => {
           {t("metrics.withdrawn", "ĐÃ RÚT")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.withdrawn)}</strong>
+          <strong>{formatNumber(metric.withdrawn)} D</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.members", "THÀNH VIÊN")}:
@@ -117,7 +117,7 @@ const DataTableComponent = () => {
           {t("metrics.remaining", "CÒN LẠI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.remaining)}</strong>
+          <strong>{formatNumber(metric.remaining)} D</strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.online", "ĐANG TRUY CẬP")}:

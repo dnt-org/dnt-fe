@@ -32,6 +32,8 @@ import ContactAdminPage from './pages/ContactAdminPage.jsx'
 import ChangeOTPPage from './pages/ChangeOTPPage.jsx'
 import CookiePolicyPage from './pages/CookiePolicyPage.jsx'
 import GuideRulesPage from './pages/GuideRulesPage.jsx'
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage.jsx'
+import RestrictedTransactionsPage from './pages/RestrictedTransactionsPage.jsx'
 import SetupNewSecurityPage from './pages/SetupNewSecurityPage.jsx'
 import { useAlive } from './custom-hooks/useAlive.js'
 
@@ -72,6 +74,8 @@ function App() {
         <Route exact path="/contact" element={<ContactAdminPage />} />
         <Route exact path="/cookie-policy" element={<CookiePolicyPage />} />
         <Route exact path="/guide-rules" element={<GuideRulesPage />} />
+        <Route exact path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+        <Route exact path="/restricted-transactions" element={<RestrictedTransactionsPage />} />
         <Route exact path="/setup-new-security" element={<SetupNewSecurityPage />} />
         <Route path="/change-password" element={<ChangePasswordPage />} />
         <Route path="/change-otp-code" element={<ChangeOTPPage />} />

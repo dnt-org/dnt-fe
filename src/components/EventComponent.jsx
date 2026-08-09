@@ -13,6 +13,8 @@ export default function EventComponent() {
   const [dragStartX, setDragStartX] = useState(null);
   const [dragLastX, setDragLastX] = useState(null);
   const [homeProducts, setHomeProducts] = useState([]);
+  const [isDesktopHovered, setIsDesktopHovered] = useState(false);
+  const [isMobileHovered, setIsMobileHovered] = useState(false);
   const navigate = useNavigate();
 
   // Desktop: hiển thị 6 cột x 2 dòng = 12 events
@@ -241,14 +243,11 @@ export default function EventComponent() {
         lineHeight: 1.25,
         fontWeight: "bold",
       }}>
-        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.category")}: {event.listingType || ""}</p>
-        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.classification")}: {event.categoryType || ""}</p>
-        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.status")}: {event.conditionType || event.status || ""}</p>
-        <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>- {t("events.goodsAddress")}: {event.goodsAddress || event.address || event.province || ""}</p>
-        <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("events.quantity")}: {getProductQuantity(event)}</p>
-        {isRealProduct && getProductPrice(event) && (
-          <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>- {t("productGrid.unitAskingPrice", "Đơn giá")}: {getProductPrice(event)}</p>
-        )}
+        {event.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.listingType.toUpperCase()}</p> : null}
+        {event.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.categoryType}</p> : null}
+        {(event.conditionType || event.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.conditionType || event.status}</p> : null}
+        {(event.goodsAddress || event.address || event.province) ? <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>{event.goodsAddress || event.address || event.province}</p> : null}
+        {getProductQuantity(event) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getProductQuantity(event)}</p> : null}
       </div>
     </div>
     );
@@ -259,6 +258,7 @@ export default function EventComponent() {
     onClick,
     disabled,
     isMobile = false,
+    visible = true,
   }) => (
     <button
       onClick={onClick}
@@ -275,11 +275,12 @@ export default function EventComponent() {
         width: isMobile ? "40px" : "50px",
         height: isMobile ? "40px" : "50px",
         cursor: disabled ? "not-allowed" : "pointer",
-        display: "flex",
+        display: visible ? "flex" : "none",
         alignItems: "center",
         justifyContent: "center",
         fontSize: isMobile ? "16px" : "20px",
         zIndex: 20,
+        transition: "opacity 0.2s",
       }}
     >
       {direction === "prev" ? "←" : "→"}
@@ -291,14 +292,15 @@ export default function EventComponent() {
       {/* Desktop Layout */}
       <div
         className="action-section-1"
-        style={{
-          position: "relative",
-        }}
+        style={{ position: "relative" }}
+        onMouseEnter={() => setIsDesktopHovered(true)}
+        onMouseLeave={() => setIsDesktopHovered(false)}
       >
         <NavigationButton
           direction="prev"
           onClick={() => handlePrevious(false)}
           disabled={!canGoPreviousDesktop}
+          visible={isDesktopHovered}
         />
 
         {/* Grid items, full width */}
@@ -330,21 +332,23 @@ export default function EventComponent() {
           direction="next"
           onClick={() => handleNext(false)}
           disabled={!canGoNextDesktop}
+          visible={isDesktopHovered}
         />
       </div>
 
       {/* Mobile Layout */}
       <div
         className="action-section-1-mobile"
-        style={{
-          position: "relative",
-        }}
+        style={{ position: "relative" }}
+        onMouseEnter={() => setIsMobileHovered(true)}
+        onMouseLeave={() => setIsMobileHovered(false)}
       >
         <NavigationButton
           direction="prev"
           onClick={() => handlePrevious(true)}
           disabled={!canGoPreviousMobile}
           isMobile={true}
+          visible={isMobileHovered}
         />
 
         {/* Grid items, full width */}
@@ -373,6 +377,7 @@ export default function EventComponent() {
           onClick={() => handleNext(true)}
           disabled={!canGoNextMobile}
           isMobile={true}
+          visible={isMobileHovered}
         />
       </div>
     </section>
