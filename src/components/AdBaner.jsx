@@ -114,8 +114,8 @@ export default function AdBanner() {
       {/* Left nav button - arrow pointing RIGHT (→), shown on hover */}
       {isHovered && adProducts.length > VISIBLE_COUNT && (
         <button
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
+          onClick={handleNext}
+          disabled={currentIndex >= maxIndex}
           className="absolute left-1 z-[100002] w-8 h-8 rounded-full bg-blue-700/90 text-white flex items-center justify-center shadow disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-800"
           style={{ top: "50%", transform: "translateY(-50%)" }}
         >
@@ -186,8 +186,8 @@ export default function AdBanner() {
       {/* Right nav button - arrow pointing LEFT (←), shown on hover */}
       {isHovered && adProducts.length > VISIBLE_COUNT && (
         <button
-          onClick={handleNext}
-          disabled={currentIndex >= maxIndex}
+          onClick={handlePrev}
+          disabled={currentIndex === 0}
           className="absolute right-7 z-[100002] w-8 h-8 rounded-full bg-blue-700/90 text-white flex items-center justify-center shadow disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue-800"
           style={{ top: "50%", transform: "translateY(-50%)" }}
         >

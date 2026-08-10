@@ -298,8 +298,8 @@ export default function EventComponent() {
       >
         <NavigationButton
           direction="prev"
-          onClick={() => handlePrevious(false)}
-          disabled={!canGoPreviousDesktop}
+          onClick={() => handleNext(false)}
+          disabled={!canGoNextDesktop}
           visible={isDesktopHovered}
         />
 
@@ -330,8 +330,8 @@ export default function EventComponent() {
 
         <NavigationButton
           direction="next"
-          onClick={() => handleNext(false)}
-          disabled={!canGoNextDesktop}
+          onClick={() => handlePrevious(false)}
+          disabled={!canGoPreviousDesktop}
           visible={isDesktopHovered}
         />
       </div>
@@ -345,8 +345,8 @@ export default function EventComponent() {
       >
         <NavigationButton
           direction="prev"
-          onClick={() => handlePrevious(true)}
-          disabled={!canGoPreviousMobile}
+          onClick={() => handleNext(true)}
+          disabled={!canGoNextMobile}
           isMobile={true}
           visible={isMobileHovered}
         />
@@ -374,8 +374,8 @@ export default function EventComponent() {
 
         <NavigationButton
           direction="next"
-          onClick={() => handleNext(true)}
-          disabled={!canGoNextMobile}
+          onClick={() => handlePrevious(true)}
+          disabled={!canGoPreviousMobile}
           isMobile={true}
           visible={isMobileHovered}
         />
