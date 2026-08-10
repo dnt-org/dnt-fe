@@ -147,43 +147,47 @@ export default function ListOfGoodsPage() {
     fetchCountries();
   }, []);
 
-  // Fetch provinces when country changes
+  // Fetch provinces when country changes.
+  // Vietnam uses Strapi's vietnam-info; all other countries use the external API.
   useEffect(() => {
     const fetchProvinces = async () => {
-      if (selectedCountry) {
-        setLoadingProvinces(true);
-        try {
-          const provincesList = await getCountryByCode(selectedCountry);
-          setProvinces(provincesList || []);
-          if (selectedProvince) {
-            const provinceExists = provincesList?.some(
-              p => p.en === selectedProvince || p.vi === selectedProvince
-            );
-            if (!provinceExists) {
-              setSelectedProvince('');
-            }
-          }
-          const savedProvince = localStorage.getItem("province");
-          if (savedProvince && !selectedProvince) {
-            const provinceExists = provincesList?.some(
-              p => p.en === savedProvince || p.vi === savedProvince
-            );
-            if (provinceExists) {
-              setSelectedProvince(savedProvince);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching provinces:", error);
-          setProvinces([]);
-        } finally {
-          setLoadingProvinces(false);
-        }
-      } else {
+      if (!selectedCountry) {
         setProvinces([]);
         setSelectedProvince('');
+        return;
+      }
+      setLoadingProvinces(true);
+      try {
+        let provincesList = [];
+        if (selectedCountry === "Vietnam") {
+          const token = localStorage.getItem("authToken");
+          const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:1337/api"}/vietnam-info`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+          const json = await res.json();
+          const tinh = json?.data?.tinh || [];
+          const all = { vi: "Tất cả", en: "All" };
+          provincesList = [all, ...tinh.map(p => ({ vi: p.name, en: p.name }))];
+        } else {
+          provincesList = await getCountryByCode(selectedCountry) || [];
+        }
+        setProvinces(provincesList);
+        if (selectedProvince) {
+          const exists = provincesList.some(p => p.en === selectedProvince || p.vi === selectedProvince);
+          if (!exists) setSelectedProvince('');
+        }
+        const savedProvince = localStorage.getItem("province");
+        if (savedProvince && !selectedProvince) {
+          const exists = provincesList.some(p => p.en === savedProvince || p.vi === savedProvince);
+          if (exists) setSelectedProvince(savedProvince);
+        }
+      } catch (error) {
+        console.error("Error fetching provinces:", error);
+        setProvinces([]);
+      } finally {
+        setLoadingProvinces(false);
       }
     };
-
     fetchProvinces();
   }, [selectedCountry]);
 
