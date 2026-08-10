@@ -1,14 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronDown, ChevronUp, RefreshCw, ScanLine, X } from "lucide-react";
+import { useSelector } from "react-redux";
+import { ChevronDown, ChevronUp, MapPin, Minus, Plus, RefreshCw, ScanLine, X } from "lucide-react";
 import { extractSideDocumentImage, extractSideInputImage } from "@microblink/blinkid";
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker";
 import useBlinkIdScanner from "../components/MicrolinkIDScanner";
 import { useTranslation } from 'react-i18next';
-import { getSessions, toggleSessionStatus } from "../services/authService";
+import { getSessions, toggleSessionStatus, updateCurrentAddress } from "../services/authService";
 import { createOrUpdateBusiness, getMyBusiness, uploadDocumentToStrapi, getMyDocuments, verifyMyBusiness } from "../services/businessService";
-import TwoLineUnitInput from "../components/atoms/TwoLineUnitInput";
 import useLocationSelection from "../hooks/useLocationSelection";
+import MapPickerModal from "../components/contact/MapPickerModal";
 
 const MOCK_VERIFICATION = String(import.meta.env.VITE_MOCK_VERIFICATION || "false").toLowerCase() === "true";
 
@@ -27,6 +28,9 @@ const ADMIN_BLINK_FEEDBACK_OPTIONS = {
   showHelpButton: true,
 };
 
+// Account types collected on the registration page (see RegisterAccountTypeSelect)
+const BUSINESS_ACCOUNT_TYPES = ["ho_kinh_doanh", "doanh_nghiep"];
+
 const imageDataToDataUrl = (imageData) => {
   if (!imageData) return null;
   const canvas = document.createElement("canvas");
@@ -44,10 +48,21 @@ const getBlinkStringValue = (field) => {
   return field.latin?.value || field.cyrillic?.value || field.greek?.value || field.arabic?.value || "";
 };
 
+// The name on the CCCD / business registration must match the bank account holder,
+// so compare without diacritics, casing or extra spacing.
+const normalizeName = (value) =>
+  String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/gi, "d")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+
 function DeviceRow({ item, actionLabel, onActionClick }) {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-[1fr_auto] border-2 border-black border-t-0 first:border-t-2">
+    <div className="grid grid-cols-[1fr_auto] border-2 border-black border-t-0 first:border-t-2 bg-white">
       <div className="p-1 text-[13px] leading-tight">
         <div>
           {t('adminControl.device')} <span className="font-bold text-red-700">{item.device_name}</span>
@@ -63,6 +78,35 @@ function DeviceRow({ item, actionLabel, onActionClick }) {
       >
         {actionLabel}
       </button>
+    </div>
+  );
+}
+
+function DeviceDropdown({ label, open, onToggle, loading, devices, emptyLabel, actionLabel, onActionClick }) {
+  const { t } = useTranslation();
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center gap-1 text-lg font-extrabold text-red-600 hover:opacity-70"
+      >
+        {label}
+        {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+      </button>
+      {open && (
+        <div className="absolute right-0 z-20 mt-1 w-[340px] max-w-[90vw]">
+          {loading ? (
+            <div className="border-2 border-black bg-white p-4 text-center">{t('adminControl.loading')}</div>
+          ) : devices.length === 0 ? (
+            <div className="border-2 border-black bg-white p-4 text-center">{emptyLabel}</div>
+          ) : (
+            devices.map((item) => (
+              <DeviceRow key={item.id} item={item} actionLabel={actionLabel} onActionClick={onActionClick} />
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -128,6 +172,13 @@ function InfoInputRow({ label, placeholder, value, onChange, inputs = [] }) {
 export default function AdminControlPage() {
   const { t } = useTranslation();
 
+  const { user } = useSelector((state) => state.auth);
+  // account_type is chosen at registration and saved to localStorage["account_type"].
+  // Redux resets on page reload so read the persisted key as fallback.
+  const accountType = user?.account_type || localStorage.getItem("account_type") || "ca_nhan";
+  const requiresBusinessDoc = BUSINESS_ACCOUNT_TYPES.includes(accountType);
+  const bankAccountHolder = user?.full_name || "";
+
   const hqLocation = useLocationSelection();
   const currLocation = useLocationSelection();
   const hqCountryOptions = (hqLocation.countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }));
@@ -136,11 +187,12 @@ export default function AdminControlPage() {
   const currProvinceOptions = (currLocation.provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }));
 
   const [color, setColor] = useState(localStorage.getItem("selectedColor") || "#ffffff");
-  const [showLoggedInDevices, setShowLoggedInDevices] = useState(true);
-  const [showLoggedOutDevices, setShowLoggedOutDevices] = useState(true);
+  const [showLoggedInDevices, setShowLoggedInDevices] = useState(false);
+  const [showLoggedOutDevices, setShowLoggedOutDevices] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpPurpose, setOtpPurpose] = useState("session"); // 'session' | 'address'
   const [otpInput, setOtpInput] = useState("");
   const [selectedSession, setSelectedSession] = useState(null);
 
@@ -163,15 +215,29 @@ export default function AdminControlPage() {
   const [scannerStarting, setScannerStarting] = useState(false);
   const [scannerError, setScannerError] = useState("");
   const [cccdScanInfo, setCccdScanInfo] = useState(null);
+  const [nameMismatchError, setNameMismatchError] = useState("");
 
   // Business registration document state
   const [businessRegDataUrl, setBusinessRegDataUrl] = useState(null);
   const [businessRegFileId, setBusinessRegFileId] = useState(null);
   const [hasBusinessVideo, setHasBusinessVideo] = useState(false);
 
+  // Document preview zoom ("thu nhỏ / phóng to")
+  const [previewZoomed, setPreviewZoomed] = useState(false);
+
   // Verification state
   const [isVerified, setIsVerified] = useState(false);
   const [verifying, setVerifying] = useState(false);
+
+  // Current address ("Địa chỉ hiện tại")
+  const [currentAddressInput, setCurrentAddressInput] = useState("");
+  const [addressOnMap, setAddressOnMap] = useState("");
+  const [addressOnMapLabel, setAddressOnMapLabel] = useState("");
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [addressSaving, setAddressSaving] = useState(false);
+
+  // 3.2 - which list is expanded ('posts' | 'joined' | null)
+  const [goodsTab, setGoodsTab] = useState(null);
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
@@ -186,6 +252,9 @@ export default function AdminControlPage() {
   });
   const [businessLoading, setBusinessLoading] = useState(false);
   const [businessSaving, setBusinessSaving] = useState(false);
+
+  // Verification is complete when every document required for this account type is captured
+  const verificationComplete = hasIdCaptured && (!requiresBusinessDoc || hasBusinessVideo);
 
   const closeIdScanner = useCallback(async () => {
     await idScannerDestroyRef.current?.();
@@ -204,10 +273,20 @@ export default function AdminControlPage() {
       return;
     }
 
+    const scannedName = getBlinkStringValue(result.fullName);
+
+    // The scanned name must match the bank account holder before anything is uploaded
+    if (bankAccountHolder && scannedName && normalizeName(scannedName) !== normalizeName(bankAccountHolder)) {
+      setNameMismatchError(t('adminControl.nameMismatch', { expected: bankAccountHolder }));
+      setScannerError(t('adminControl.nameMismatch', { expected: bankAccountHolder }));
+      return;
+    }
+
+    setNameMismatchError("");
     setCccdFrontDataUrl(frontDataUrl);
     setCccdBackDataUrl(backDataUrl);
     setCccdScanInfo({
-      fullName: getBlinkStringValue(result.fullName),
+      fullName: scannedName,
       idNumber: getBlinkStringValue(result.personalIdNumber) || getBlinkStringValue(result.documentNumber),
     });
 
@@ -217,7 +296,7 @@ export default function AdminControlPage() {
     ]);
     if (frontOk && backOk) setHasIdCaptured(true);
     await closeIdScanner();
-  }, [closeIdScanner]);
+  }, [closeIdScanner, bankAccountHolder, t]);
 
   const handleBlinkIdError = useCallback((error) => {
     console.error("BlinkID scan error:", error);
@@ -414,10 +493,19 @@ export default function AdminControlPage() {
   }, []);
 
   useEffect(() => {
-    if (hasIdCaptured && hasBusinessVideo) {
+    if (verificationComplete) {
       fetchBusiness();
     }
-  }, [hasIdCaptured, hasBusinessVideo, fetchBusiness]);
+  }, [verificationComplete, fetchBusiness]);
+
+  // Prefill the current address from the logged in user
+  useEffect(() => {
+    setCurrentAddressInput(user?.address_no || "");
+  }, [user?.address_no]);
+
+  useEffect(() => {
+    setAddressOnMap(user?.address_on_map || "");
+  }, [user?.address_on_map]);
 
   const handleBusinessFieldChange = (field) => (e) => {
     setBusinessForm(prev => ({ ...prev, [field]: e.target.value }));
@@ -522,10 +610,13 @@ export default function AdminControlPage() {
     try {
       setLoading(true);
       const response = await getSessions();
-      setSessions(response.data?.data || []);
+      // BE may return { data: [...] } or { data: { data: [...] } }
+      const raw = response.data;
+      const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.data) ? raw.data : []);
+      setSessions(list);
     } catch (error) {
       console.error("Error fetching sessions:", error);
-      alert(t('adminControl.fetchError', 'Không thể tải danh sách phiên đăng nhập'));
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -533,6 +624,76 @@ export default function AdminControlPage() {
 
   const handleActionClick = (session) => {
     setSelectedSession(session);
+    setOtpPurpose("session");
+    setShowOtpModal(true);
+    setOtpInput("");
+  };
+
+  // "XÁC MINH TÀI KHOẢN" — CCCD for every account, plus the business registration
+  // when the customer registered as a household / company account.
+  const handleVerifyAccount = () => {
+    setNameMismatchError("");
+
+    if (!hasIdCaptured) {
+      if (MOCK_VERIFICATION) {
+        mockIdCapture();
+      } else {
+        setCccdFrontDataUrl(null);
+        setCccdBackDataUrl(null);
+        setCccdFrontFileId(null);
+        setCccdBackFileId(null);
+        setCccdScanInfo(null);
+        openIdScanner();
+      }
+      return;
+    }
+
+    if (requiresBusinessDoc && !hasBusinessVideo) {
+      if (MOCK_VERIFICATION) {
+        mockBusinessRegCapture();
+      } else {
+        openCamera('business_reg');
+      }
+      return;
+    }
+
+    // Everything captured — rescan the CCCD from the start
+    if (MOCK_VERIFICATION) {
+      mockIdCapture();
+      return;
+    }
+    setCccdFrontDataUrl(null);
+    setCccdBackDataUrl(null);
+    setCccdFrontFileId(null);
+    setCccdBackFileId(null);
+    setHasIdCaptured(false);
+    setCccdScanInfo(null);
+    openIdScanner();
+  };
+
+  const verifyButtonHint = useMemo(() => {
+    if (!hasIdCaptured) return t('adminControl.scanCccdStep');
+    if (requiresBusinessDoc && !hasBusinessVideo) return t('adminControl.scanBusinessStep');
+    return "";
+  }, [hasIdCaptured, hasBusinessVideo, requiresBusinessDoc, t]);
+
+  // Pin the exact spot the customer is at, so a hidden location can still be corrected.
+  // The picker opens on the map so the customer can drag the pin when GPS is off or inaccurate.
+  const handlePinLocation = () => setShowMapPicker(true);
+
+  const handleSendLocation = (latitude, longitude, resolvedAddress) => {
+    setAddressOnMap(`${latitude},${longitude}`);
+    setAddressOnMapLabel(resolvedAddress || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+    // Only seed the typed address when the customer has not written one themselves
+    if (resolvedAddress && !currentAddressInput.trim()) setCurrentAddressInput(resolvedAddress);
+  };
+
+  const handleUpdateAddressClick = () => {
+    if (!currentAddressInput.trim()) {
+      alert(t('adminControl.addressRequired'));
+      return;
+    }
+    setOtpPurpose("address");
     setShowOtpModal(true);
     setOtpInput("");
   };
@@ -542,13 +703,36 @@ export default function AdminControlPage() {
       alert(t('adminControl.otpRequired', 'Vui lòng nhập mã OTP'));
       return;
     }
+
+    if (otpPurpose === "address") {
+      try {
+        setAddressSaving(true);
+        await updateCurrentAddress(
+          {
+            address_no: currentAddressInput.trim(),
+            ...(addressOnMap ? { address_on_map: addressOnMap } : {}),
+          },
+          otpInput
+        );
+        alert(t('adminControl.addressUpdateSuccess'));
+        handleCloseOtpModal();
+      } catch (error) {
+        console.error("Error updating current address:", error);
+        const errorMessage = error.response?.data?.error?.message === 'Invalid OTP'
+          ? t('adminControl.otpError', 'Mã OTP không chính xác')
+          : t('adminControl.addressUpdateError');
+        alert(errorMessage);
+      } finally {
+        setAddressSaving(false);
+      }
+      return;
+    }
+
     try {
       const response = await toggleSessionStatus(selectedSession.id, otpInput);
       if (response.data?.success) {
         alert(t('adminControl.toggleSuccess', 'Đã thay đổi trạng thái phiên đăng nhập'));
-        setShowOtpModal(false);
-        setOtpInput("");
-        setSelectedSession(null);
+        handleCloseOtpModal();
         fetchSessions();
       } else {
         alert(t('adminControl.toggleError', 'Không thể thay đổi trạng thái'));
@@ -564,6 +748,7 @@ export default function AdminControlPage() {
     setShowOtpModal(false);
     setOtpInput("");
     setSelectedSession(null);
+    setOtpPurpose("session");
   };
 
   const loggedInDevices = sessions.filter(s => s.status === 'login');
@@ -593,225 +778,147 @@ export default function AdminControlPage() {
     }
   };
 
+  const documentPreviews = [
+    cccdFrontDataUrl && { src: cccdFrontDataUrl, alt: "CCCD mặt trước", caption: "Mặt trước" },
+    cccdBackDataUrl && { src: cccdBackDataUrl, alt: "CCCD mặt sau", caption: "Mặt sau" },
+    businessRegDataUrl && { src: businessRegDataUrl, alt: "Giấy ĐKKD", caption: "Giấy ĐKKD" },
+  ].filter(Boolean);
+
   return (
     <>
-    <div className="flex justify-center items-center min-h-screen p-1">
+    <div className="w-full p-1">
       <div className="bg-transparent backdrop-blur-md p-0 rounded-lg w-full mx-auto">
-        {/* Header */}
+        {/* Header - pinned to the top of the page */}
         <PageHeaderWithOutColorPicker
           color={color}
           onColorChange={handleChangeColor}
           titlePrefix="3"
           title={t('adminControl.title')}
+          compact
         />
 
-        <section>
-          <h2 className="mb-2 text-3xl font-extrabold uppercase">{t('adminControl.header3_1')}</h2>
+        <section className="mt-2">
+          <h2 className="mb-2 text-2xl font-extrabold uppercase">{t('adminControl.header3_1')}</h2>
 
-          <button
-            onClick={() => setShowLoggedInDevices(!showLoggedInDevices)}
-            className="mb-2 flex items-center gap-2 text-xl font-extrabold uppercase hover:opacity-70"
-          >
-            {t('adminControl.loggedInDevicesHeader')}
-            {showLoggedInDevices ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-          {showLoggedInDevices && (
-            <div className="max-w-[520px]">
-              {loading ? (
-                <div className="border-2 border-black p-4 text-center">{t('adminControl.loading')}</div>
-              ) : loggedInDevices.length === 0 ? (
-                <div className="border-2 border-black p-4 text-center">{t('adminControl.noLoggedInDevices')}</div>
-              ) : (
-                loggedInDevices.map((item) => (
-                  <DeviceRow
-                    key={item.id}
-                    item={item}
-                    actionLabel={t('adminControl.logout')}
-                    onActionClick={handleActionClick}
-                  />
-                ))
-              )}
+          {/* Password / OTP shortcuts on the left, device dropdowns on the right */}
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-wrap gap-4">
+              <button
+                type="button"
+                className="min-w-[240px] border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
+                onClick={() => navigate("/change-password")}
+              >
+                {t('adminControl.changePassword')}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/change-otp-code")}
+                className="min-w-[240px] border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
+              >
+                {t('adminControl.changeOtpCode')}
+              </button>
             </div>
-          )}
 
-          <button
-            onClick={() => setShowLoggedOutDevices(!showLoggedOutDevices)}
-            className="mb-2 mt-4 flex items-center gap-2 text-xl font-extrabold uppercase hover:opacity-70"
-          >
-            {t('adminControl.loggedOutDevicesHeader')}
-            {showLoggedOutDevices ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </button>
-          {showLoggedOutDevices && (
-            <div className="max-w-[520px]">
-              {loading ? (
-                <div className="border-2 border-black p-4 text-center">{t('adminControl.loading')}</div>
-              ) : loggedOutDevices.length === 0 ? (
-                <div className="border-2 border-black p-4 text-center">{t('adminControl.noLoggedOutDevices')}</div>
-              ) : (
-                loggedOutDevices.map((item) => (
-                  <DeviceRow
-                    key={item.id}
-                    item={item}
-                    actionLabel={t('adminControl.login')}
-                    onActionClick={handleActionClick}
-                  />
-                ))
-              )}
-            </div>
-          )}
-        </section>
-
-        <section className="mt-6 max-w-[650px]">
-          <div className="grid grid-cols-[110px_1fr_130px] border-2 border-black text-sm font-bold">
-            <div className="border-r-2 border-black p-2 uppercase">{t('adminControl.walletBalance')}</div>
-            <div className="p-2 text-right">1,000,000,000.00</div>
-            <div className="border-l-2 border-black p-2 text-center text-red-700">
-              <TwoLineUnitInput isInput={false} />
+            <div className="flex flex-wrap gap-6">
+              <DeviceDropdown
+                label={t('adminControl.loggedInDevicesHeader')}
+                open={showLoggedInDevices}
+                onToggle={() => setShowLoggedInDevices((prev) => !prev)}
+                loading={loading}
+                devices={loggedInDevices}
+                emptyLabel={t('adminControl.noLoggedInDevices')}
+                actionLabel={t('adminControl.logout')}
+                onActionClick={handleActionClick}
+              />
+              <DeviceDropdown
+                label={t('adminControl.loggedOutDevicesHeader')}
+                open={showLoggedOutDevices}
+                onToggle={() => setShowLoggedOutDevices((prev) => !prev)}
+                loading={loading}
+                devices={loggedOutDevices}
+                emptyLabel={t('adminControl.noLoggedOutDevices')}
+                actionLabel={t('adminControl.login')}
+                onActionClick={handleActionClick}
+              />
             </div>
           </div>
-        </section>
 
-        <section className="mt-6 max-w-[820px] space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+          {/* Account verification */}
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              className="border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase hover:bg-black hover:text-white"
-              onClick={() => navigate("/change-password")}
-            >
-              {t('adminControl.changePassword')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate("/change-otp-code")}
-              className="border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase hover:bg-black hover:text-white"
-            >
-              {t('adminControl.changeOtpCode')}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {/* CCCD Verification Button */}
-            <button
-              type="button"
-              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${
-                hasIdCaptured ? 'bg-green-100' : cccdFrontDataUrl ? 'bg-yellow-50' : ''
+              className={`border-2 border-black px-4 py-1.5 text-center text-xl font-extrabold uppercase hover:bg-black hover:text-white ${
+                hasIdCaptured ? 'bg-green-100' : ''
               }`}
-              onClick={() => {
-                if (MOCK_VERIFICATION) {
-                  mockIdCapture();
-                } else if (!cccdFrontDataUrl) {
-                  openIdScanner();
-                } else if (!cccdBackDataUrl) {
-                  openIdScanner();
-                } else {
-                  setCccdFrontDataUrl(null);
-                  setCccdBackDataUrl(null);
-                  setCccdFrontFileId(null);
-                  setCccdBackFileId(null);
-                  setHasIdCaptured(false);
-                  setCccdScanInfo(null);
-                  openIdScanner();
-                }
-              }}
+              onClick={handleVerifyAccount}
+              title={!hasIdCaptured ? t('adminControl.scanCccdStep') : undefined}
             >
               <span className="inline-flex items-center justify-center gap-2">
                 <ScanLine size={20} />
-                {t('adminControl.idVerification')}
+                {t('adminControl.verifyAccount')}
               </span>
-              <br />
-              {t('adminControl.forPersonalAccounts')}
-              {cccdFrontDataUrl && !cccdBackDataUrl && (
-                <div className="text-sm text-yellow-600 mt-1 normal-case font-normal">
-                  Đã chụp mặt trước - Bấm để quét lại đủ hai mặt
-                </div>
-              )}
-              {hasIdCaptured && (
-                <div className="text-sm text-green-600 mt-1 normal-case font-normal">
-                  {t("camera.captured", "Đã xác minh")}
-                </div>
-              )}
             </button>
-
-            {/* Business Registration Verification Button */}
-            <button
-              type="button"
-              className={`border-2 border-black px-3 py-2 text-center text-lg font-extrabold uppercase leading-tight hover:bg-black hover:text-white ${
-                hasBusinessVideo ? 'bg-green-100' : ''
-              }`}
-              onClick={() => {
-                if (MOCK_VERIFICATION) {
-                  mockBusinessRegCapture();
-                } else {
-                  openCamera('business_reg');
-                }
-              }}
-            >
-              {t('adminControl.businessRegistrationVerification')}
-              <br />
-              {t('adminControl.forBusinessAccounts')}
-              {hasBusinessVideo && (
-                <div className="text-sm text-green-600 mt-1 normal-case font-normal">
-                  {t("camera.captured", "Đã xác minh")}
-                </div>
-              )}
-            </button>
-          </div>
-
-          {/* Verification status */}
-          {isVerified ? (
-            <div className="mt-3 flex items-center gap-2 border-2 border-green-600 bg-green-50 px-3 py-2 text-green-700 font-bold text-sm">
-              <span>✓</span>
-              <span>{t('adminControl.verifiedBadge', 'Tài khoản đã được xác minh')}</span>
-            </div>
-          ) : (hasIdCaptured || hasBusinessVideo) ? (
-            <div className="mt-3 flex items-center gap-3">
-              <div className="border-2 border-yellow-500 bg-yellow-50 px-3 py-2 text-yellow-700 font-bold text-sm">
-                {t('adminControl.notVerified', 'Chưa xác minh')}
-              </div>
+            {requiresBusinessDoc && (
+              <button
+                type="button"
+                className={`border-2 border-black px-4 py-1.5 text-center text-xl font-extrabold uppercase hover:bg-black hover:text-white ${
+                  hasBusinessVideo ? 'bg-green-100' : ''
+                }`}
+                onClick={() => MOCK_VERIFICATION ? mockBusinessRegCapture() : openCamera('business_reg')}
+                title={t('adminControl.scanBusinessStep', 'Chụp giấy phép kinh doanh')}
+              >
+                <span className="inline-flex items-center justify-center gap-2">
+                  <ScanLine size={20} />
+                  XÁC MINH GPKD
+                </span>
+              </button>
+            )}
+            <span className="text-2xl font-bold text-red-600">*</span>
+            {isVerified ? (
+              <span className="border-2 border-green-600 bg-green-50 px-3 py-1 text-sm font-bold text-green-700">
+                ✓ {t('adminControl.verifiedBadge', 'Tài khoản đã được xác minh')}
+              </span>
+            ) : verificationComplete ? (
               <button
                 type="button"
                 onClick={handleMarkVerified}
                 disabled={verifying}
-                className="border-2 border-black px-3 py-2 text-sm font-bold uppercase hover:bg-black hover:text-white disabled:opacity-50"
+                className="border-2 border-black px-3 py-1 text-sm font-bold uppercase hover:bg-black hover:text-white disabled:opacity-50"
               >
                 {verifying ? t('adminControl.verifying', 'Đang xác minh...') : t('adminControl.markVerified', 'Xác minh ngay')}
               </button>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
 
-          {/* Document photo previews */}
-          {(cccdFrontDataUrl || cccdBackDataUrl || businessRegDataUrl) && (
-            <div className="flex gap-3 mt-1">
-              {cccdFrontDataUrl && (
-                <div className="text-center">
-                  <img
-                    src={cccdFrontDataUrl}
-                    alt="CCCD mặt trước"
-                    className="h-16 w-24 object-cover border border-gray-400 rounded"
-                  />
-                  <div className="text-[10px] text-gray-500 mt-0.5">Mặt trước</div>
-                </div>
-              )}
-              {cccdBackDataUrl && (
-                <div className="text-center">
-                  <img
-                    src={cccdBackDataUrl}
-                    alt="CCCD mặt sau"
-                    className="h-16 w-24 object-cover border border-gray-400 rounded"
-                  />
-                  <div className="text-[10px] text-gray-500 mt-0.5">Mặt sau</div>
-                </div>
-              )}
-              {businessRegDataUrl && (
-                <div className="text-center">
-                  <img
-                    src={businessRegDataUrl}
-                    alt="Giấy ĐKKD"
-                    className="h-16 w-24 object-cover border border-gray-400 rounded"
-                  />
-                  <div className="text-[10px] text-gray-500 mt-0.5">Giấy ĐKKD</div>
-                </div>
-              )}
+          {nameMismatchError && (
+            <div className="mt-2 max-w-[890px] border-2 border-red-500 bg-red-50 px-3 py-2 text-sm font-bold text-red-700">
+              {nameMismatchError}
+            </div>
+          )}
+
+          {/* Captured documents + zoom control */}
+          {documentPreviews.length > 0 && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setPreviewZoomed((prev) => !prev)}
+                title={previewZoomed ? t('adminControl.zoomOut') : t('adminControl.zoomIn')}
+                className="mb-1 flex h-5 w-5 items-center justify-center border-2 border-black hover:bg-black hover:text-white"
+              >
+                {previewZoomed ? <Minus size={12} /> : <Plus size={12} />}
+              </button>
+              <div className="flex flex-wrap gap-3">
+                {documentPreviews.map((preview) => (
+                  <div key={preview.caption} className="text-center">
+                    <img
+                      src={preview.src}
+                      alt={preview.alt}
+                      className={`border border-gray-400 rounded object-cover ${previewZoomed ? 'h-48 w-72' : 'h-16 w-24'}`}
+                    />
+                    <div className="text-[10px] text-gray-500 mt-0.5">{preview.caption}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -821,10 +928,53 @@ export default function AdminControlPage() {
               {cccdScanInfo.idNumber && <div><span className="font-bold">Số CCCD:</span> {cccdScanInfo.idNumber}</div>}
             </div>
           )}
+
+          {/* Current address - shown so the customer can correct it while their location is hidden */}
+          <div className="mt-3 flex items-center gap-2">
+            <div className="grid w-full max-w-[890px] grid-cols-[auto_1fr_auto_auto] border-2 border-black text-[13px] leading-tight">
+              <div className="border-r-2 border-black px-2 py-1 text-red-600">
+                {t('adminControl.currentAddressLabel')}
+              </div>
+              <input
+                type="text"
+                value={currentAddressInput}
+                onChange={(e) => setCurrentAddressInput(e.target.value)}
+                placeholder={t('adminControl.addressPlaceholder')}
+                className="px-2 py-1 bg-transparent focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={handlePinLocation}
+                title={addressOnMap || t('common.pinLocation', 'GHIM VỊ TRÍ')}
+                className={`flex items-center justify-center border-l-2 border-black px-2 text-white hover:bg-blue-800 ${
+                  addressOnMap ? 'bg-green-700' : 'bg-blue-700'
+                }`}
+              >
+                <MapPin size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdateAddressClick}
+                disabled={addressSaving}
+                className="border-l-2 border-black px-3 py-1 font-bold uppercase hover:bg-black hover:text-white disabled:opacity-50"
+              >
+                {addressSaving ? t('adminControl.saving', 'Đang lưu...') : t('adminControl.update')}
+              </button>
+            </div>
+            <span className="text-2xl font-bold text-red-600">*</span>
+          </div>
+
+          {addressOnMap && (
+            <div className="mt-1 flex max-w-[890px] items-start gap-1 text-[11px] leading-tight text-green-700">
+              <MapPin size={12} className="mt-[2px] shrink-0" />
+              <span>{addressOnMapLabel || addressOnMap}</span>
+            </div>
+          )}
         </section>
 
-        {hasIdCaptured && hasBusinessVideo && (
-            <section className="mt-2">
+        {/* Business details, only relevant once the required documents are on file */}
+        {verificationComplete && (
+            <section className="mt-4">
               {businessLoading ? (
                 <div className="border-2 border-black p-4 text-center">{t('adminControl.loading')}</div>
               ) : (
@@ -885,6 +1035,41 @@ export default function AdminControlPage() {
             </section>
         )}
 
+        {/* 3.2 */}
+        <section className="mt-6">
+          <div className="flex flex-wrap items-center gap-6">
+            <h2 className="text-2xl font-extrabold uppercase">{t('adminControl.header3_2')}</h2>
+            <div className="flex border-2 border-black">
+              <button
+                type="button"
+                onClick={() => setGoodsTab((prev) => (prev === 'posts' ? null : 'posts'))}
+                className={`flex items-center gap-1 px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                  goodsTab === 'posts' ? 'bg-black text-white' : ''
+                }`}
+              >
+                {t('adminControl.postsTab')}
+                {goodsTab === 'posts' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setGoodsTab((prev) => (prev === 'joined' ? null : 'joined'))}
+                className={`flex items-center gap-1 border-l-2 border-black px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                  goodsTab === 'joined' ? 'bg-black text-white' : ''
+                }`}
+              >
+                {t('adminControl.joinedPostsTab')}
+                {goodsTab === 'joined' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {goodsTab && (
+            <div className="mt-2 max-w-[890px] border-2 border-black p-4 text-center text-sm">
+              {t('adminControl.sectionEmpty')}
+            </div>
+          )}
+        </section>
+
       </div>
     </div>
 
@@ -893,14 +1078,20 @@ export default function AdminControlPage() {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 bg-opacity-50">
         <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
           <h3 className="text-xl font-bold mb-4">
-            {selectedSession?.status === 'login' ? t('adminControl.logoutDevice') : t('adminControl.loginDevice')}
+            {otpPurpose === 'address'
+              ? t('adminControl.currentAddressLabel')
+              : selectedSession?.status === 'login'
+                ? t('adminControl.logoutDevice')
+                : t('adminControl.loginDevice')}
           </h3>
-          <p className="mb-4 text-sm text-gray-600">
-            {t('adminControl.device')} <span className="font-semibold">{selectedSession?.device_name}</span>
-          </p>
+          {otpPurpose === 'session' && (
+            <p className="mb-4 text-sm text-gray-600">
+              {t('adminControl.device')} <span className="font-semibold">{selectedSession?.device_name}</span>
+            </p>
+          )}
           <div className="mb-4">
             <label className="block text-sm font-medium mb-2">
-              {t('adminControl.enterOtpConfirm')}
+              {otpPurpose === 'address' ? t('adminControl.enterOtpAddress') : t('adminControl.enterOtpConfirm')}
             </label>
             <input
               type="text"
@@ -914,7 +1105,8 @@ export default function AdminControlPage() {
           <div className="flex gap-3">
             <button
               onClick={handleOtpSubmit}
-              className="flex-1 bg-blue-500 text-white px-4 py-2 rounded font-bold hover:bg-gray-300"
+              disabled={addressSaving}
+              className="flex-1 bg-blue-500 text-white px-4 py-2 rounded font-bold hover:bg-gray-300 disabled:opacity-50"
             >
               {t('adminControl.confirm')}
             </button>
@@ -953,6 +1145,13 @@ export default function AdminControlPage() {
               muted
               className="w-full h-auto border border-gray-300 rounded"
             />
+            {/* Framing guide - line the document up inside it before capturing */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+              <div className="h-[62%] w-[86%] border-4 border-dashed border-yellow-400/90" />
+            </div>
+            <div className="pointer-events-none absolute bottom-2 left-0 right-0 text-center text-xs font-bold text-yellow-300">
+              {t('adminControl.frameGuide')}
+            </div>
             {previewBlocked && (
               <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                 <button
@@ -995,7 +1194,7 @@ export default function AdminControlPage() {
         </button>
         <div className="mb-3 max-w-[900px] px-12 text-center text-white">
           <h2 className="text-2xl font-bold leading-tight">Quét CCCD hai mặt</h2>
-          <p className="mt-1 text-base leading-snug text-gray-300">Đưa CCCD vào khung, giữ rõ nét, rồi lật mặt sau khi hệ thống yêu cầu.</p>
+          <p className="mt-1 text-base leading-snug text-gray-300">{t('adminControl.frameGuide')} — đưa CCCD vào khung, giữ rõ nét, rồi lật mặt sau khi hệ thống yêu cầu.</p>
         </div>
         <div
           ref={idScannerContainerRef}
@@ -1014,6 +1213,13 @@ export default function AdminControlPage() {
         )}
       </div>
     )}
+
+    {/* Map picker for the current address pin */}
+    <MapPickerModal
+      isOpen={showMapPicker}
+      onClose={() => setShowMapPicker(false)}
+      onSendLocation={handleSendLocation}
+    />
   </>
   );
 }

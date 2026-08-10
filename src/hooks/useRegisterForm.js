@@ -354,7 +354,8 @@ export default function useRegisterForm(t) {
       const authToken = response.data?.token || response.data?.jwt
       localStorage.setItem("authToken", authToken)
       localStorage.setItem("user", JSON.stringify(response.data?.user))
-      dispatch(loginAction(response.data?.user))
+      localStorage.setItem("account_type", formData.account_type || "ca_nhan")
+      dispatch(loginAction({ ...response.data?.user, account_type: formData.account_type || "ca_nhan" }))
       navigate("/")
     } catch (error) {
       console.error("Lỗi khi đăng ký:", error.response?.data || error.message)

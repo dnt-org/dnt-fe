@@ -1,39 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import { filterProducts } from "../services/productService";
 import { useTranslation } from 'react-i18next';
-import { getCountryByCode } from "../services/countries";
+import { getCountries, getCountryByCode } from "../services/countries";
 import { getMediaUrl } from "../services/videoService";
+import { categories, subCategories, conditions } from "../constants/filterConstants";
 import {
-  Home as HomeIcon,
-  KeyboardIcon as KeyboardIcon,
+  Mic as MicIcon,
   SearchIcon as SearchIcon,
 } from "lucide-react";
 
-// Categories data - defined outside component to avoid reference errors
-const categories = {
-  "SALE": { vi: "HÀNG BÁN", en: "Sell" },
-  "BUY": { vi: "CẦN MUA", en: "Buy" },
-  "RENT": { vi: "HÀNG THUÊ", en: "Rent" },
-  "FOR_RENT": { vi: "CHO THUÊ", en: "For rent" },
-  "SERVICE": { vi: "DỊCH VỤ", en: "Service" },
-};
-
-const subcategories = {
-  "GOODS": { vi: "HÀNG HÓA", en: "Goods" },
-  "LANDHOUSE": { vi: "BẤT ĐỘNG SẢN", en: "Land/house" },
-  "VEHICLE": { vi: "PHƯƠNG TIỆN", en: "Vehicle" },
-  "Manpower": { vi: "NHÂN LỰC", en: "Manpower" },
-  "IMPORT_EXPORT": { vi: "XUẤT - NHẬP KHẨU", en: "Import - Export" },
-};
-
-const conditions = {
-  "SCRAP": { vi: "PHẾ LIỆU", en: "Scrap" },
-  "NEW": { vi: "MỚI", en: "New", noteVi: "< 7 năm từ ngày sản xuất", noteEn: "< 7 years from production date" },
-  "OLD": { vi: "CŨ", en: "Old", noteVi: "Hoạt động bình thường", noteEn: "Operating normally" },
-  "UNUSED": { vi: "CHƯA SỬ DỤNG", en: "Unused", noteVi: "> 7 năm từ ngày sản xuất", noteEn: "> 7 years from production date" },
-};
+// The first entry of every list is a placeholder, and "Tất cả / ALL" means "no filter";
+// both map to an empty filter value. Every other option is sent to the API as its `en`
+// value, which is exactly what the Home page stores on the product.
+const NO_FILTER_VALUES = ["ALL", "All", "Tất cả"];
+const optionValue = (item, index) =>
+  index === 0 || NO_FILTER_VALUES.includes(item.en) ? "" : item.en;
 
 export default function ListOfGoodsPage() {
   const { t, i18n } = useTranslation();
@@ -60,43 +43,18 @@ export default function ListOfGoodsPage() {
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [countries, setCountries] = useState([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
   const [provinces, setProvinces] = useState([]);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const voiceBaseTermRef = useRef("");
 
-  // DB category mapping functions to translate keys to API-compliant values
-  const getDbListingType = (cat) => {
-    if (!cat) return "";
-    switch (cat.toUpperCase()) {
-      case "SALE": return "sale";
-      case "BUY": return "buy";
-      case "RENT": return "rent";
-      case "FOR_RENT":
-      case "FOR RENT": return "forRent";
-      case "SERVICE":
-      case "SERVICES": return "service";
-      default: return cat.toLowerCase();
-    }
-  };
-
-  const getDbCategoryType = (subcat) => {
-    if (!subcat) return "";
-    switch (subcat.toUpperCase()) {
-      case "GOODS": return "goods";
-      case "LANDHOUSE":
-      case "LAND HOUSE":
-      case "LAND_HOUSE":
-      case "LAND_AND_HOUSE": return "land";
-      case "VEHICLE": return "vehicle";
-      case "MANPOWER": return "manpower";
-      case "IMPORT_EXPORT": return "importExport";
-      default: return subcat.toLowerCase();
-    }
-  };
-
-  const getDbConditionType = (cond) => {
-    if (!cond) return "";
-    return cond.split(" (")[0].toLowerCase();
-  };
+  const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
+  const speechSupported =
+    typeof window !== "undefined" &&
+    !!(window.SpeechRecognition || window.webkitSpeechRecognition);
 
   // Helper functions for displaying values on the product cards
   const getProductTitle = (event) => {
@@ -122,16 +80,20 @@ export default function ListOfGoodsPage() {
     return 'https://img.lovepik.com/png/20231125/delivery-box-3d-illustration-icon-arrows-search_698016_wh860.png';
   };
 
-  // Sync state to filters structure when inputs change
+  // Sync state to filters structure when inputs change. The search term is debounced so
+  // typing - and above all live voice dictation - does not fire a request per character.
   useEffect(() => {
-    setFilters({
-      listingType: getDbListingType(selectedCategory),
-      categoryType: getDbCategoryType(selectedSubcategory),
-      conditionType: getDbConditionType(selectedCondition),
-      nation: selectedCountry || '',
-      province: selectedProvince || '',
-      name: searchTerm || ''
-    });
+    const timer = setTimeout(() => {
+      setFilters({
+        listingType: selectedCategory || '',
+        categoryType: selectedSubcategory || '',
+        conditionType: selectedCondition || '',
+        nation: selectedCountry || '',
+        province: selectedProvince || '',
+        name: searchTerm.trim()
+      });
+    }, 300);
+    return () => clearTimeout(timer);
   }, [selectedCategory, selectedSubcategory, selectedCondition, selectedCountry, selectedProvince, searchTerm]);
   
   const handleChangeColor = (e) => {
@@ -165,6 +127,23 @@ export default function ListOfGoodsPage() {
       setLoading(false);
     }
   };
+
+  // Full country list - same source as the Home page filter
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        setCountries(await getCountries() || []);
+      } catch (error) {
+        console.error("Error fetching countries:", error);
+        setCountries([]);
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+
+    fetchCountries();
+  }, []);
 
   // Fetch provinces when country changes
   useEffect(() => {
@@ -206,110 +185,74 @@ export default function ListOfGoodsPage() {
     fetchProvinces();
   }, [selectedCountry]);
 
-  // Load criteria pre-filtered on the Home page (stored in localStorage)
+  // Load criteria pre-filtered on the Home page (stored in localStorage). The Home page
+  // stores the same `en` values this page filters on, so a case-insensitive match is enough.
   useEffect(() => {
-    const category = localStorage.getItem("category");
-    const subcategory = localStorage.getItem("subcategory");
-    const condition = localStorage.getItem("condition");
+    const restore = (list, stored, setter) => {
+      if (!stored) return;
+      const match = list.find(
+        (item, index) =>
+          optionValue(item, index) && item.en.toUpperCase() === stored.toUpperCase()
+      );
+      if (match) setter(match.en);
+    };
+
+    restore(categories, localStorage.getItem("category"), setSelectedCategory);
+    restore(subCategories, localStorage.getItem("subcategory"), setSelectedSubcategory);
+    restore(conditions, localStorage.getItem("condition"), setSelectedCondition);
+
     const nation = localStorage.getItem("nation");
-    const province = localStorage.getItem("province");
-    
-    const categoryMapping = {
-      "SALE": "SALE",
-      "BUY": "BUY",
-      "RENT": "RENT",
-      "FOR RENT": "FOR_RENT",
-      "FOR_RENT": "FOR_RENT",
-      "SERVICES": "SERVICE",
-      "SERVICE": "SERVICE"
-    };
-    
-    const subcategoryMapping = {
-      "GOODS": "GOODS",
-      "LAND AND HOUSE": "LANDHOUSE",
-      "LANDHOUSE": "LANDHOUSE",
-      "VEHICLE": "VEHICLE",
-      "MANPOWER": "Manpower",
-      "IMPORT - EXPORT": "IMPORT_EXPORT",
-      "IMPORT_EXPORT": "IMPORT_EXPORT"
-    };
-    
-    if (category) {
-      if (categories[category]) {
-        setSelectedCategory(category);
-      } else if (categoryMapping[category]) {
-        setSelectedCategory(categoryMapping[category]);
-      } else {
-        const normalized = category.toUpperCase().replace(/\s+/g, '_');
-        if (categories[normalized]) {
-          setSelectedCategory(normalized);
-        } else {
-          const foundCategory = Object.keys(categories).find(
-            key => key.toUpperCase() === category.toUpperCase() || 
-                   categories[key]?.en?.toUpperCase() === category.toUpperCase()
-          );
-          if (foundCategory) setSelectedCategory(foundCategory);
-        }
-      }
-    }
-    
-    if (subcategory) {
-      if (subcategories[subcategory]) {
-        setSelectedSubcategory(subcategory);
-      } else if (subcategoryMapping[subcategory]) {
-        setSelectedSubcategory(subcategoryMapping[subcategory]);
-      } else {
-        const normalized = subcategory.toUpperCase().replace(/\s+/g, '_').replace(/-/g, '_');
-        if (subcategories[normalized]) {
-          setSelectedSubcategory(normalized);
-        } else {
-          const foundSubcategory = Object.keys(subcategories).find(
-            key => key.toUpperCase() === subcategory.toUpperCase() ||
-                   subcategories[key]?.en?.toUpperCase() === subcategory.toUpperCase()
-          );
-          if (foundSubcategory) setSelectedSubcategory(foundSubcategory);
-        }
-      }
-    }
-    
-    if (condition) {
-      const baseCondition = condition.split(" (")[0].toUpperCase();
-      if (conditions[condition]) {
-        setSelectedCondition(condition);
-      } else if (conditions[baseCondition]) {
-        setSelectedCondition(baseCondition);
-      } else {
-        const normalized = condition.toUpperCase();
-        if (conditions[normalized]) {
-          setSelectedCondition(normalized);
-        } else {
-          const foundCondition = Object.keys(conditions).find(
-            key => {
-              const baseEnValue = conditions[key]?.en?.split(" (")[0]?.toUpperCase();
-              return key.toUpperCase() === baseCondition || baseEnValue === baseCondition;
-            }
-          );
-          if (foundCondition) setSelectedCondition(foundCondition);
-        }
-      }
-    }
-    
-    if (nation) {
+    if (nation && !NO_FILTER_VALUES.includes(nation)) {
       setSelectedCountry(nation);
     }
   }, []);
 
+  // Voice search: dictated text lands in the search box as it is recognised, so the
+  // customer can read back what was understood before it is used as a filter.
+  const toggleVoiceSearch = () => {
+    const SpeechRecognitionCtor =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) return;
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = isVi ? 'vi-VN' : 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    voiceBaseTermRef.current = searchTerm ? `${searchTerm.trim()} ` : '';
+
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setSearchTerm(voiceBaseTermRef.current + transcript);
+      setCurrentPage(1);
+    };
+    recognition.onerror = (event) => {
+      console.error("Speech recognition error:", event.error);
+      setIsListening(false);
+    };
+    recognition.onend = () => setIsListening(false);
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  };
+
+  // Stop an in-flight recognition session when leaving the page
+  useEffect(() => () => recognitionRef.current?.stop(), []);
+
   return (
     <div className="flex min-h-screen">
       <div className="bg-transparent backdrop-blur-md p-1 rounded-lg w-full mx-auto">
-        {/* Header with Navigation */}
+        {/* Header */}
         <div className="flex items-center justify-between relative mb-2">
-          <button 
-            className="text-red-600 hover:text-red-800 relative"
-            onClick={() => navigate("/")}
-          >
-            <HomeIcon size={28} />
-          </button>
           {/* Tiêu đề ở giữa */}
           <div className="text-center relative flex-1 flex items-center justify-center gap-2">
             <input
@@ -322,12 +265,6 @@ export default function ListOfGoodsPage() {
               5 - {t('goods.listOfGoods')}
             </h1>
           </div>
-          <button 
-            className="text-red-600 hover:text-red-800"
-            onClick={() => navigate("/admin-control")}
-          >
-            <KeyboardIcon size={28} />
-          </button>
         </div>
 
         <div className="mt-2">
@@ -335,7 +272,7 @@ export default function ListOfGoodsPage() {
           <div className="grid grid-cols-5 gap-2">
             {/* Column 1 - Categories */}
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedCategory || ''}
                 onChange={(e) => {
@@ -343,18 +280,17 @@ export default function ListOfGoodsPage() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">{t('goods.selectType')}</option>
-                {Object.entries(categories).map(([key]) => (
-                  <option key={key} value={key}>
-                    {t(`goods.category.${key.toLowerCase()}`)}
+                {categories.map((item, index) => (
+                  <option key={item.en} value={optionValue(item, index)}>
+                    {isVi ? item.vi : item.en}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             {/* Column 2 - Subcategories */}
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedSubcategory || ''}
                 onChange={(e) => {
@@ -362,18 +298,17 @@ export default function ListOfGoodsPage() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">{t('goods.selectSubcategory')}</option>
-                {Object.entries(subcategories).map(([key]) => (
-                  <option key={key} value={key}>
-                    {t(`goods.subcategory.${key.toLowerCase()}`)}
+                {subCategories.map((item, index) => (
+                  <option key={item.en} value={optionValue(item, index)}>
+                    {isVi ? item.vi : item.en}
                   </option>
                 ))}
               </select>
             </div>
-            
+
             {/* Column 3 - Conditions */}
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedCondition || ''}
                 onChange={(e) => {
@@ -381,23 +316,17 @@ export default function ListOfGoodsPage() {
                   setCurrentPage(1);
                 }}
               >
-                <option value="">{t('goods.selectCondition')}</option>
-                {Object.entries(conditions).map(([key, value]) => {
-                  const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
-                  const label = isVi ? value.vi : value.en;
-                  const note = isVi ? value.noteVi : value.noteEn;
-                  return (
-                    <option key={key} value={key}>
-                      {note ? `${label} (${note})` : label}
-                    </option>
-                  );
-                })}
+                {conditions.map((item, index) => (
+                  <option key={item.en} value={optionValue(item, index)}>
+                    {isVi ? item.vi : item.en}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* Column 4 - Country */}
+            {/* Column 4 - Country (full list, same source as the Home page) */}
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedCountry || ''}
                 onChange={(e) => {
@@ -405,19 +334,22 @@ export default function ListOfGoodsPage() {
                   setSelectedProvince('');
                   setCurrentPage(1);
                 }}
+                disabled={loadingCountries}
               >
-                <option value="">{t('goods.selectCountry')}</option>
-                <option value="Vietnam">{t('goods.vietnam')}</option>
-                <option value="United States">{t('goods.usa')}</option>
-                <option value="China">{t('goods.china')}</option>
-                <option value="Japan">{t('goods.japan')}</option>
-                <option value="South Korea">{t('goods.korea')}</option>
+                {loadingCountries && (
+                  <option value="">{isVi ? 'Đang tải...' : 'Loading...'}</option>
+                )}
+                {countries.map((country, index) => (
+                  <option key={country.cca2 || country.en} value={optionValue(country, index)}>
+                    {isVi ? country.vi : country.en}
+                  </option>
+                ))}
               </select>
             </div>
-            
-            {/* Column 5 - Province */}
+
+            {/* Column 5 - Province ("Tất cả" first, same source as the Home page) */}
             <div className="flex items-center justify-center">
-              <select 
+              <select
                 className="w-full p-2 border border-gray-300"
                 value={selectedProvince || ''}
                 onChange={(e) => {
@@ -426,26 +358,44 @@ export default function ListOfGoodsPage() {
                 }}
                 disabled={!selectedCountry || loadingProvinces}
               >
-                <option value="">{loadingProvinces ? (i18n.language === 'vi' ? 'Đang tải...' : 'Loading...') : t('goods.selectProvince')}</option>
-                {provinces.map((province, index) => {
-                  const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
-                  return (
-                    <option key={index} value={province.en}>
-                      {isVi ? province.vi : province.en}
-                    </option>
-                  );
-                })}
+                {(loadingProvinces || provinces.length === 0) && (
+                  <option value="">
+                    {loadingProvinces ? (isVi ? 'Đang tải...' : 'Loading...') : (isVi ? 'Tất cả' : 'All')}
+                  </option>
+                )}
+                {provinces.map((province, index) => (
+                  <option key={province.en} value={optionValue(province, index)}>
+                    {isVi ? province.vi : province.en}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
-          
+
           {/* Search section */}
           <div className="mt-1 border-1 border-gray-300">
-            <div className="flex items-center">
+            <div className="flex items-center gap-1">
               <SearchIcon size={24} className="text-gray-400" />
-              <input 
-                type="text" 
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={toggleVoiceSearch}
+                  title={isVi ? 'Nhấn để nói' : 'Press to speak'}
+                  aria-label={isVi ? 'Tìm kiếm bằng giọng nói' : 'Voice search'}
+                  aria-pressed={isListening}
+                  className={`p-1 rounded-full transition-colors ${
+                    isListening ? 'text-red-600 bg-red-100 animate-pulse' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <MicIcon size={22} />
+                </button>
+              )}
+              <input
+                type="text"
                 className="flex-1 p-2 rounded focus:outline-none"
+                placeholder={isListening
+                  ? (isVi ? 'Đang nghe...' : 'Listening...')
+                  : t('goods.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
@@ -473,40 +423,55 @@ export default function ListOfGoodsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   {products.map((product) => {
                     const detailId = product.documentId || product.id;
-                    const imageUrl = getProductImage(product);
                     const title = getProductTitle(product);
-                    const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
 
                     return (
-                      <div 
-                        key={product.id} 
-                        className="relative bg-white rounded-xl shadow-sm border border-gray-800 p-3 flex flex-col justify-between items-stretch text-center cursor-pointer min-h-[220px] transition-all hover:translate-y-[-2px] hover:shadow-md overflow-hidden group"
+                      <div
+                        key={product.id}
                         onClick={() => navigate(`/list-of-goods/${detailId}`)}
+                        style={{
+                          backgroundColor: "white",
+                          minHeight: "clamp(138px, 18vw, 230px)",
+                          padding: "clamp(6px, 1vw, 10px)",
+                          borderRadius: "8px",
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          alignItems: "stretch",
+                          textAlign: "center",
+                          border: "1px solid black",
+                          boxSizing: "border-box",
+                          cursor: "pointer",
+                          minWidth: 0,
+                          overflow: "hidden",
+                        }}
                       >
-                        {/* Background watermark image */}
-                        <div className="absolute inset-0 opacity-10 group-hover:opacity-15 transition-opacity z-0">
-                          <img 
-                            src={imageUrl}
-                            alt="Watermark" 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>               
-                        
-                        {/* Product title */}
-                        <h3 className="relative z-10 font-bold text-gray-900 text-xs mb-2 min-h-[36px] line-clamp-3 leading-snug break-words">
+                        <h3 style={{
+                          margin: "4px 0 8px 0",
+                          fontSize: "clamp(11px, 1.15vw, 14px)",
+                          lineHeight: 1.25,
+                          fontWeight: "bold",
+                          overflow: "hidden",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: "vertical",
+                          overflowWrap: "anywhere",
+                        }}>
                           {title}
                         </h3>
-
-                        {/* Product metadata similar to Home page */}
-                        <div className="relative z-10 text-left text-[11px] leading-relaxed font-semibold text-gray-700 space-y-0.5">
-                          <p className="truncate">- {t("events.category")}: {product.listingType || ""}</p>
-                          <p className="truncate">- {t("events.classification")}: {product.categoryType || ""}</p>
-                          <p className="truncate">- {t("events.status")}: {product.conditionType || product.status || ""}</p>
-                          <p className="line-clamp-2">- {t("events.goodsAddress")}: {product.goodsAddress || product.address || product.province || ""}</p>
-                          <p className="truncate">- {t("events.quantity")}: {getProductQuantity(product)}</p>
-                          {getProductPrice(product) && (
-                            <p className="truncate text-blue-600">- {t("productGrid.unitAskingPrice", "Đơn giá")}: {getProductPrice(product)}</p>
-                          )}
+                        <div style={{
+                          minWidth: 0,
+                          textAlign: "left",
+                          fontSize: "clamp(10px, 1vw, 12px)",
+                          lineHeight: 1.25,
+                          fontWeight: "bold",
+                        }}>
+                          {product.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{product.listingType.toUpperCase()}</p> : null}
+                          {product.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{product.categoryType}</p> : null}
+                          {(product.conditionType || product.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{product.conditionType || product.status}</p> : null}
+                          {(product.goodsAddress || product.address || product.province) ? <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>{product.goodsAddress || product.address || product.province}</p> : null}
+                          {getProductQuantity(product) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getProductQuantity(product)}</p> : null}
                         </div>
                       </div>
                     );

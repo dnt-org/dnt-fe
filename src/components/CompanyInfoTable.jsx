@@ -196,8 +196,8 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             <tbody>
               {/* Header — Company name */}
               <tr>
-                <td colSpan={3} className="border-2 border-black p-2 text-center">
-                  <span className="font-bold text-base sm:text-lg text-blue-700">
+                <td colSpan={3} className="border-2 border-black px-2 py-0.5 text-center">
+                  <span className="font-bold text-blue-700" style={{ fontSize: "clamp(16px, 1.6vw, 26px)", lineHeight: 1.2, display: "block" }}>
                     {userData?.company_name || fallback.companyName}
                   </span>
                 </td>

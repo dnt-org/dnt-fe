@@ -196,7 +196,7 @@ export default function MapPickerModal({ isOpen, onClose, onSendLocation }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-[300000] flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden transition-all transform scale-100">
         
         {/* Header */}
