@@ -82,8 +82,10 @@ export default function ListOfGoodsPage() {
 
   // Sync state to filters structure when inputs change. The search term is debounced so
   // typing - and above all live voice dictation - does not fire a request per character.
+  // Reset to page 1 whenever filters change so stale page numbers don't hide results.
   useEffect(() => {
     const timer = setTimeout(() => {
+      setCurrentPage(1);
       setFilters({
         listingType: selectedCategory || '',
         categoryType: selectedSubcategory || '',
@@ -95,7 +97,7 @@ export default function ListOfGoodsPage() {
     }, 300);
     return () => clearTimeout(timer);
   }, [selectedCategory, selectedSubcategory, selectedCondition, selectedCountry, selectedProvince, searchTerm]);
-  
+
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
     setColor(newColor);
@@ -480,23 +482,26 @@ export default function ListOfGoodsPage() {
               )}
               
               {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex justify-center mt-6">
-                  <div className="flex space-x-2">
-                    {[...Array(totalPages)].map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentPage(index + 1)}
-                        className={`px-3.5 py-1.5 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors font-semibold text-sm ${
-                          currentPage === index + 1 ? 'bg-blue-600 border-blue-600 text-white hover:bg-blue-700' : 'bg-white text-gray-700'
-                        }`}
-                      >
-                        {index + 1}
-                      </button>
+              {totalPages > 1 && (() => {
+                const delta = 2;
+                const pages = [];
+                for (let i = Math.max(1, currentPage - delta); i <= Math.min(totalPages, currentPage + delta); i++) pages.push(i);
+                const btnCls = (active) => `px-3.5 py-1.5 border rounded-lg font-semibold text-sm transition-colors ${active ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'}`;
+                return (
+                  <div className="flex justify-center items-center gap-1 mt-6 flex-wrap">
+                    <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className={`${btnCls(false)} disabled:opacity-40`}>«</button>
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className={`${btnCls(false)} disabled:opacity-40`}>‹</button>
+                    {pages[0] > 1 && <span className="px-2 text-gray-400">…</span>}
+                    {pages.map(p => (
+                      <button key={p} onClick={() => setCurrentPage(p)} className={btnCls(p === currentPage)}>{p}</button>
                     ))}
+                    {pages[pages.length - 1] < totalPages && <span className="px-2 text-gray-400">…</span>}
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className={`${btnCls(false)} disabled:opacity-40`}>›</button>
+                    <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className={`${btnCls(false)} disabled:opacity-40`}>»</button>
+                    <span className="ml-2 text-sm text-gray-500">{currentPage}/{totalPages}</span>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           )}
         </div>
