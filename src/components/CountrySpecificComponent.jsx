@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const CountrySpecificComponent = ({ userCountry = 'vi' }) => {
@@ -34,15 +35,22 @@ const CountrySpecificComponent = ({ userCountry = 'vi' }) => {
   const isLoggedIn = localStorage.getItem('authToken') !== null && localStorage.getItem('authToken') !== '';
 
   return (
-    <>
+    <div className="flex flex-col items-center">
       {/* Global Logo - Planet Earth */}
-          <img
-            src={isLoggedIn ? currentCountry.flag : './planet.jpg'}
-            alt="Country"
-            style={{height: '94%'}}
-            className="w-full h-full max-w-[100px] max-h-[100px] sm:max-w-[130px] sm:max-h-[130px] md:max-w-[130px] md:max-h-[200px] object-contain mx-auto"
-          />
-    </>
+      <img
+        src={isLoggedIn ? currentCountry.flag : './planet.jpg'}
+        alt="Country"
+        style={{height: '94%'}}
+        className="w-full h-full max-w-[100px] max-h-[100px] sm:max-w-[130px] sm:max-h-[130px] md:max-w-[130px] md:max-h-[200px] object-contain mx-auto"
+      />
+      <Link
+        to="/terms-and-conditions"
+        className="text-center font-bold text-blue-700 underline mt-1"
+        style={{ fontSize: "clamp(6px, 0.7vw, 10px)", lineHeight: 1.3 }}
+      >
+        HỢP ĐỒNG<br />VÀ CÁC<br />ĐIỀU KHOẢN
+      </Link>
+    </div>
   );
 };
 
