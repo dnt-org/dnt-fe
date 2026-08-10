@@ -113,24 +113,25 @@ export default function RegisterPage() {
                 ✕
               </button>
             </div>
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0">
               {isContractLoading ? (
                 <div className="flex-1 flex items-center justify-center">
                   <span>{t("common.loading", "Đang tải...")}</span>
                 </div>
               ) : contractFiles && contractFiles.length > 0 ? (
                 <>
-                  <div className="flex-1 overflow-auto bg-gray-100">
+                  <div className="flex-1 overflow-auto bg-gray-100 min-h-0">
                     {activeFile?.kind === "docx" ? (
                       <div
                         ref={docxContainerRef}
-                        className="w-full h-full overflow-auto p-4"
+                        className="w-full min-h-full overflow-visible p-4"
                       />
                     ) : (
                       <iframe
                         key={activeFile?.url}
                         src={activeFile?.url}
-                        className="w-full h-full"
+                        className="w-full"
+                        style={{ height: "calc(100vh - 110px)" }}
                         title={activeFile?.label || "contract-file"}
                       />
                     )}
