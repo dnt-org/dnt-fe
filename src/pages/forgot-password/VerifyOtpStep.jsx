@@ -48,10 +48,8 @@ export default function VerifyOtpStep() {
             }`}
           onClick={handleVerifyOtp}
           disabled={isLoading || !otp.trim()}
-          dangerouslySetInnerHTML={isLoading
-            ? t('common.loading', 'Đang xử lý...')
-            : t('forgotPassword.verifyOtpButton', 'XÁC THỰC MẬT MÃ OTP')}
         >
+          {isLoading ? t('common.loading', 'Đang xử lý...') : t('forgotPassword.verifyOtpButton', 'XÁC THỰC MẬT MÃ OTP')}
         </button>
          {errorMessage && (
         <p className="text-red-500 text-sm text-center">{errorMessage}</p>
