@@ -608,7 +608,7 @@ export default function LoginPage() {
             )}
 
             {!isPermanentlyBlocked && errorMessage && (
-              <h2 className="text-xl text-center text-red-500">
+              <h2 className="text-base text-center text-red-500">
                 {errorMessage} <br />
 
               </h2>

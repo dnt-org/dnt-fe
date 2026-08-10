@@ -538,10 +538,34 @@ const verifyRecoveryCccd = async (accountId, fullName, idNumber) => {
     return response;
 };
 
+/**
+ * Update the current address of the logged in user. Confirmed with the account OTP.
+ * @param {{ address_no?: string, address_on_map?: string }} address
+ * @param {string} otp
+ */
+const updateCurrentAddress = async (address, otp) => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+        throw new Error("No authentication token found");
+    }
+
+    const response = await axios.post(
+        `${API_URL}/auth/update-address`,
+        { ...address, otp },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        }
+    );
+    return response;
+};
+
 export {
     login, getMe, changePassword, verifyBankNumber, generateQrSession, generateQrSessionInfo,
     updateUser, updateAvatar, updateAvatarFile, checkQrStatus, verifyQrSession, recoverLogin, verifyOtp,
     verifyRecoveryString, resetPasswordWithToken, verifyRecoveryOtp, getSessions, toggleSessionStatus, changeOtp,
     verifyRecoveryAccount, verifyRecoveryKey, verifyRecoveryOtpStep, verifyRecoveryBalance, verifyRecoveryCccd,
-    setRecoveryString
+    setRecoveryString, updateCurrentAddress
 };
