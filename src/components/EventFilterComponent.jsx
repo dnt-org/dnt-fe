@@ -4,6 +4,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getMetric } from '../services/metricService';
 import { CHANGE_USER_COUNTRY } from '../context/action/filterAction';
 import { getCountries, getCountryByCode, getDistrictByCode } from '../services/countries';
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:1337/api";
+
+// For Vietnam: load provinces from Strapi vietnam-info; fall back to external API for all other countries.
+const getProvincesByCountry = async (countryName) => {
+  if (countryName === "Vietnam") {
+    const token = localStorage.getItem("authToken");
+    const res = await fetch(`${API_URL}/vietnam-info`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+    const json = await res.json();
+    const tinh = json?.data?.tinh || [];
+    const all = { vi: "Tất cả", en: "All" };
+    return [all, ...tinh.map(p => ({ vi: p.name, en: p.name }))];
+  }
+  return getCountryByCode(countryName);
+};
 import { useTranslation } from 'react-i18next';
 import {
     KeyboardIcon as KeyboardIcon,
@@ -121,7 +138,7 @@ function EventFilterComponent() {
                         items={[]}
                         onChange={handleCategoryChange}
                         value={province}
-                        fetchItems={getCountryByCode}
+                        fetchItems={getProvincesByCountry}
                         dependsOn={nation?.en}
                         placeholder={{ vi: "Chọn tỉnh/thành", en: "Select province/city" }}
                         initIndex={0}
