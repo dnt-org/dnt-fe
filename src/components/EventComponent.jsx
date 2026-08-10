@@ -283,7 +283,7 @@ export default function EventComponent() {
         transition: "opacity 0.2s",
       }}
     >
-      {direction === "prev" ? "←" : "→"}
+      {direction === "prev" ? "→" : "←"}
     </button>
   );
 
