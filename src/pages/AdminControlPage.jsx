@@ -82,20 +82,33 @@ function DeviceRow({ item, actionLabel, onActionClick }) {
   );
 }
 
-function DeviceDropdown({ label, open, onToggle, loading, devices, emptyLabel, actionLabel, onActionClick }) {
+function DevicePanel({ activeTab, onTabChange, loading, loggedInDevices, loggedOutDevices, loggedInLabel, loggedOutLabel, noLoggedInLabel, noLoggedOutLabel, logoutLabel, loginLabel, onActionClick }) {
   const { t } = useTranslation();
+  const devices = activeTab === 'in' ? loggedInDevices : loggedOutDevices;
+  const emptyLabel = activeTab === 'in' ? noLoggedInLabel : noLoggedOutLabel;
+  const actionLabel = activeTab === 'in' ? logoutLabel : loginLabel;
   return (
     <div className="relative">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex items-center gap-1 text-lg font-extrabold text-red-600 hover:opacity-70"
-      >
-        {label}
-        {open ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-      </button>
-      {open && (
-        <div className="absolute right-0 z-20 mt-1 w-[340px] max-w-[90vw]">
+      <div className="flex border-2 border-black">
+        <button
+          type="button"
+          onClick={() => onTabChange(activeTab === 'in' ? null : 'in')}
+          className={`flex items-center gap-1 px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${activeTab === 'in' ? 'bg-black text-white' : 'text-red-600'}`}
+        >
+          {loggedInLabel}
+          {activeTab === 'in' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+        <button
+          type="button"
+          onClick={() => onTabChange(activeTab === 'out' ? null : 'out')}
+          className={`flex items-center gap-1 border-l-2 border-black px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${activeTab === 'out' ? 'bg-black text-white' : 'text-red-600'}`}
+        >
+          {loggedOutLabel}
+          {activeTab === 'out' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+      </div>
+      {activeTab && (
+        <div className="absolute left-0 right-0 z-20 mt-1">
           {loading ? (
             <div className="border-2 border-black bg-white p-4 text-center">{t('adminControl.loading')}</div>
           ) : devices.length === 0 ? (
@@ -187,8 +200,8 @@ export default function AdminControlPage() {
   const currProvinceOptions = (currLocation.provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }));
 
   const [color, setColor] = useState(localStorage.getItem("selectedColor") || "#ffffff");
-  const [showLoggedInDevices, setShowLoggedInDevices] = useState(false);
-  const [showLoggedOutDevices, setShowLoggedOutDevices] = useState(false);
+  const [deviceTab, setDeviceTab] = useState(null); // 'in' | 'out' | null
+  const [addressSectionCollapsed, setAddressSectionCollapsed] = useState(false);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOtpModal, setShowOtpModal] = useState(false);
@@ -238,6 +251,7 @@ export default function AdminControlPage() {
 
   // 3.2 - which list is expanded ('posts' | 'joined' | null)
   const [goodsTab, setGoodsTab] = useState(null);
+  const [freelanceTab, setFreelanceTab] = useState(null);
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
@@ -800,12 +814,12 @@ export default function AdminControlPage() {
         <section className="mt-2">
           <h2 className="mb-2 text-2xl font-extrabold uppercase">{t('adminControl.header3_1')}</h2>
 
-          {/* Password / OTP shortcuts on the left, device dropdowns on the right */}
+          {/* Password / OTP + verification buttons on the left, device panel on the right */}
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                className="min-w-[240px] border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
+                className="border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
                 onClick={() => navigate("/change-password")}
               >
                 {t('adminControl.changePassword')}
@@ -813,67 +827,62 @@ export default function AdminControlPage() {
               <button
                 type="button"
                 onClick={() => navigate("/change-otp-code")}
-                className="min-w-[240px] border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
+                className="border-2 border-black px-3 py-1 text-center text-base text-red-600 hover:bg-black hover:text-white"
               >
                 {t('adminControl.changeOtpCode')}
               </button>
+              {!isVerified && (
+                <>
+                  <button
+                    type="button"
+                    className={`border-2 border-black px-3 py-1 text-center text-base font-extrabold uppercase hover:bg-black hover:text-white ${
+                      hasIdCaptured ? 'bg-green-100' : ''
+                    }`}
+                    onClick={handleVerifyAccount}
+                    title={!hasIdCaptured ? t('adminControl.scanCccdStep') : undefined}
+                  >
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <ScanLine size={20} />
+                      {t('adminControl.verifyAccount')}
+                    </span>
+                  </button>
+                  {requiresBusinessDoc ? (
+                    <button
+                      type="button"
+                      className={`border-2 border-black px-3 py-1 text-center text-base font-extrabold uppercase hover:bg-black hover:text-white ${
+                        hasBusinessVideo ? 'bg-green-100' : ''
+                      }`}
+                      onClick={() => MOCK_VERIFICATION ? mockBusinessRegCapture() : openCamera('business_reg')}
+                      title={t('adminControl.scanBusinessStep', 'Chụp giấy phép kinh doanh')}
+                    >
+                      <span className="inline-flex items-center justify-center gap-2">
+                        <ScanLine size={20} />
+                        XÁC MINH GPKD
+                      </span>
+                    </button>
+                  ) : <div />}
+                </>
+              )}
             </div>
 
-            <div className="flex flex-wrap gap-6">
-              <DeviceDropdown
-                label={t('adminControl.loggedInDevicesHeader')}
-                open={showLoggedInDevices}
-                onToggle={() => setShowLoggedInDevices((prev) => !prev)}
-                loading={loading}
-                devices={loggedInDevices}
-                emptyLabel={t('adminControl.noLoggedInDevices')}
-                actionLabel={t('adminControl.logout')}
-                onActionClick={handleActionClick}
-              />
-              <DeviceDropdown
-                label={t('adminControl.loggedOutDevicesHeader')}
-                open={showLoggedOutDevices}
-                onToggle={() => setShowLoggedOutDevices((prev) => !prev)}
-                loading={loading}
-                devices={loggedOutDevices}
-                emptyLabel={t('adminControl.noLoggedOutDevices')}
-                actionLabel={t('adminControl.login')}
-                onActionClick={handleActionClick}
-              />
-            </div>
+            <DevicePanel
+              activeTab={deviceTab}
+              onTabChange={setDeviceTab}
+              loading={loading}
+              loggedInDevices={loggedInDevices}
+              loggedOutDevices={loggedOutDevices}
+              loggedInLabel={t('adminControl.loggedInDevicesHeader')}
+              loggedOutLabel={t('adminControl.loggedOutDevicesHeader')}
+              noLoggedInLabel={t('adminControl.noLoggedInDevices')}
+              noLoggedOutLabel={t('adminControl.noLoggedOutDevices')}
+              logoutLabel={t('adminControl.logout')}
+              loginLabel={t('adminControl.login')}
+              onActionClick={handleActionClick}
+            />
           </div>
 
-          {/* Account verification */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              className={`border-2 border-black px-4 py-1.5 text-center text-xl font-extrabold uppercase hover:bg-black hover:text-white ${
-                hasIdCaptured ? 'bg-green-100' : ''
-              }`}
-              onClick={handleVerifyAccount}
-              title={!hasIdCaptured ? t('adminControl.scanCccdStep') : undefined}
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                <ScanLine size={20} />
-                {t('adminControl.verifyAccount')}
-              </span>
-            </button>
-            {requiresBusinessDoc && (
-              <button
-                type="button"
-                className={`border-2 border-black px-4 py-1.5 text-center text-xl font-extrabold uppercase hover:bg-black hover:text-white ${
-                  hasBusinessVideo ? 'bg-green-100' : ''
-                }`}
-                onClick={() => MOCK_VERIFICATION ? mockBusinessRegCapture() : openCamera('business_reg')}
-                title={t('adminControl.scanBusinessStep', 'Chụp giấy phép kinh doanh')}
-              >
-                <span className="inline-flex items-center justify-center gap-2">
-                  <ScanLine size={20} />
-                  XÁC MINH GPKD
-                </span>
-              </button>
-            )}
-            <span className="text-2xl font-bold text-red-600">*</span>
+          {/* Verification status badge */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             {isVerified ? (
               <span className="border-2 border-green-600 bg-green-50 px-3 py-1 text-sm font-bold text-green-700">
                 ✓ {t('adminControl.verifiedBadge', 'Tài khoản đã được xác minh')}
@@ -930,8 +939,17 @@ export default function AdminControlPage() {
           )}
 
           {/* Current address - shown so the customer can correct it while their location is hidden */}
-          <div className="mt-3 flex items-center gap-2">
-            <div className="grid w-full max-w-[890px] grid-cols-[auto_1fr_auto_auto] border-2 border-black text-[13px] leading-tight">
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={() => setAddressSectionCollapsed(prev => !prev)}
+              className="mb-1 flex items-center gap-1 text-sm font-bold text-red-600 hover:opacity-70"
+            >
+              {addressSectionCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+            </button>
+          </div>
+          {!addressSectionCollapsed && <div className="mt-1 flex items-center gap-2">
+            <div className="grid w-full max-w-[620px] grid-cols-[auto_1fr_auto_auto] border-2 border-black text-[13px] leading-tight">
               <div className="border-r-2 border-black px-2 py-1 text-red-600">
                 {t('adminControl.currentAddressLabel')}
               </div>
@@ -961,8 +979,7 @@ export default function AdminControlPage() {
                 {addressSaving ? t('adminControl.saving', 'Đang lưu...') : t('adminControl.update')}
               </button>
             </div>
-            <span className="text-2xl font-bold text-red-600">*</span>
-          </div>
+          </div>}
 
           {addressOnMap && (
             <div className="mt-1 flex max-w-[890px] items-start gap-1 text-[11px] leading-tight text-green-700">
@@ -1035,35 +1052,63 @@ export default function AdminControlPage() {
             </section>
         )}
 
-        {/* 3.2 */}
+        {/* 3.2 + 3.3 */}
         <section className="mt-6">
-          <div className="flex flex-wrap items-center gap-6">
-            <h2 className="text-2xl font-extrabold uppercase">{t('adminControl.header3_2')}</h2>
-            <div className="flex border-2 border-black">
-              <button
-                type="button"
-                onClick={() => setGoodsTab((prev) => (prev === 'posts' ? null : 'posts'))}
-                className={`flex items-center gap-1 px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
-                  goodsTab === 'posts' ? 'bg-black text-white' : ''
-                }`}
-              >
-                {t('adminControl.postsTab')}
-                {goodsTab === 'posts' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => setGoodsTab((prev) => (prev === 'joined' ? null : 'joined'))}
-                className={`flex items-center gap-1 border-l-2 border-black px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
-                  goodsTab === 'joined' ? 'bg-black text-white' : ''
-                }`}
-              >
-                {t('adminControl.joinedPostsTab')}
-                {goodsTab === 'joined' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-            </div>
+          <div className="grid gap-y-3" style={{gridTemplateColumns: 'max-content auto'}}>
+            <h2 className="flex items-center text-2xl font-extrabold uppercase pr-2">{t('adminControl.header3_2')}</h2>
+            <div className="flex border-2 border-black w-fit">
+                <button
+                  type="button"
+                  onClick={() => setGoodsTab((prev) => (prev === 'posts' ? null : 'posts'))}
+                  className={`flex items-center gap-1 px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                    goodsTab === 'posts' ? 'bg-black text-white' : ''
+                  }`}
+                >
+                  {t('adminControl.postsTab')}
+                  {goodsTab === 'posts' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGoodsTab((prev) => (prev === 'joined' ? null : 'joined'))}
+                  className={`flex items-center gap-1 border-l-2 border-black px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                    goodsTab === 'joined' ? 'bg-black text-white' : ''
+                  }`}
+                >
+                  {t('adminControl.joinedPostsTab')}
+                  {goodsTab === 'joined' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+              </div>
+            <h2 className="flex items-center text-2xl font-extrabold uppercase pr-2">{t('adminControl.header3_3', 'CÔNG VIỆC TỰ DO')}</h2>
+            <div className="flex border-2 border-black w-fit">
+                <button
+                  type="button"
+                  onClick={() => setFreelanceTab((prev) => (prev === 'posts' ? null : 'posts'))}
+                  className={`flex items-center gap-1 px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                    freelanceTab === 'posts' ? 'bg-black text-white' : ''
+                  }`}
+                >
+                  {t('adminControl.postsTab')}
+                  {freelanceTab === 'posts' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFreelanceTab((prev) => (prev === 'joined' ? null : 'joined'))}
+                  className={`flex items-center gap-1 border-l-2 border-black px-3 py-1 text-lg font-extrabold uppercase hover:bg-black hover:text-white ${
+                    freelanceTab === 'joined' ? 'bg-black text-white' : ''
+                  }`}
+                >
+                  {t('adminControl.joinedPostsTab')}
+                  {freelanceTab === 'joined' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+              </div>
           </div>
 
           {goodsTab && (
+            <div className="mt-2 max-w-[890px] border-2 border-black p-4 text-center text-sm">
+              {t('adminControl.sectionEmpty')}
+            </div>
+          )}
+          {freelanceTab && (
             <div className="mt-2 max-w-[890px] border-2 border-black p-4 text-center text-sm">
               {t('adminControl.sectionEmpty')}
             </div>

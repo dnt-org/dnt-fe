@@ -27,7 +27,7 @@ const FooterComponent = () => {
                         borderRight: '1px solid',
                     }}
                 >
-                    <p>{t('common.updateNotice', 'DANH SÁCH NHẬN GIẢM GIÁ')}</p>
+                    <p>{t('common.updateNotice', 'DANH SÁCH NHẬN THƯỞNG')}</p>
                 </div>
                 <div
                     onClick={() => navigate("/restricted-transactions")}
