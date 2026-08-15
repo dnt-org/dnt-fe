@@ -57,6 +57,10 @@ export default function VerifyRecoveryStep() {
           placeholder={t('forgotPassword.recoveryStringPlaceholder', 'ký tự khôi phục tài khoản')}
           value={recoveryString}
           onChange={(e) => setRecoveryString(e.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
+          autoComplete="off"
+          spellCheck={false}
           disabled={isLoading || isBlocked || isTempBlocked}
         />
         <button

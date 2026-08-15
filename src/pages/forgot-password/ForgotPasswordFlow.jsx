@@ -287,7 +287,10 @@ export default function ForgotPasswordFlow() {
 
       switch (errorCode) {
         case 'INVALID_OTP':
-          setErrorMessage(t('forgotPassword.errors.invalidOtp', 'Mã OTP không chính xác'));
+          setErrorMessage(t('forgotPassword.errors.invalidOtp', 'Mật mã OTP không chính xác. Vui lòng kiểm tra lại mật mã bạn đã đặt khi đăng ký.'));
+          break;
+        case 'OTP_NOT_SET':
+          setErrorMessage(t('forgotPassword.errors.otpNotSet', 'Tài khoản chưa thiết lập mật mã OTP. Vui lòng liên hệ hỗ trợ.'));
           break;
         case 'INVALID_RESET_TOKEN':
           setErrorMessage(t('forgotPassword.errors.invalidToken', 'Token không hợp lệ. Vui lòng thử lại từ đầu.'));
@@ -362,7 +365,7 @@ export default function ForgotPasswordFlow() {
           console.error('Auto-login after password reset failed:', autoLoginError);
           resetResetLoginCaptcha();
           // Password change itself succeeded — fall back to manual login instead of stranding the user
-          navigate('/login', {
+          navigate('/', {
             state: {
               message: t('forgotPassword.redirectMessage', 'Mật khẩu đã được đổi thành công. Vui lòng đăng nhập.')
             }

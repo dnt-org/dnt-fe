@@ -24,7 +24,7 @@ export default function VerifyOtpStep() {
           {t('forgotPassword.otpDescription', 'Vui lòng nhập mật mã của bạn.')}
         </p>
         <p className="text-gray-400 text-xs mt-1">
-          {t('forgotPassword.otpDescriptionHint', '(mật mã này do bạn tự đặt ở trang đăng ký, hệ thống không gửi tin nhắn)')}
+          {t('forgotPassword.otpDescriptionHint', '(đây là mật mã OTP bạn tự đặt trong phần cài đặt tài khoản, không phải mã hệ thống gửi)')}
         </p>
       </div>
 
@@ -35,6 +35,10 @@ export default function VerifyOtpStep() {
           value={otp}
           placeholder={t('forgotPassword.otpPlaceholder', 'Nhập mật mã OTP')}
           onChange={(e) => setOtp(e.target.value)}
+          autoCapitalize="none"
+          autoCorrect="off"
+          autoComplete="one-time-code"
+          spellCheck={false}
           disabled={isLoading}
         />
       </div>
@@ -49,7 +53,7 @@ export default function VerifyOtpStep() {
           onClick={handleVerifyOtp}
           disabled={isLoading || !otp.trim()}
         >
-          {isLoading ? t('common.loading', 'Đang xử lý...') : t('forgotPassword.verifyOtpButton', 'XÁC THỰC MẬT MÃ OTP')}
+          {isLoading ? t('common.loading', 'Đang xử lý...') : t('forgotPassword.verifyOtpButton', 'XÁC THỰC')}
         </button>
          {errorMessage && (
         <p className="text-red-500 text-sm text-center">{errorMessage}</p>
