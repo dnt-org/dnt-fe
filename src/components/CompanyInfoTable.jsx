@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { Building2, Camera } from 'lucide-react';
 import { getMe, updateAvatarFile } from '../services/authService';
 import { downloadContract } from '../services/contractService';
 import { getAvatarUrl } from '../utils/user';
 import planetImage from '../assets/planet.jpg';
+import ContractModal from './ContractModal';
 
 const DEFAULT_AVATAR = 'https://th.bing.com/th/id/OIP.aqzvZTh44zgk38UdpdE1KQHaHa?rs=1&pid=ImgDetMain';
 
@@ -16,6 +18,13 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const [dlLoading, setDlLoading] = useState({ contract: false });
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
+
+  const [contractModalOpen, setContractModalOpen] = useState(false);
+  const [contractFiles, setContractFiles] = useState([]);
+  const [contractActiveIndex, setContractActiveIndex] = useState(0);
+  const [contractLoading, setContractLoading] = useState(false);
+  const [contractError, setContractError] = useState('');
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api';
 
   const countryData = {
     vi: {
@@ -82,6 +91,72 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
     }
   };
 
+  const handleOpenContractModal = async () => {
+    setContractError('');
+    setContractModalOpen(true);
+    setContractLoading(true);
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await getMe(authToken);
+      const user = response.data;
+
+      const generateResponse = await axios.post(
+        `${API_URL}/contract/generate`,
+        {
+          benAIdentityNumber: user?.identityNumber || user?.cccd || '',
+          benAName: user?.full_name || user?.username || '',
+          benAAddress: user?.address_no || '',
+          collateralCode: 'CONTRACT_TEMPLATE',
+        },
+        { responseType: 'blob', headers: { 'Content-Type': 'application/json' } }
+      );
+
+      const contentDisposition = generateResponse.headers?.['content-disposition'] || '';
+      let generatedFileName = 'contract.docx';
+      const match = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i);
+      if (match) generatedFileName = match[1].replace(/['"]/g, '').trim();
+
+      const generatedBlob = new Blob([generateResponse.data], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+      const generatedUrl = window.URL.createObjectURL(generatedBlob);
+
+      const collateralsResponse = await axios.get(`${API_URL}/collaterals/download/CONTRACT`);
+      const collateralFilesRaw = collateralsResponse.data?.files || [];
+      const collateralFiles = await Promise.all(
+        collateralFilesRaw.filter(Boolean).map(async (rawUrl, index) => {
+          const clean = String(rawUrl).replace(/`/g, '').trim();
+          const downloadName = clean.split('?')[0].split('/').pop() || `file_${index + 1}.pdf`;
+          try {
+            const fileResp = await axios.get(clean, { responseType: 'blob' });
+            const contentType = fileResp.headers?.['content-type'] || 'application/pdf';
+            const inlineBlob = new Blob([fileResp.data], { type: contentType });
+            return { type: 'collateral', url: window.URL.createObjectURL(inlineBlob), label: `File ${index + 1}`, downloadName };
+          } catch {
+            return { type: 'collateral', url: clean, label: `File ${index + 1}`, downloadName };
+          }
+        })
+      );
+
+      setContractFiles([
+        { type: 'generated', kind: 'docx', blob: generatedBlob, url: generatedUrl, label: 'Hợp đồng', downloadName: generatedFileName },
+        ...collateralFiles,
+      ]);
+      setContractActiveIndex(0);
+    } catch (err) {
+      const msg = 'Không thể tải hợp đồng. Vui lòng thử lại.';
+      setContractError(msg);
+    } finally {
+      setContractLoading(false);
+    }
+  };
+
+  const handleCloseContractModal = () => {
+    contractFiles.forEach((f) => { try { window.URL.revokeObjectURL(f.url); } catch {} });
+    setContractFiles([]);
+    setContractModalOpen(false);
+  };
+
   const handleAvatarClick = () => {
     avatarInputRef.current?.click();
   };
@@ -141,6 +216,7 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
   const companyLogo = userData?.company_logo?.url || planetImage;
 
   return (
+    <>
     <div className="w-full h-full px-4 py-4">
       {/* Main layout: 2 columns — left logo+avatar, right info box */}
       <div className="flex flex-row gap-6 items-start">
@@ -153,6 +229,16 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
             alt="Company Logo"
             className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-blue-700 shadow-lg"
           />
+
+          {/* Contract link below logo */}
+          <button
+            type="button"
+            onClick={handleOpenContractModal}
+            className="text-red-600 font-bold underline text-center leading-tight mt-1"
+            style={{ fontSize: 'clamp(8px, 0.75vw, 11px)' }}
+          >
+            HỢP ĐỒNG
+          </button>
 
           {/* User avatar — small, round, centered below logo. Ấn vào để đổi avatar. */}
           <button
@@ -288,6 +374,17 @@ const CompanyInfoTable = ({ userCountry = 'vi' }) => {
         </div>
       </div>
     </div>
+
+      <ContractModal
+        isOpen={contractModalOpen}
+        isLoading={contractLoading}
+        contractFiles={contractFiles}
+        contractActiveIndex={contractActiveIndex}
+        setContractActiveIndex={setContractActiveIndex}
+        contractError={contractError}
+        onClose={handleCloseContractModal}
+      />
+    </>
   );
 };
 

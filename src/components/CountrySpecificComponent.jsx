@@ -45,10 +45,10 @@ const CountrySpecificComponent = ({ userCountry = 'vi' }) => {
       />
       <Link
         to="/terms-and-conditions"
-        className="text-center font-bold text-blue-700 underline mt-1"
+        className="text-center font-bold text-red-600 underline mt-1"
         style={{ fontSize: "clamp(6px, 0.7vw, 10px)", lineHeight: 1.3 }}
       >
-        HỢP ĐỒNG<br />VÀ CÁC<br />ĐIỀU KHOẢN
+        HỢP ĐỒNG VÀ<br />CÁC ĐIỀU KHOẢN
       </Link>
     </div>
   );

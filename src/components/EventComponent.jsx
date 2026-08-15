@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { filterProducts } from "../services/productService";
 
 export default function EventComponent() {
@@ -187,7 +188,10 @@ export default function EventComponent() {
 
   const getProductQuantity = (event) => {
     const firstItem = event.productItems?.[0] || {};
-    return firstItem.quantityMinimum || firstItem.quantityMinRequire || "";
+    const qty = firstItem.quantityMinimum || firstItem.quantityMinRequire || "";
+    const unit = firstItem.unit || firstItem.unitType || "";
+    if (!qty) return "";
+    return unit ? `${qty} ${unit}` : `${qty}`;
   };
 
   const getProductPrice = (event) => {
@@ -203,53 +207,53 @@ export default function EventComponent() {
     const detailId = getProductDetailId(event);
 
     return (
-    <div
-      onClick={() => detailId && navigate(`/list-of-goods/${detailId}`)}
-      style={{
-        backgroundColor: "white",
-        minHeight: "clamp(138px, 18vw, 230px)",
-        padding: "clamp(6px, 1vw, 10px)",
-        borderRadius: "8px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        alignItems: "stretch",
-        textAlign: "center",
-        border: "1px solid black",
-        boxSizing: "border-box",
-        cursor: "pointer",
-        minWidth: 0,
-        overflow: "hidden",
-      }}
-    >
-      <h3 style={{
-        margin: "4px 0 8px 0",
-        fontSize: "clamp(11px, 1.15vw, 14px)",
-        lineHeight: 1.25,
-        fontWeight: "bold",
-        overflow: "hidden",
-        display: "-webkit-box",
-        WebkitLineClamp: 3,
-        WebkitBoxOrient: "vertical",
-        overflowWrap: "anywhere",
-      }}>
-        {title}
-      </h3>
-      <div style={{
-        minWidth: 0,
-        textAlign: "left",
-        fontSize: "clamp(10px, 1vw, 12px)",
-        lineHeight: 1.25,
-        fontWeight: "bold",
-      }}>
-        {event.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.listingType.toUpperCase()}</p> : null}
-        {event.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.categoryType}</p> : null}
-        {(event.conditionType || event.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.conditionType || event.status}</p> : null}
-        {(event.goodsAddress || event.address || event.province) ? <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>{event.goodsAddress || event.address || event.province}</p> : null}
-        {getProductQuantity(event) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getProductQuantity(event)}</p> : null}
+      <div
+        onClick={() => detailId && navigate(`/list-of-goods/${detailId}`)}
+        style={{
+          backgroundColor: "white",
+          minHeight: "clamp(138px, 18vw, 230px)",
+          padding: "clamp(6px, 1vw, 10px)",
+          borderRadius: "8px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          alignItems: "stretch",
+          textAlign: "center",
+          border: "1px solid black",
+          boxSizing: "border-box",
+          cursor: "pointer",
+          minWidth: 0,
+          overflow: "hidden",
+        }}
+      >
+        <h3 style={{
+          margin: "4px 0 8px 0",
+          fontSize: "clamp(11px, 1.15vw, 14px)",
+          lineHeight: 1.25,
+          fontWeight: "bold",
+          overflow: "hidden",
+          display: "-webkit-box",
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: "vertical",
+          overflowWrap: "anywhere",
+        }}>
+          {title}
+        </h3>
+        <div style={{
+          minWidth: 0,
+          textAlign: "left",
+          fontSize: "clamp(10px, 1vw, 12px)",
+          lineHeight: 1.25,
+          fontWeight: "bold",
+        }}>
+          {event.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.listingType.toUpperCase()}</p> : null}
+          {event.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.categoryType}</p> : null}
+          {(event.conditionType || event.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.conditionType || event.status}</p> : null}
+          {(event.address || event.goodsAddress || event.province) ? <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>{event.address || event.goodsAddress || event.province}</p> : null}
+          {getProductQuantity(event) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getProductQuantity(event)}</p> : null}
+        </div>
       </div>
-    </div>
     );
   };
 
@@ -271,7 +275,7 @@ export default function EventComponent() {
         background: disabled ? "rgba(204,204,204,0.85)" : "rgba(0,123,255,0.9)",
         color: "white",
         border: "none",
-        borderRadius: "50%",
+        borderRadius: "6px",
         width: isMobile ? "40px" : "50px",
         height: isMobile ? "40px" : "50px",
         cursor: disabled ? "not-allowed" : "pointer",
@@ -283,7 +287,7 @@ export default function EventComponent() {
         transition: "opacity 0.2s",
       }}
     >
-      {direction === "prev" ? "→" : "←"}
+      {direction === "prev" ? <ChevronRight size={isMobile ? 20 : 26} /> : <ChevronLeft size={isMobile ? 20 : 26} />}
     </button>
   );
 
@@ -298,8 +302,8 @@ export default function EventComponent() {
       >
         <NavigationButton
           direction="prev"
-          onClick={() => handleNext(false)}
-          disabled={!canGoNextDesktop}
+          onClick={() => handlePrevious(false)}
+          disabled={!canGoPreviousDesktop}
           visible={isDesktopHovered}
         />
 
@@ -330,8 +334,8 @@ export default function EventComponent() {
 
         <NavigationButton
           direction="next"
-          onClick={() => handlePrevious(false)}
-          disabled={!canGoPreviousDesktop}
+          onClick={() => handleNext(false)}
+          disabled={!canGoNextDesktop}
           visible={isDesktopHovered}
         />
       </div>
@@ -345,8 +349,8 @@ export default function EventComponent() {
       >
         <NavigationButton
           direction="prev"
-          onClick={() => handleNext(true)}
-          disabled={!canGoNextMobile}
+          onClick={() => handlePrevious(true)}
+          disabled={!canGoPreviousMobile}
           isMobile={true}
           visible={isMobileHovered}
         />
@@ -374,8 +378,8 @@ export default function EventComponent() {
 
         <NavigationButton
           direction="next"
-          onClick={() => handlePrevious(true)}
-          disabled={!canGoPreviousMobile}
+          onClick={() => handleNext(true)}
+          disabled={!canGoNextMobile}
           isMobile={true}
           visible={isMobileHovered}
         />

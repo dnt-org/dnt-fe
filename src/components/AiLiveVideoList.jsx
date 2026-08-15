@@ -13,14 +13,14 @@ export default function AiLiveVideoList({ videos = [] }) {
   const rawData = videos.length
     ? videos
     : Array.from({ length: 50 }, (_, i) => ({
-        id: i + 1,
-        name: `${t("aiLiveVideo.video", "VIDEO")} ${i + 1}`,
-        productId: `PRD-${String(i + 1).padStart(3, "0")}`,
-        viewers: 2112,
-        saves: 35143,
-        shares: 424652,
-        hasPlatformLogo: i % 5 === 0,
-      }))
+      id: i + 1,
+      name: `${t("aiLiveVideo.video", "VIDEO")} ${i + 1}`,
+      productId: `PRD-${String(i + 1).padStart(3, "0")}`,
+      viewers: 2112,
+      saves: 35143,
+      shares: 424652,
+      hasPlatformLogo: i % 5 === 0,
+    }))
 
   // Video có Logo nền tảng đứng đầu danh sách của ID hàng hóa đó
   const data = [...rawData].sort((a, b) => (b.hasPlatformLogo ? 1 : 0) - (a.hasPlatformLogo ? 1 : 0))
@@ -43,7 +43,7 @@ export default function AiLiveVideoList({ videos = [] }) {
         onClick={handlePrevPage}
         className="disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center text-center"
       >
-        <ChevronLeft size={24} />
+        <ChevronRight size={24} />
       </button>
 
       <div className="grid sm:grid-cols-6 grid-cols-3 gap-4 border-black py-4 px-2 flex-grow ">

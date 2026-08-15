@@ -22,7 +22,7 @@ const DataTableComponent = () => {
           {t("metrics.listedValue", "GIÁ TRỊ LÊN SÀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.listedValue)} D</strong>
+          <strong>{formatNumber(metric.listedValue)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.transactions", "LƯỢT GIAO DỊCH")}:
@@ -44,19 +44,19 @@ const DataTableComponent = () => {
           {t("metrics.successfully", "THÀNH CÔNG")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.successfully)}</strong>
+          <strong>{formatNumber(metric.successfully)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.amount", "SỐ TIỀN")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.amount)} D</strong>
+          <strong>{formatNumber(metric.amount)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.duration", "THỜI LƯỢNG")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1">
-          <strong>1x10^14 S</strong>
+          <strong><span style={{color:'#1d4ed8'}}>1</span>x<span style={{color:'#dc2626'}}>10</span><sup style={{color:'#1d4ed8'}}>14</sup> S</strong>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ const DataTableComponent = () => {
           {t("metrics.deposited", "ĐÃ GỬI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.deposited)} D</strong>
+          <strong>{formatNumber(metric.deposited)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.videoViews", "LƯỢT XEM VIDEO")}:
@@ -95,7 +95,7 @@ const DataTableComponent = () => {
           {t("metrics.withdrawn", "ĐÃ RÚT")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.withdrawn)} D</strong>
+          <strong>{formatNumber(metric.withdrawn)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.members", "THÀNH VIÊN")}:
@@ -117,7 +117,7 @@ const DataTableComponent = () => {
           {t("metrics.remaining", "CÒN LẠI")}:
         </div>
         <div className="flex-2 flex items-center justify-end py-1 px-1 border-r border-black">
-          <strong>{formatNumber(metric.remaining)} D</strong>
+          <strong>{formatNumber(metric.remaining)} <span style={{color:'#1d4ed8'}}>D</span></strong>
         </div>
         <div className="table-cell flex items-center font-bold py-1 px-1 border-r border-black">
           {t("metrics.online", "ĐANG TRUY CẬP")}:
