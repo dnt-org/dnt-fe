@@ -1,4 +1,5 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import { renderAsync } from "docx-preview";
 import { useTranslation } from "react-i18next";
 
@@ -28,8 +29,8 @@ export default function ContractModal({
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[200000] flex items-center justify-center bg-black/60">
       <div className="bg-white w-screen h-screen flex flex-col">
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <h2 className="font-semibold text-lg">
@@ -108,6 +109,7 @@ export default function ContractModal({
           ) : null}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

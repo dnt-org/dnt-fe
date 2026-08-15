@@ -1325,5 +1325,38 @@
     "enterOtp": "ENTER OTP",
     "enterWalletId": "ENTER WALLET BALANCE ID",
     "typeMessage": "Type message to A"
+  },
+  "listingType": {
+    "SALE": "SALE",
+    "BUY": "BUY",
+    "RENT": "RENT",
+    "FOR RENT": "FOR RENT",
+    "PROVIDE SERVICES": "PROVIDE SERVICES",
+    "USE SERVICES": "USE SERVICES"
+  },
+  "categoryType": {
+    "GOODS": "GOODS",
+    "LAND AND HOUSE": "LAND AND HOUSE",
+    "VEHICLE": "VEHICLE",
+    "MANPOWER": "MANPOWER",
+    "IMPORT - EXPORT": "IMPORT - EXPORT"
+  },
+  "conditionType": {
+    "ALL": "ALL",
+    "SCRAP": "SCRAP",
+    "NEW": "NEW (< 7 years from production date)",
+    "OLD": "OLD (Operating normally)",
+    "UNUSED": "UNUSED (> 7 years from production date)"
+  },
+  "region": {
+    "ALL": "ALL",
+    "SOUTH EAST": "SOUTH EAST",
+    "NORTH EAST": "NORTH EAST",
+    "SOUTH WEST": "SOUTH WEST",
+    "NORTH WEST": "NORTH WEST",
+    "NORTH CENTRAL": "NORTH CENTRAL",
+    "SOUTH CENTRAL": "SOUTH CENTRAL",
+    "HIGHLANDS": "HIGHLANDS",
+    "OTHER COUNTRIES": "OTHER COUNTRIES"
   }
 }

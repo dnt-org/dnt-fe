@@ -21,7 +21,7 @@
     "confirm": "Xác nhận",
     "close": "Đóng",
     "advertising": "QUẢNG CÁO",
-    "updateNotice": "DANH SÁCH NHẬN GIẢM GIÁ",
+    "updateNotice": "DANH SÁCH NHẬN THƯỞNG",
     "companyName": "© CÔNG TY TNHH ĐẠI NGHĨA TÍN",
     "taxCode": "MST: 3702678200",
     "stt": "STT",
@@ -1306,5 +1306,38 @@
     "enterOtp": "NHẬP MẬT MÃ OTP",
     "enterWalletId": "NHẬP SỐ D CÓ TRONG VÍ",
     "typeMessage": "Nhập tin nhắn tới A"
+  },
+  "listingType": {
+    "SALE": "HÀNG BÁN",
+    "BUY": "CẦN MUA",
+    "RENT": "CẦN THUÊ",
+    "FOR RENT": "CHO THUÊ",
+    "PROVIDE SERVICES": "CUNG CẤP DỊCH VỤ",
+    "USE SERVICES": "SỬ DỤNG DỊCH VỤ"
+  },
+  "categoryType": {
+    "GOODS": "HÀNG HÓA",
+    "LAND AND HOUSE": "BẤT ĐỘNG SẢN",
+    "VEHICLE": "PHƯƠNG TIỆN",
+    "MANPOWER": "NHÂN LỰC",
+    "IMPORT - EXPORT": "XUẤT - NHẬP KHẨU"
+  },
+  "conditionType": {
+    "ALL": "Tất cả",
+    "SCRAP": "PHẾ LIỆU",
+    "NEW": "MỚI (< 7 năm từ ngày sản xuất)",
+    "OLD": "CŨ (Hoạt động bình thường)",
+    "UNUSED": "CHƯA SỬ DỤNG (> 7 năm từ ngày sản xuất)"
+  },
+  "region": {
+    "ALL": "TẤT CẢ",
+    "SOUTH EAST": "ĐÔNG NAM BỘ",
+    "NORTH EAST": "ĐÔNG BẮC BỘ",
+    "SOUTH WEST": "TÂY NAM BỘ",
+    "NORTH WEST": "TÂY BẮC BỘ",
+    "NORTH CENTRAL": "BẮC TRUNG BỘ",
+    "SOUTH CENTRAL": "NAM TRUNG BỘ",
+    "HIGHLANDS": "TÂY NGUYÊN",
+    "OTHER COUNTRIES": "NƯỚC KHÁC"
   }
 }

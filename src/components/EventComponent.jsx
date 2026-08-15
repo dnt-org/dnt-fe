@@ -247,9 +247,9 @@ export default function EventComponent() {
           lineHeight: 1.25,
           fontWeight: "bold",
         }}>
-          {event.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.listingType.toUpperCase()}</p> : null}
-          {event.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.categoryType}</p> : null}
-          {(event.conditionType || event.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{event.conditionType || event.status}</p> : null}
+          {event.listingType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t(`listingType.${event.listingType.toUpperCase()}`, event.listingType.toUpperCase())}</p> : null}
+          {event.categoryType ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t(`categoryType.${event.categoryType.toUpperCase()}`, event.categoryType)}</p> : null}
+          {(event.conditionType || event.status) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t(`conditionType.${(event.conditionType || event.status).toUpperCase()}`, event.conditionType || event.status)}</p> : null}
           {(event.address || event.goodsAddress || event.province) ? <p style={{ margin: "2px 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflowWrap: "anywhere" }}>{event.address || event.goodsAddress || event.province}</p> : null}
           {getProductQuantity(event) ? <p style={{ margin: "2px 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getProductQuantity(event)}</p> : null}
         </div>

@@ -152,7 +152,7 @@ export default function AdBanner() {
       {showCloseBtn && (
         <button
           onClick={() => setShowAd(false)}
-          className="absolute z-[100001] top-1 right-2 text-gray-500 hover:text-black font-bold cursor-pointer bg-white/80 rounded-full w-5 h-5 flex items-center justify-center border border-gray-300 shadow-sm"
+          className="absolute z-[100003] top-1 right-2 text-gray-500 hover:text-black font-bold cursor-pointer bg-white/80 rounded-full w-5 h-5 flex items-center justify-center border border-gray-300 shadow-sm"
         >
           ✕
         </button>
