@@ -7,6 +7,10 @@ import PostTypeMenu from "../components/PostTypeMenu"
 import PageHeaderWithOutColorPicker from "../components/PageHeaderWithOutColorPicker.jsx"
 import AppPageLayout from "../components/layouts/AppPageLayout.jsx"
 import GoodsFormRows from "../components/organisms/GoodsFormRows.jsx"
+import ScrapSaleFormRows from "../components/organisms/ScrapSaleFormRows.jsx"
+import { SCRAP_DURATION, emptyScrapItem, estimatedTotal, invoiceTypeForAccount, minTrustDeposit, remainingPayment } from "../utils/scrapSalePost.js"
+import { getConditionList, getSubCategoryList, isSaleGoodsScrap } from "../constants/filterConstants.js"
+import { toNumber } from "../utils/currency.js"
 import usePersistentColor from "../hooks/usePersistentColor.js"
 import useLocationSelection from "../hooks/useLocationSelection.js"
 import useGoodsForm from "../hooks/useGoodsForm.js"
@@ -23,6 +27,86 @@ export default function NewGoodPostPage() {
   const { goodsItems, goodsInfo, setGoodsInfo, handleInputChange, formatPriceReviewTime, handleItemsChange } = useGoodsForm()
   const [errorMessage, setErrorMessage] = useState("")
   const [draftMessage, setDraftMessage] = useState("")
+  const isScrapSale = isSaleGoodsScrap(selectedType, selectedCategory, selectedCondition)
+  const accountType = (() => {
+    try {
+      return localStorage.getItem("account_type") || JSON.parse(localStorage.getItem("user") || "{}")?.account_type || "ca_nhan"
+    } catch {
+      return "ca_nhan"
+    }
+  })()
+
+  // Bộ lọc phụ thuộc: đổi danh mục/phân loại thì bỏ chọn cấp dưới nếu không còn hợp lệ
+  const handleTypeChange = (e) => {
+    const type = e.target.value
+    setSelectedType(type)
+    if (!getSubCategoryList(type).some((sc) => sc.en === selectedCategory)) {
+      setSelectedCategory("")
+      setSelectedCondition("")
+    } else if (!getConditionList(type, selectedCategory).some((cd) => cd.en === selectedCondition)) {
+      setSelectedCondition("")
+    }
+  }
+
+  const handleCategoryChange = (e) => {
+    const category = e.target.value
+    setSelectedCategory(category)
+    if (!getConditionList(selectedType, category).some((cd) => cd.en === selectedCondition)) {
+      setSelectedCondition("")
+    }
+  }
+
+  // Mẫu PHẾ LIỆU dùng bảng hàng hóa riêng: đổi mẫu thì làm mới các dòng chưa nhập gì
+  const isScrapItem = (item) => "quantityEstimated" in item
+  useEffect(() => {
+    const blank = goodsItems.length === 1 && !goodsItems[0].name
+    if (isScrapSale && !goodsItems.every(isScrapItem) && blank) {
+      handleItemsChange([{ ...emptyScrapItem(1), invoiceType: invoiceTypeForAccount(accountType) }])
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isScrapSale])
+
+  const scrapItemsPayload = () =>
+    goodsItems.map((item) => ({
+      ...item,
+      contractDurationMultiplicity: item.contractDurationMultiplicity || SCRAP_DURATION.ONE_TIME,
+      handoverLocation: "Kho người bán",
+      invoiceType: invoiceTypeForAccount(accountType),
+      totalEstimated: item.contractDurationMultiplicity === SCRAP_DURATION.ONE_YEAR ? "" : estimatedTotal(item),
+      remainingPayment: item.contractDurationMultiplicity === SCRAP_DURATION.ONE_YEAR ? "" : remainingPayment(item),
+    }))
+
+  // Kiểm tra các trường bắt buộc (*) của mẫu HÀNG BÁN - HÀNG HÓA - PHẾ LIỆU
+  const validateScrapPost = () => {
+    const missing = []
+    goodsItems.forEach((item, idx) => {
+      const yearly = item.contractDurationMultiplicity === SCRAP_DURATION.ONE_YEAR
+      const row = `dòng ${idx + 1}`
+      if (!item.name) missing.push(`(1) Tên phế liệu - ${row}`)
+      if (!item.image) missing.push(`(6) Hình ảnh - ${row}`)
+      if (!item.videoFile) missing.push(`(7) Quay phim - ${row}`)
+      if (!item.qualityInfoText && !item.qualityInfoFile) missing.push(`(8) Chất lượng, thông tin hàng hóa - ${row}`)
+      if (!item.maxDeliveryDaysAfterAcceptance) missing.push(`Thời gian giao nhận hàng - ${row}`)
+      if (yearly ? !item.quantityStock || !item.quantityMonthly : !item.quantityEstimated) missing.push(`Số lượng - ${row}`)
+      if (!item.unit) missing.push(`Đơn vị tính - ${row}`)
+      if (!item.unitAskingPrice) missing.push(`Đơn giá mong muốn - ${row}`)
+      if (item.depositRequirement === "" || item.depositRequirement === undefined) missing.push(`Yêu cầu đặt cọc, ký quỹ - ${row}`)
+    })
+    if (!goodsInfo.priceReviewTimeHour && !goodsInfo.priceReviewTimeMinute && !goodsInfo.priceReviewTimeSecond) missing.push("(3) Thời lượng duyệt giá")
+    if (!goodsInfo.onlineVerificationTime) missing.push("(4) Thời gian xác minh trực tuyến")
+    if (!goodsInfo.onsiteSurveyTime) missing.push("(5) Thời gian khảo sát thực tế")
+    if (!goodsInfo.goodsAddress) missing.push("(6) Địa chỉ hàng hóa")
+    if (!goodsInfo.endPostDate) missing.push("(8) Thời gian kết thúc bài đăng")
+    if (!goodsInfo.postDisplayFee || !goodsInfo.postDisplayDays) missing.push("(9) Phí hiển thị bài đăng")
+    if (goodsInfo.affiliateFeePercent === undefined || goodsInfo.affiliateFeePercent === "") missing.push("(10) Phí tiếp thị liên kết")
+    if (goodsInfo.successFee === undefined || goodsInfo.successFee === "") missing.push("(12) Phí thành công")
+    if (missing.length) return `Vui lòng nhập: ${missing.join(", ")}`
+    if (goodsInfo.trustPlatform && toNumber(goodsInfo.trustDepositAmount) < minTrustDeposit(goodsItems)) {
+      return `Số tiền ký quỹ ủy thác tối thiểu là ${Math.ceil(minTrustDeposit(goodsItems)).toLocaleString("vi-VN")} D`
+    }
+    if (!goodsInfo.agreeTerms) return "Vui lòng tick cam kết thông tin đăng tải."
+    return ""
+  }
 
   useEffect(() => {
     let mounted = true
@@ -70,7 +154,7 @@ export default function NewGoodPostPage() {
     province: selectedProvince,
     address: selectedDistrict,
     priceReviewTime: formatPriceReviewTime(),
-    items: goodsItems,
+    items: isScrapSale ? scrapItemsPayload() : goodsItems,
   })
 
   const submitForm = async (status) => {
@@ -78,6 +162,13 @@ export default function NewGoodPostPage() {
     if (!token) {
       setErrorMessage("Bạn cần đăng nhập để đăng hàng hóa.")
       return
+    }
+    if (isScrapSale) {
+      const error = validateScrapPost()
+      if (error) {
+        setErrorMessage(error)
+        return
+      }
     }
     try {
       const res = await createProduct(token, buildPayload(status))
@@ -132,33 +223,58 @@ export default function NewGoodPostPage() {
       <div className="mt-1">
         <form className="border-gray-300">
           <PostTypeMenu activeType="goods" />
-          <GoodsFormRows
-            selectedType={selectedType}
-            selectedCategory={selectedCategory}
-            selectedCondition={selectedCondition}
-            onTypeChange={(e) => setSelectedType(e.target.value)}
-            onCategoryChange={(e) => setSelectedCategory(e.target.value)}
-            onConditionChange={(e) => setSelectedCondition(e.target.value)}
-            countries={countries}
-            provinces={provinces}
-            districts={districts}
-            selectedCountry={selectedCountry}
-            selectedProvince={selectedProvince}
-            selectedDistrict={selectedDistrict}
-            onCountryChange={handleCountryChange}
-            onProvinceChange={(e) => {
-              handleProvinceChange(e)
-              setGoodsInfo((prev) => ({ ...prev, province: e.target.value }))
-            }}
-            onDistrictChange={(e) => {
-              handleDistrictChange(e)
-              setGoodsInfo((prev) => ({ ...prev, address: e.target.value }))
-            }}
-            goodsInfo={goodsInfo}
-            onGoodsInfoChange={onGoodsInfoChange}
-            goodsItems={goodsItems}
-            onItemsChange={handleItemsChange}
-          />
+          {isScrapSale ? (
+            <ScrapSaleFormRows
+              selectedType={selectedType}
+              selectedCategory={selectedCategory}
+              selectedCondition={selectedCondition}
+              onTypeChange={handleTypeChange}
+              onCategoryChange={handleCategoryChange}
+              onConditionChange={(e) => setSelectedCondition(e.target.value)}
+              countries={countries}
+              provinces={provinces}
+              selectedCountry={selectedCountry}
+              selectedProvince={selectedProvince}
+              onCountryChange={handleCountryChange}
+              onProvinceChange={(e) => {
+                handleProvinceChange(e)
+                setGoodsInfo((prev) => ({ ...prev, province: e.target.value }))
+              }}
+              goodsInfo={goodsInfo}
+              onGoodsInfoChange={onGoodsInfoChange}
+              goodsItems={goodsItems}
+              onItemsChange={handleItemsChange}
+              accountType={accountType}
+            />
+          ) : (
+            <GoodsFormRows
+              selectedType={selectedType}
+              selectedCategory={selectedCategory}
+              selectedCondition={selectedCondition}
+              onTypeChange={handleTypeChange}
+              onCategoryChange={handleCategoryChange}
+              onConditionChange={(e) => setSelectedCondition(e.target.value)}
+              countries={countries}
+              provinces={provinces}
+              districts={districts}
+              selectedCountry={selectedCountry}
+              selectedProvince={selectedProvince}
+              selectedDistrict={selectedDistrict}
+              onCountryChange={handleCountryChange}
+              onProvinceChange={(e) => {
+                handleProvinceChange(e)
+                setGoodsInfo((prev) => ({ ...prev, province: e.target.value }))
+              }}
+              onDistrictChange={(e) => {
+                handleDistrictChange(e)
+                setGoodsInfo((prev) => ({ ...prev, address: e.target.value }))
+              }}
+              goodsInfo={goodsInfo}
+              onGoodsInfoChange={onGoodsInfoChange}
+              goodsItems={goodsItems}
+              onItemsChange={handleItemsChange}
+            />
+          )}
           {/* <AdvertisingSection goodsInfo={goodsInfo} onGoodsInfoChange={onGoodsInfoChange} /> */}
           <div className="border-t border-gray-300 p-4">
             <div className="flex items-start gap-3">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getMetric } from '../services/metricService';
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { SearchSection } from './Body';
 import CategorySelect from './CategorySelect';
-import { categories, subCategories, conditions, regions } from '../constants/filterConstants';
+import { categories, getSubCategoryList, getConditionList, SUBCATEGORY_PLACEHOLDER, CONDITION_PLACEHOLDER } from '../constants/filterConstants';
 
 function EventFilterComponent() {
     const [category, setCategory] = useState({
@@ -66,14 +66,34 @@ function EventFilterComponent() {
         dispatch({ type: CHANGE_USER_COUNTRY, payload: nation?.en });
     }, [category, subcategory, condition, nation, province, district]);
 
+    // Phân loại phụ thuộc danh mục, tình trạng phụ thuộc phân loại (sheet "Bộ lọc")
+    const subCategoryItems = useMemo(
+        () => [SUBCATEGORY_PLACEHOLDER, ...getSubCategoryList(category?.en)],
+        [category?.en]
+    );
+    const conditionItems = useMemo(
+        () => [CONDITION_PLACEHOLDER, ...getConditionList(category?.en, subcategory?.en)],
+        [category?.en, subcategory?.en]
+    );
+
     const handleCategoryChange = (title, item) => {
         switch (title) {
-            case "DANH MỤC":
+            case "DANH MỤC": {
                 setCategory(item);
+                // Đổi danh mục: giữ phân loại/tình trạng nếu vẫn tồn tại, nếu không thì về chọn đầu tiên
+                const subs = getSubCategoryList(item?.en);
+                const nextSub = subs.find((s) => s.en === subcategory?.en) || subs[0] || SUBCATEGORY_PLACEHOLDER;
+                setSubcategory(nextSub);
+                const conds = getConditionList(item?.en, nextSub?.en);
+                setCondition(conds.find((c) => c.en === condition?.en) || conds[0] || CONDITION_PLACEHOLDER);
                 break;
-            case "Subcategories":
+            }
+            case "Subcategories": {
                 setSubcategory(item);
+                const conds = getConditionList(category?.en, item?.en);
+                setCondition(conds.find((c) => c.en === condition?.en) || conds[0] || CONDITION_PLACEHOLDER);
                 break;
+            }
             case "Conditions":
                 setCondition(item);
                 break;
@@ -110,14 +130,14 @@ function EventFilterComponent() {
                 />
                 <CategorySelect
                     title="Subcategories"
-                    items={subCategories}
+                    items={subCategoryItems}
                     onChange={handleCategoryChange}
                     value={subcategory}
                     placeholder={{ vi: "Chọn phân loại", en: "Select subcategory" }}
                 />
                 <CategorySelect
                     title="Conditions"
-                    items={conditions}
+                    items={conditionItems}
                     onChange={handleCategoryChange}
                     value={condition}
                     placeholder={{ vi: "Chọn tình trạng", en: "Select condition" }}

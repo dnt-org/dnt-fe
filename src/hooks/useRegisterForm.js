@@ -349,7 +349,8 @@ export default function useRegisterForm(t) {
       const uploadToCloudinaryResp = "https://res.cloudinary.com/demo/image/upload/v1692323522/sample.jpg"
       formData.id = formData.bank_number
       formData.cccd = formData.id
-      const payload = { ...formData, signature: uploadToCloudinaryResp, recaptchaToken }
+      // nation: quốc gia đăng ký, dùng để quy đổi giá D sang tiền tệ của người dùng
+      const payload = { ...formData, nation: selectedCountry?.value, signature: uploadToCloudinaryResp, recaptchaToken }
       const response = await axios.post(`${API_URL}/auth/register`, payload, { headers: { "Content-Type": "application/json" } })
       const authToken = response.data?.token || response.data?.jwt
       localStorage.setItem("authToken", authToken)

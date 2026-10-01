@@ -66,6 +66,11 @@ export default function useGoodsForm() {
   const formatPriceReviewTime = () => {
     const hour = (goodsInfo.priceReviewTimeHour || "00").toString().padStart(2, "0")
     const minute = (goodsInfo.priceReviewTimeMinute || "00").toString().padStart(2, "0")
+    // Mẫu PHẾ LIỆU nhập thêm giây (hh:mm:ss)
+    if (goodsInfo.priceReviewTimeSecond !== undefined) {
+      const second = (goodsInfo.priceReviewTimeSecond || "00").toString().padStart(2, "0")
+      return `${hour}:${minute}:${second}`
+    }
     return `${hour}:${minute}`
   }
 

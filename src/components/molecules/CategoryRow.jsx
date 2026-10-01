@@ -1,7 +1,6 @@
-import React from "react"
 import PropTypes from "prop-types"
 import { useTranslation } from "react-i18next"
-import { categories, subCategories, conditions } from "../../constants/filterConstants"
+import { FILTER_TREE, getSubCategoryList, getConditionList } from "../../constants/filterConstants"
 import Select from "../atoms/Select"
 
 export default function CategoryRow({ selectedType, 
@@ -20,13 +19,11 @@ export default function CategoryRow({ selectedType,
   const { t, i18n } = useTranslation()
   const isVi = (i18n.language || "vi").toLowerCase().startsWith("vi")
 
-  const categoryKeyMap = { SALE: "sale", BUY: "buy", RENT: "rent", "FOR RENT": "for_rent", "PROVIDE SERVICES": "provide_services", "USE SERVICES": "use_services" }
-  const subcategoryKeyMap = { GOODS: "goods", "LAND AND HOUSE": "landhouse", VEHICLE: "vehicle", MANPOWER: "manpower", "IMPORT - EXPORT": "import_export" }
-  const conditionKeyMap = { SCRAP: "scrap", NEW: "new", OLD: "old", UNUSED: "unused" }
-
-  const categoryOptions = [{ label: t("goods.selectCategory"), value: "" }, ...categories.slice(1).map((c) => ({ label: t(`goods.category.${categoryKeyMap[c.en] || c.en.toLowerCase()}`) || (isVi ? c.vi : c.en), value: c.en }))]
-  const subcategoryOptions = [{ label: t("goods.selectSubcategoryPlaceholder"), value: "" }, ...subCategories.slice(1).map((sc) => ({ label: t(`goods.subcategory.${subcategoryKeyMap[sc.en] || sc.en.toLowerCase().replace(/\s+/g, "_").replace(/-/g, "_")}`) || (isVi ? sc.vi : sc.en), value: sc.en }))]
-  const conditionOptions = [{ label: t("goods.selectConditionPlaceholder"), value: "" }, ...conditions.slice(1).filter((cd) => cd.en !== "ALL").map((cd) => ({ label: isVi ? cd.vi : cd.en, value: cd.en.split(" (")[0] }))]
+  // Danh mục -> phân loại -> tình trạng theo sheet "Bộ lọc"; giá trị lưu là `en`
+  const label = (item) => (isVi ? item.vi : item.en)
+  const categoryOptions = [{ label: t("goods.selectCategory"), value: "" }, ...FILTER_TREE.map((c) => ({ label: label(c), value: c.en }))]
+  const subcategoryOptions = [{ label: t("goods.selectSubcategoryPlaceholder"), value: "" }, ...getSubCategoryList(selectedType).map((sc) => ({ label: label(sc), value: sc.en }))]
+  const conditionOptions = [{ label: t("goods.selectConditionPlaceholder"), value: "" }, ...getConditionList(selectedType, selectedCategory).map((cd) => ({ label: label(cd), value: cd.en }))]
 
   const countryOptions = [{ label: t("goods.selectCountry"), value: "" }, ...(countries || []).map((c) => ({ label: c.vi || c.en, value: c.en || c.vi }))]
   const provinceOptions = [{ label: t("goods.selectProvince"), value: "" }, ...(provinces || []).map((p) => ({ label: p.vi || p.en, value: p.en || p.vi }))]
@@ -40,12 +37,12 @@ export default function CategoryRow({ selectedType,
       </div>
       <div className="p-2">
         <div className="text-center">
-          <Select value={selectedCategory} onChange={onCategoryChange} options={subcategoryOptions} className="w-full border border-gray-300 p-1" />
+          <Select value={selectedCategory} onChange={onCategoryChange} options={subcategoryOptions} className="w-full border border-gray-300 p-1" disabled={!selectedType} />
         </div>
       </div>
       <div className="p-2">
         <div className="text-center">
-          <Select value={selectedCondition} onChange={onConditionChange} options={conditionOptions} className="w-full border border-gray-300 p-1" />
+          <Select value={selectedCondition} onChange={onConditionChange} options={conditionOptions} className="w-full border border-gray-300 p-1" disabled={!selectedCategory} />
         </div>
       </div>
       <div className="p-2">

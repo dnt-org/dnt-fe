@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import "../styles/Login.css";
 import { useNavigate } from "react-router-dom";
 import { filterProducts } from "../services/productService";
 import { useTranslation } from 'react-i18next';
 import { getCountries, getCountryByCode } from "../services/countries";
 import { getMediaUrl } from "../services/videoService";
-import { categories, subCategories, conditions } from "../constants/filterConstants";
+import { categories, getSubCategoryList, getConditionList, SUBCATEGORY_PLACEHOLDER, CONDITION_PLACEHOLDER } from "../constants/filterConstants";
 import {
   Mic as MicIcon,
   SearchIcon as SearchIcon,
@@ -52,6 +52,16 @@ export default function ListOfGoodsPage() {
   const voiceBaseTermRef = useRef("");
 
   const isVi = (i18n.language || 'vi').toLowerCase().startsWith('vi');
+
+  // Phân loại phụ thuộc danh mục, tình trạng phụ thuộc phân loại (sheet "Bộ lọc")
+  const subCategories = useMemo(
+    () => [SUBCATEGORY_PLACEHOLDER, ...getSubCategoryList(selectedCategory)],
+    [selectedCategory]
+  );
+  const conditions = useMemo(
+    () => [CONDITION_PLACEHOLDER, ...getConditionList(selectedCategory, selectedSubcategory)],
+    [selectedCategory, selectedSubcategory]
+  );
   const speechSupported =
     typeof window !== "undefined" &&
     !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -203,9 +213,11 @@ export default function ListOfGoodsPage() {
       if (match) setter(match.en);
     };
 
-    restore(categories, localStorage.getItem("category"), setSelectedCategory);
-    restore(subCategories, localStorage.getItem("subcategory"), setSelectedSubcategory);
-    restore(conditions, localStorage.getItem("condition"), setSelectedCondition);
+    const storedCategory = localStorage.getItem("category");
+    const storedSubcategory = localStorage.getItem("subcategory");
+    restore(categories, storedCategory, setSelectedCategory);
+    restore([SUBCATEGORY_PLACEHOLDER, ...getSubCategoryList(storedCategory)], storedSubcategory, setSelectedSubcategory);
+    restore([CONDITION_PLACEHOLDER, ...getConditionList(storedCategory, storedSubcategory)], localStorage.getItem("condition"), setSelectedCondition);
 
     const nation = localStorage.getItem("nation");
     if (nation && !NO_FILTER_VALUES.includes(nation)) {
@@ -283,6 +295,14 @@ export default function ListOfGoodsPage() {
                 value={selectedCategory || ''}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
+                  // Phân loại/tình trạng không còn thuộc danh mục mới thì bỏ chọn
+                  const subs = getSubCategoryList(e.target.value);
+                  if (!subs.some((sc) => sc.en === selectedSubcategory)) {
+                    setSelectedSubcategory('');
+                    setSelectedCondition('');
+                  } else if (!getConditionList(e.target.value, selectedSubcategory).some((cd) => cd.en === selectedCondition)) {
+                    setSelectedCondition('');
+                  }
                   setCurrentPage(1);
                 }}
               >
@@ -301,6 +321,9 @@ export default function ListOfGoodsPage() {
                 value={selectedSubcategory || ''}
                 onChange={(e) => {
                   setSelectedSubcategory(e.target.value);
+                  if (!getConditionList(selectedCategory, e.target.value).some((cd) => cd.en === selectedCondition)) {
+                    setSelectedCondition('');
+                  }
                   setCurrentPage(1);
                 }}
               >

@@ -18,6 +18,11 @@ const CategorySelect = ({
     const [itemList, setItemList] = useState(items || []);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Danh sách tĩnh có thể đổi theo lựa chọn cấp cha (bộ lọc phụ thuộc)
+    useEffect(() => {
+        if (!fetchItems) setItemList(items || []);
+    }, [items, fetchItems]);
+
     // Fetch items if a fetch function is provided
     useEffect(() => {
         const loadItems = async () => {

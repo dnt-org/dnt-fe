@@ -12,45 +12,21 @@ import {
 } from "lucide-react";
 import ProductGrid from "../components/ProductGrid";
 import GoodsAccount from "../components/GoodsAccount";
+import { findCategoryLabel, findSubCategoryLabel, findConditionLabel } from "../constants/filterConstants";
 
 
 export default function DetailOfGoodsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isVi = (i18n.language || "vi").toLowerCase().startsWith("vi");
   const [color, setColor] = useState(localStorage.getItem("selectedColor"));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedSubcategory, setSelectedSubcategory] = useState("");
-  const [selectedCondition, setSelectedCondition] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedProvince, setSelectedProvince] = useState("");
   const navigate = useNavigate();
   const { id } = useParams(); // Get the ID from the URL parameter
   const [product, setProduct] = useState({});
-
-  const categories = {
-    sale: { vi: "HÀNG BÁN", en: "Sale" },
-    buy: { vi: "CẦN MUA", en: "Buy" },
-    rent: { vi: "HÀNG THUÊ", en: "Rent" },
-    forRent: { vi: "CHO THUÊ", en: "For rent" },
-    service: { vi: "DỊCH VỤ", en: "Service" }
-  };
-
-  const subcategories = {
-    goods: { vi: "HÀNG HÓA", en: "Goods" },
-    land: { vi: "BẤT ĐỘNG SẢN", en: "Land/house" },
-    vehicle: { vi: "PHƯƠNG TIỆN", en: "Vehicle" },
-    manpower: { vi: "NHÂN LỰC", en: "Manpower" },
-    importExport: { vi: "XUẤT - NHẬP KHẨU", en: "Import - Export" }
-  };
-
-  const conditions = {
-    scrap: { vi: "PHẾ LIỆU", en: "Scrap" },
-    new: { vi: "MỚI", en: "New", noteVi: "< 7 năm từ ngày sản xuất", noteEn: "< 7 years from production date" },
-    old: { vi: "CŨ", en: "Old", noteVi: "Hoạt động bình thường", noteEn: "Operating normally" },
-    unused: { vi: "CHƯA SỬ DỤNG", en: "Unused", noteVi: "> 7 năm từ ngày sản xuất", noteEn: "> 7 years from production date" }
-  };
 
   const handleChangeColor = (e) => {
     const newColor = e.target.value;
@@ -69,54 +45,6 @@ export default function DetailOfGoodsPage() {
     fetchProductDetails();
 
   }, [id]);
-
-  // Map localStorage values (EN upper-case) to internal keys used by this page
-  // Xử lý cả giá trị từ localStorage và API (có thể khác format)
-  const mapCategoryToKey = (value) => {
-    if (!value) return "";
-    const v = value.toString().toUpperCase().replace(/_/g, " ").trim();
-    switch (v) {
-      case "SALE": return "sale";
-      case "BUY": return "buy";
-      case "RENT": return "rent";
-      case "FOR RENT":
-      case "FORRENT": return "forRent";
-      case "SERVICES":
-      case "SERVICE": return "service";
-      default: return "";
-    }
-  };
-
-  const mapSubcategoryToKey = (value) => {
-    if (!value) return "";
-    const v = value.toString().toUpperCase().replace(/_/g, " ").trim();
-    switch (v) {
-      case "GOODS": return "goods";
-      case "LAND AND HOUSE":
-      case "LAND HOUSE":
-      case "LANDHOUSE":
-      case "LAND_HOUSE": return "land";
-      case "VEHICLE": return "vehicle";
-      case "MANPOWER": return "manpower";
-      case "IMPORT - EXPORT":
-      case "IMPORT-EXPORT":
-      case "IMPORT_EXPORT":
-      case "IMPORTEXPORT": return "importExport";
-      default: return "";
-    }
-  };
-
-  const mapConditionToKey = (value) => {
-    if (!value) return "";
-    const v = value.toString().toUpperCase().replace(/_/g, " ").trim();
-    switch (v) {
-      case "SCRAP": return "scrap";
-      case "NEW": return "new";
-      case "OLD": return "old";
-      case "UNUSED": return "unused";
-      default: return "";
-    }
-  };
 
   const normalizeProductItems = (nextProduct) => {
     const rawItems = nextProduct?.productItems;
@@ -144,9 +72,6 @@ export default function DetailOfGoodsPage() {
       const response = await getProductById(id);
       const nextProduct = normalizeProduct(response.data?.data || {});
       setProduct(nextProduct);
-      setSelectedCategory(mapCategoryToKey(nextProduct.listingType));
-      setSelectedSubcategory(mapSubcategoryToKey(nextProduct.categoryType));
-      setSelectedCondition(mapConditionToKey(nextProduct.conditionType));
       setSelectedCountry(nextProduct.nation || "");
       setSelectedProvince(nextProduct.province || "");
     } catch (err) {
@@ -206,48 +131,21 @@ export default function DetailOfGoodsPage() {
         {/* Category Selection - Tối ưu không gian */}
         <div className="mt-2">
           <div className="grid grid-cols-5 gap-2">
-            <div className="flex items-center justify-center">
-              <select
-                className="w-full p-2 border border-gray-300"
-                value={selectedCategory}
-                disabled
-              >
-                <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(categories).map(([key]) => (
-                  <option key={key} value={key}>
-                    {t(`detailOfGoods.category.${key}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center justify-center">
-              <select
-                className="w-full p-2 border border-gray-300"
-                value={selectedSubcategory}
-                disabled
-              >
-                <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(subcategories).map(([key]) => (
-                  <option key={key} value={key}>
-                    {t(`detailOfGoods.subcategory.${key}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center justify-center">
-              <select
-                className="w-full p-2 border border-gray-300"
-                value={selectedCondition}
-                disabled
-              >
-                <option value="">{t('detailOfGoods.selectType')}</option>
-                {Object.entries(conditions).map(([key]) => (
-                  <option key={key} value={key}>
-                    {t(`detailOfGoods.condition.${key}`)}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {[
+              [product.listingType, findCategoryLabel],
+              [product.categoryType, findSubCategoryLabel],
+              [product.conditionType, findConditionLabel],
+            ].map(([value, findLabel], idx) => {
+              const label = findLabel(value);
+              return (
+                <div key={idx} className="flex items-center justify-center">
+                  <select className="w-full p-2 border border-gray-300" value={value || ""} disabled>
+                    <option value="">{t('detailOfGoods.selectType')}</option>
+                    {value && <option value={value}>{label ? (isVi ? label.vi : label.en) : value}</option>}
+                  </select>
+                </div>
+              );
+            })}
             <div className="flex items-center justify-center">
               <select className="w-full p-2 border border-gray-300" disabled value={selectedCountry || ""}>
                 <option value="">{t('detailOfGoods.selectCountry')}</option>
